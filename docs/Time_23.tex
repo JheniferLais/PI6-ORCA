@@ -1,0 +1,367 @@
+\documentclass[
+    12pt,           % tamanho da fonte do texto
+    oneside,        % impressão em um lado da folha
+    a4paper,        % tamanho do papel
+    chapter=TITLE,  % títulos de capítulos em caixa alta
+    english,        % idioma adicional para pacotes internos
+    brazil          % idioma principal do documento
+]{abntex2}
+
+\usepackage[utf8]{inputenc}      % codificação de entrada UTF-8
+\usepackage[T1]{fontenc}         % codificação de fonte
+\usepackage{indentfirst}         % recuo na primeira linha dos parágrafos
+\usepackage{graphicx}            % inserção de imagens (uso futuro)
+\usepackage{microtype}           % melhorias tipográficas sutis
+\usepackage{newtxtext}           % fonte Times New Roman
+\usepackage{pifont}              % ícones para tabela (check e cross)
+\usepackage{xcolor}              % suporte a cores
+
+% MARGENS superior 3 cm | esquerda 3 cm | inferior 2 cm | direita 2 cm
+\usepackage[
+    top=3cm,
+    left=3cm,
+    bottom=2cm,
+    right=2cm
+]{geometry}
+
+
+% ESPAÇAMENTO E FORMATAÇÃO DE PARÁGRAFO
+\OnehalfSpacing                  % espaçamento 1,5 entre linhas
+\setlength{\parindent}{1.25cm}   % recuo de parágrafo
+\setlength{\parskip}{0pt}        % sem espaçamento extra entre parágrafos
+
+
+% FONTES E TAMANHOS DOS TÍTULOS (CAPÍTULOS, SEÇÕES E SUBSEÇÕES)
+\renewcommand{\ABNTEXchapterfontsize}{\fontsize{12}{14}\selectfont}
+\renewcommand{\ABNTEXsectionfontsize}{\fontsize{12}{14}\selectfont}
+\renewcommand{\ABNTEXsubsectionfontsize}{\fontsize{12}{14}\selectfont}
+\renewcommand{\ABNTEXsubsubsectionfontsize}{\fontsize{12}{14}\selectfont}
+
+\renewcommand{\ABNTEXchapterfont}{\rmfamily\bfseries}
+\renewcommand{\ABNTEXsectionfont}{\rmfamily\bfseries}
+\renewcommand{\ABNTEXsubsectionfont}{\rmfamily\bfseries}
+\renewcommand{\ABNTEXsubsubsectionfont}{\rmfamily\itshape}
+
+\setlength{\beforechapskip}{0pt}
+\setlength{\afterchapskip}{\baselineskip}
+
+
+% TABELAS
+\newcommand{\cmark}{\textcolor{green!60!black}{\ding{51}}}  % Símbolo de visto (verde)
+\newcommand{\xmark}{\textcolor{red}{\textbf{X}}}            % Símbolo de X (vermelho)
+
+
+% INFORMAÇÕES DO DOCUMENTO
+\titulo{Não temos titulo ainda pois não sabemos oq fazer e blablabla blablabla blablabla blablabla blablabla blablabla blablabla}
+\autor{%
+    Eduarda Luiza Pinheiro Nepomuceno \\
+    Jean Yuki Kimura \\
+    Jhenifer Laís Barbosa \\
+    João Pedro Duarte Giatti
+}
+
+% CONFIGURAÇÕES DE PDF (metadados)
+\makeatletter
+\hypersetup{
+    pdftitle={\@title},
+    pdfauthor={\@author},
+    pdfsubject={Engenharia de Software},
+    pdfkeywords={blablabla, blablabla, blablabla, blablabla, blablabla},
+    colorlinks=false,
+    pdfborder={0 0 0}
+}
+\makeatother
+
+\begin{document}
+
+
+
+% ------------------------------------------------------------
+% CAPA
+% ------------------------------------------------------------
+\begin{capa}
+    \center
+
+    {\fontsize{12}{14}\selectfont PONTIFÍCIA UNIVERSIDADE CATÓLICA DE CAMPINAS}\par
+    {\fontsize{12}{14}\selectfont ENGENHARIA DE SOFTWARE}\par
+    {\fontsize{12}{14}\selectfont 12563 - PROJETO INTEGRADOR VI - ENGENHARIA DE SOFTWARE}
+
+    \vfill
+
+    {\fontsize{12}{16}\selectfont
+        \textbf{24002529 Eduarda Luiza Pinheiro Nepomuceno}\par
+        \textbf{24008214 Jean Yuki Kimura}\par
+        \textbf{24014979 Jhenifer Laís Barbosa}\par
+        \textbf{24019083 João Pedro Duarte Giatti}\par
+    }
+
+    \vfill
+
+    {\bfseries\fontsize{12}{16}\selectfont 
+        \imprimirtitulo\par}
+
+    \vfill
+
+    {\fontsize{12}{14}\selectfont
+        Orientadora: Profa. Ma. Sílvia Cristina de Matos Soares\par
+    }
+
+    \vfill
+
+    {\fontsize{12}{14}\selectfont 
+        Campinas\par
+        2º Semestre de 2026\par
+    }
+\end{capa}
+
+% ------------------------------------------------------------
+% RESUMO
+% ------------------------------------------------------------
+\begin{resumo}
+    \SingleSpacing
+    
+    Apresentar uma visão geral do projeto, incluindo o problema abordado, a solução proposta
+    com o uso da tecnologia atual (Inteligência Artificial ou Blockchain ou tema p
+    Cibersegurança ou Business Intelligence ou outra acordada com a orientadora), a
+    metodologia adotada e os principais resultados obtidos.
+
+    \vspace{\onelineskip}
+
+    \noindent
+    \textbf{Palavras-chave}: blablabla. blablabla. blablabla. blablabla. blablabla. blablabla.
+\end{resumo}
+
+% ------------------------------------------------------------
+% SUMÁRIO
+% ------------------------------------------------------------
+\pdfbookmark[0]{\contentsname}{sumario}
+\tableofcontents*
+\cleardoublepage
+\textual
+
+% ------------------------------------------------------------
+% 1 INTRODUÇÃO
+% ------------------------------------------------------------
+\chapter{Introdução}
+
+Descrever o \textbf{contexto do problema} (qual é o problema que este projeto pretende resolver),
+a motivação para o desenvolvimento do projeto, a \textbf{justificativa da solução proposta} (por
+que a solução proposta é a melhor, o que ela traz de vantagens e de benefícios?) e o \textbf{escopo
+do projeto} (o que o software fará e o que o software não irá fazer).
+
+Elaborar o \textbf{Círculo Dourado.}
+
+% ------------------------------------------------------------
+% 2 OBJETIVOS 
+% ------------------------------------------------------------
+\chapter{Objetivos}
+
+\section{Objetivo Geral}
+Descrever o objetivo principal do projeto.
+
+\section{Objetivos Específicos}
+Listar os objetivos específicos que contribuem para atingir o objetivo geral.
+
+\begin{alineas}
+    \item blablabla blablabla blablabla blablabla blablabla blablabla;
+    \item blablabla blablabla blablabla blablabla blablabla blablabla;
+    \item blablabla blablabla blablabla blablabla blablabla blablabla.
+\end{alineas}
+
+% ------------------------------------------------------------
+% 3 Representantes da Comunidade Externa
+% ------------------------------------------------------------
+\chapter{Representantes da Comunidade Externa}
+
+Caracterizar a extensão (62 horas de extensão) - são as pessoas que participarão da
+definição, das entrevistas, da definição dos requisitos, da validação dos protótipos e da
+validação final do projeto).
+
+Nome, contato (e-mail) e cargo do profissional/pessoa e o nome e CNPJ da organização
+onde ele(a) atua (2 a 5 profissionais). 
+
+% ------------------------------------------------------------
+% 4 Fundamentação Teórica
+% ------------------------------------------------------------
+\chapter{Fundamentação Teórica}
+
+Apresentar os conceitos teóricos relacionados à tecnologia atual e Engenharia de Software
+que embasam o projeto.
+
+Incluir a definição das técnicas/ferramentas/algoritmos etc. das tecnologias atuais
+utilizadas.
+
+% ------------------------------------------------------------
+% 5 Levantamento e Análise de Requisitos
+% ------------------------------------------------------------
+\chapter{Levantamento e Análise de Requisitos}
+
+\section{Requisitos Funcionais}
+Listar e descrever os requisitos funcionais do sistema (Casos de Uso e demais definições –
+histórias de usuários e outros).
+
+\section{Requisitos Não Funcionais}
+Listar requisitos de desempenho, segurança, usabilidade, escalabilidade, disponibilidade,
+entre outros.
+
+\section{Requisitos Específicos para Inteligência Artificial}
+Definir métricas de qualidade do modelo (ex.: acurácia mínima, tempo de resposta, entre
+outros).
+
+% ------------------------------------------------------------
+% 6 Benchmarking 
+% ------------------------------------------------------------
+\chapter{Benchmarking}
+
+Elaborar uma tabela para comparar as funcionalidades/benefícios do seu software em
+relação aos demais, já existentes no mercado (pelo menos 3 software do mercado).
+
+\vspace{1em}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|p{3.5cm}|c|c|c|c|}
+\hline
+Software & \textbf{Seu Software} & \textbf{Software1} & \textbf{Software2} & \textbf{Software3} \\ \hline
+Funcionalidade & & & & \\ \hline
+\textbf{Func1} & \cmark & \xmark & \cmark & \cmark \\ \hline
+\textbf{Func2} & \cmark & \cmark & \cmark & \cmark \\ \hline
+\textbf{Func3} & \xmark & \cmark & \xmark & \xmark \\ \hline
+\textbf{Func4} & \cmark & \xmark & \cmark & \xmark \\ \hline
+\textbf{Func5} & \cmark & \cmark & \cmark & \xmark \\ \hline
+\end{tabular}
+\end{table}
+
+Descrever qual é o diferencial do seu software em relação aos softwares já existentes.
+Apontar o caráter inovador ou atual do projeto.
+
+% ------------------------------------------------------------
+% 7 Definição das Personas 
+% ------------------------------------------------------------
+\chapter{Definição das Personas}
+
+% ------------------------------------------------------------
+% 8 Protótipos das Interfaces 
+% ------------------------------------------------------------
+\chapter{Protótipos das Interfaces}
+
+Print, legível, das interfaces, no arquivo do relatório final .docx e também o link do
+software utilizado para o design (ex: link do figma, XD etc.).
+
+Não será aceito apenas o link.
+
+Validação/aceite dos protótipos com as pessoas/profissionais da comunidade externa.
+
+% ------------------------------------------------------------
+% 9 {Modelo de Dados 
+% ------------------------------------------------------------
+\chapter{Modelo de Dados}
+
+MER para banco de dados relacional ou modelo da estrutura de dados para banco de dados
+não relacional.
+
+
+% ------------------------------------------------------------
+% 10 Arquitetura e Tecnologias 
+% ------------------------------------------------------------
+\chapter{Arquitetura e Tecnologias}
+
+Descrever a arquitetura geral do sistema, incluindo o diagrama/modelo arquitetural e a
+integração dos componentes de IA e/ou demais tecnologias atuais do projeto.
+
+Descrever as tecnologias, linguagens, frameworks e bibliotecas utilizadas no
+desenvolvimento do sistema (frontend, protótipos, backend, banco de dados, cloud etc).
+
+% ------------------------------------------------------------
+% 11 Descrição da Solução de Inteligência Artificial ou outra Tecnologia Atual do Projeto
+% ------------------------------------------------------------
+\chapter{Descrição da Solução Tecnologica Atual do Projeto}
+
+\section{Base de Dados}
+Descrever a origem, características, volume e tratamento dos dados utilizados.
+
+\section{Pré-processamento dos Dados (se utilizar IA)}
+Explicar as técnicas de limpeza, normalização e preparação dos dados.
+
+\section{Modelos de IA Utilizados (se utilizar IA)}
+Descrever os algoritmos, modelos e hiperparâmetros adotados.
+
+\section{Treinamento e Validação (se utilizar IA)}
+Explicar o processo de treinamento, validação e teste dos modelos.
+
+\section{Métricas de Avaliação (se utilizar IA)}
+Apresentar e justificar as métricas utilizadas para avaliação do desempenho.
+
+\section{Estrutura definida para Blockchain (se utilizar Blockchain)IA)}
+Apresentar e justificar a estrutura e seus relacionamentos definidos para Blockchain.
+
+\section{Definir se considera ataque ou defesa e como (se envolver
+Cibersegurança}
+Apresentar e justificar se o projeto envolve mecanismos para ataque e/ou defesa p/
+Cibersegurança.
+
+
+% ------------------------------------------------------------
+% 12 Testes e Validação do Sistema 
+% ------------------------------------------------------------
+\chapter{Testes e Validação do Sistema}
+
+Apresentar a estratégia de testes de software e os resultados obtidos.
+
+% ------------------------------------------------------------
+% 12 Gestão do Projeto 
+% ------------------------------------------------------------
+\chapter{Gestão do Projeto}
+
+Descrever a metodologia de desenvolvimento adotada (SCRUM), listar o Product Backlog,
+cronograma planejado inicial (SPRINTS) com tarefas e responsáveis, cronograma real final
+(SPRINTS) com tarefas e responsáveis.
+
+% ------------------------------------------------------------
+% 14 Resultados e Discussão 
+% ------------------------------------------------------------
+\chapter{Resultados e Discussão}
+
+Analisar os resultados obtidos, confrontando-os com os objetivos propostos.
+
+Descrever quais as facilidades e as melhorias que o projeto traz aos usuários, quais os
+objetivos foram atendidos e quais objetivos não foram atendidos (e por que não foram
+atendidos?).
+
+Fazer as considerações éticas, de privacidade e de impacto social. Discutir possíveis vieses,
+impactos sociais, questões éticas e conformidade com legislações de proteção de dados.
+
+% ------------------------------------------------------------
+% 15 Conclusão e Trabalhos Futuros 
+% ------------------------------------------------------------
+\chapter{Conclusão e Trabalhos Futuros}
+
+Apresentar as conclusões do projeto, limitações encontradas e sugestões de melhorias
+futuras.
+
+% ------------------------------------------------------------
+% 16 Aceite final do projeto 
+% ------------------------------------------------------------
+\chapter{Aceite final do projeto}
+
+Elaborar um termo de aceite do projeto, pela comunidade externa.
+
+% ------------------------------------------------------------
+% REFERÊNCIAS
+% ------------------------------------------------------------
+\postextual
+
+\chapter{Referências}
+
+% APENAS DE EXEMPLO
+\bibitem{springbootdocs2026}
+SPRING.
+Spring Boot Reference Documentation.
+\textbf{Spring Framework Docs}, 2026.
+Disponível em: \url{https://docs.spring.io/spring-boot/docs/current/reference/html/}.
+Acesso em: 10 ago. 2026.
+
+
+
+\end{document}
