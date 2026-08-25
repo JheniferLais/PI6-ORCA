@@ -54,7 +54,7 @@
 
 
 % INFORMAÇÕES DO DOCUMENTO
-\titulo{SISTEMA DE SEGURANÇA E CONTROLE PARENTAL EM INFRAESTRUTURA DE REDES DOMÉSTICAS UTILIZANDO RASPBERRY PI E INTELIGÊNCIA ARTIFICIAL}
+\titulo{CLASSIFICAÇÃO INTELIGENTE DE CONTEÚDO WEB PARA CONTROLE DE ACESSO EM NAVEGADORES}
 \autor{%
     Eduarda Luiza Pinheiro Nepomuceno \\
     Jean Yuki Kimura \\
@@ -68,7 +68,7 @@
     pdftitle={\@title},
     pdfauthor={\@author},
     pdfsubject={Engenharia de Software},
-    pdfkeywords={Inteligência Artificial. Segurança digital. Controle parental. Classificação de conteúdo. Redes domésticas. Raspberry Pi},
+    pdfkeywords={Inteligência Artificial. Segurança digital. Controle parental. Classificação de conteúdo. Navegadores. Processamento de linguagem natural},
     colorlinks=false,
     pdfborder={0 0 0}
 }
@@ -120,30 +120,35 @@
 \begin{resumo}
     \SingleSpacing
 
-    O crescimento do número de dispositivos conectados nos lares tornou o controle
-    parental sobre o acesso à internet uma tarefa complexa, especialmente para
-    responsáveis sem conhecimento técnico, que precisam configurar regras de proteção
-    individualmente em cada equipamento. Este projeto propõe o desenvolvimento de uma
-    plataforma de controle parental centralizada na rede doméstica, utilizando um
-    Raspberry Pi como servidor/\textit{gateway} local, capaz de aplicar políticas de
-    acesso a múltiplos dispositivos a partir de um único ponto de controle. O
-    diferencial da proposta está no uso de inteligência artificial para classificação
-    automática de conteúdo web, reduzindo a dependência de listas estáticas de sites
-    bloqueados e permitindo estimar a probabilidade de uma página pertencer a
-    categorias consideradas inadequadas, como conteúdo adulto, jogos de azar, drogas
-    e violência. O desenvolvimento está organizado em três semestres, contemplando,
-    respectivamente, a construção e validação do motor de classificação de conteúdo,
-    a integração dessa inteligência à infraestrutura de rede baseada em Raspberry Pi
-    e, por fim, a implementação de um painel administrativo simples voltado a
-    usuários sem conhecimento técnico. Como resultado, espera-se um produto funcional
-    e mensurável, apresentado como um mecanismo de redução da exposição a conteúdos
-    inadequados e de auxílio ao controle parental, com suas limitações técnicas
-    devidamente documentadas.
+    O acesso frequente de crianças e adolescentes à internet por meio de
+    computadores e navegadores torna relevante o desenvolvimento de mecanismos
+    capazes de identificar e reduzir a exposição a conteúdos potencialmente
+    inadequados. Neste semestre, este projeto propõe o desenvolvimento e a
+    validação de um sistema executado em nível de máquina, associado ao uso de
+    um navegador, capaz de obter o conteúdo textual das páginas acessadas e
+    submetê-lo a um modelo de inteligência artificial para classificação
+    automática. O modelo será treinado ou ajustado (\textit{fine-tuned}) pela
+    equipe para classificar conteúdos em categorias previamente definidas,
+    permitindo que um mecanismo de políticas determine se determinado conteúdo
+    deve ser permitido ou bloqueado. O sistema também deverá registrar
+    informações relevantes sobre as classificações e ações realizadas, de modo
+    a possibilitar a apresentação de estatísticas e histórico por meio de uma
+    interface de acompanhamento. O escopo deste semestre está concentrado na
+    construção e validação do motor de classificação textual e de sua aplicação
+    em nível de máquina, não contemplando ainda a implementação de um
+    \textit{gateway} de rede ou a identificação de usuários por endereço IP.
+    Como evolução planejada para os semestres seguintes, o núcleo desenvolvido
+    será integrado a uma infraestrutura baseada em Raspberry Pi, permitindo a
+    aplicação centralizada de políticas a diferentes dispositivos de uma rede
+    doméstica e, posteriormente, a expansão da solução para outros cenários de
+    controle e segurança digital. Espera-se, ao final deste semestre, obter um
+    protótipo funcional e mensurável, com suas métricas de desempenho e
+    limitações técnicas devidamente documentadas.
 
     \vspace{\onelineskip}
     \noindent
 
-    \textbf{Palavras-chave}: Inteligência Artificial. Segurança digital. Controle parental. Classificação de conteúdo. Redes domésticas. Raspberry Pi.
+    \textbf{Palavras-chave}: Inteligência Artificial. Segurança digital. Controle parental. Classificação de conteúdo. Navegadores. Processamento de linguagem natural.
 \end{resumo}
 
 % ------------------------------------------------------------
@@ -160,30 +165,101 @@
 % ------------------------------------------------------------
 \chapter{Introdução}
 
-O crescimento do número de dispositivos conectados nos lares — smartphones, tablets, computadores, consoles de videogame e outros equipamentos com acesso à internet — tornou o controle parental uma tarefa cada vez mais complexa. Crianças e adolescentes têm acesso simultâneo a múltiplos pontos de entrada para a internet, o que dificulta a aplicação de regras de proteção de forma centralizada e consistente.
+O acesso à internet por crianças e adolescentes ocorre, cada vez mais, por meio
+de navegadores instalados em computadores e outros dispositivos de uso pessoal.
+Embora a internet ofereça importantes recursos para educação, comunicação e
+entretenimento, a variedade e a velocidade de publicação de conteúdos também
+dificultam a identificação manual de materiais potencialmente inadequados.
 
-As soluções atualmente disponíveis para controle parental costumam exigir configuração individual em cada dispositivo, conhecimento técnico sobre redes, DNS ou firewalls, ou dependem de listas estáticas de sites bloqueados, que precisam ser constantemente atualizadas e que não conseguem acompanhar a velocidade com que novos domínios e conteúdos surgem na internet. Esse cenário cria uma barreira significativa para responsáveis que não possuem formação técnica, mas que ainda assim desejam proteger seus filhos de conteúdos inadequados, como pornografia, jogos de azar, incentivo ao uso de drogas e violência explícita.
+As soluções tradicionais de controle de acesso frequentemente dependem de
+listas de bloqueio, categorias previamente cadastradas ou configurações
+realizadas individualmente em cada dispositivo. Essas abordagens podem
+apresentar limitações diante de páginas novas, conteúdos dinâmicos e situações
+em que um mesmo domínio disponibiliza materiais de naturezas distintas. Nesse
+contexto, técnicas de inteligência artificial podem ser utilizadas para analisar
+o conteúdo textual de uma página e estimar a quais categorias de conteúdo ele
+pertence, oferecendo uma camada adicional de decisão.
 
-Esse problema pode ser ilustrado pelo seguinte cenário: Sílvia possui um filho de 11 anos que utiliza diversos dispositivos conectados à rede doméstica. Ela gostaria de reduzir a exposição dele a conteúdos inadequados, mas não possui conhecimento técnico para configurar soluções individuais em cada equipamento, tampouco tempo disponível para monitorar manualmente o uso da internet pela criança. Sílvia precisa de uma solução centralizada, simples e de fácil utilização, capaz de aplicar políticas de proteção a todos os dispositivos da criança a partir de um único ponto de controle.
+Este projeto tem como foco o desenvolvimento, neste semestre, de um sistema em
+nível de máquina voltado à análise do conteúdo textual de páginas acessadas por
+meio de um navegador. A proposta consiste em obter o conteúdo textual
+disponível durante a navegação, submetê-lo a um modelo de inteligência
+artificial treinado ou ajustado pela equipe e produzir uma classificação
+associada a categorias previamente definidas. A partir dessa classificação, um
+mecanismo de políticas poderá determinar se o conteúdo deve ser permitido ou
+bloqueado de acordo com as regras estabelecidas para o cenário de uso.
 
-A motivação deste projeto está em oferecer uma alternativa que combine simplicidade de uso para o responsável com uma abordagem tecnicamente mais robusta de identificação de conteúdo, reduzindo a dependência de listas estáticas por meio do uso de técnicas de inteligência artificial para classificação automática de conteúdo web.
+A arquitetura proposta separa a responsabilidade de classificação da
+responsabilidade de decisão. O modelo de inteligência artificial deverá
+responder à pergunta ``que tipo de conteúdo está presente?'', enquanto o
+mecanismo de políticas deverá responder ``esse conteúdo é permitido para este
+contexto?''. Essa separação permite que a mesma classificação seja utilizada
+por diferentes conjuntos de regras e possibilita a evolução posterior da
+solução para outros ambientes.
 
-A solução proposta consiste em uma plataforma de controle parental baseada em rede doméstica, utilizando um \textit{Raspberry Pi} como servidor/\textit{gateway} local, responsável por centralizar a aplicação de regras de acesso para todos os dispositivos conectados à rede. O diferencial da proposta está no núcleo de classificação de conteúdo, que utiliza técnicas de inteligência artificial e processamento de linguagem natural para estimar a probabilidade de uma página pertencer a categorias consideradas inadequadas, complementando abordagens tradicionais baseadas apenas em bloqueio de domínios.
+Para este semestre, o foco da inteligência artificial será a análise textual,
+com a utilização de técnicas de processamento de linguagem natural. O modelo
+será treinado ou ajustado (\textit{fine-tuned}) a partir de dados apropriados
+para as categorias definidas pela equipe. Sua avaliação será realizada por
+meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxas de
+falsos positivos e falsos negativos e tempo de classificação, permitindo medir
+não apenas a capacidade de classificação, mas também a viabilidade de sua
+utilização em um cenário de navegação.
 
-Essa solução se justifica por permitir que o responsável configure a proteção uma única vez, por meio de uma interface simples, sem a necessidade de compreender a infraestrutura técnica subjacente (DNS, roteamento, classificadores de conteúdo), e por reduzir a dependência de listas de bloqueio mantidas manualmente, que tendem a ficar desatualizadas frente à velocidade de criação de novos domínios.
+O projeto também poderá disponibilizar uma interface de acompanhamento, na
+qual informações como classificações realizadas, conteúdos bloqueados e
+estatísticas de uso possam ser consultadas. Essa interface tem caráter de
+apoio ao acompanhamento e à avaliação do protótipo, não constituindo, neste
+semestre, um painel de administração de uma rede doméstica.
 
-É importante delimitar o escopo do projeto de forma clara. O sistema desenvolvido terá como escopo: (i) um motor de classificação de conteúdo web, capaz de analisar características de URLs, texto e, eventualmente, aspectos visuais de páginas para estimar seu grau de adequação; (ii) uma infraestrutura de rede baseada em Raspberry Pi, capaz de identificar dispositivos na rede doméstica e aplicar políticas de acesso a partir das classificações obtidas; e (iii) um painel administrativo que permita ao responsável cadastrar perfis, associar dispositivos e definir regras de proteção. Não fazem parte do escopo deste projeto: a criação de um modelo de inteligência artificial treinado do zero em larga escala; a garantia de bloqueio absoluto de todo e qualquer conteúdo inadequado presente na internet; e a análise de tráfego criptografado ponto a ponto além do que é tecnicamente viável por meio de resolução de nomes (DNS) e metadados de conexão. Essas limitações técnicas, decorrentes de fatores como o uso de HTTPS, conteúdo dinâmico, CDNs e mecanismos de privacidade em dispositivos, são discutidas em detalhe ao longo deste documento, e a solução é apresentada como um mecanismo de \textbf{redução da exposição} e \textbf{auxílio ao controle parental}, e não como uma barreira infalível.
+É importante delimitar o escopo desta etapa. O sistema desenvolvido terá como
+escopo: (i) um mecanismo em nível de máquina associado à navegação por
+navegador; (ii) a obtenção e o processamento do conteúdo textual das páginas
+acessadas; (iii) um modelo de inteligência artificial treinado ou ajustado pela
+equipe para classificação do conteúdo em categorias definidas; (iv) um
+mecanismo de aplicação de políticas capaz de permitir ou bloquear conteúdos
+de acordo com a classificação; e (v) o registro e a apresentação de informações
+necessárias para testes, validação e acompanhamento do sistema.
+
+Não fazem parte do escopo deste semestre: a implementação do Raspberry Pi como
+\textit{gateway} de rede; a identificação de usuários ou dispositivos por
+endereço IP em nível de rede; a aplicação centralizada de políticas para
+múltiplos dispositivos; e a análise do tráfego criptografado ponto a ponto.
+Também não se pretende garantir o bloqueio absoluto de todo conteúdo
+inadequado presente na internet. A solução será apresentada como um mecanismo
+de redução da exposição a conteúdos potencialmente inadequados, considerando
+as limitações inerentes à obtenção de conteúdo textual, ao funcionamento dos
+navegadores, ao uso de HTTPS e à natureza dinâmica da web.
+
+\section*{Evolução planejada do projeto}
+
+A solução desenvolvida neste semestre constitui o núcleo inicial de uma
+proposta de maior abrangência para os semestres seguintes. Como evolução
+planejada, o motor de classificação deverá ser integrado a uma infraestrutura
+baseada em Raspberry Pi, que atuará como ponto central de controle em uma rede
+doméstica. Nessa etapa futura, será possível associar dispositivos e,
+posteriormente, usuários ou perfis a políticas específicas e aplicar as
+decisões de acesso de maneira centralizada.
+
+Em uma etapa posterior, a solução poderá incorporar um painel administrativo
+voltado a responsáveis, permitindo configurar perfis, políticas e horários,
+além de acompanhar estatísticas e tentativas de acesso bloqueadas. A
+arquitetura também poderá ser expandida para cenários além do controle
+parental, como ambientes educacionais e empresariais, nos quais a classificação
+inteligente de conteúdo possa auxiliar na redução de riscos de segurança
+digital.
 
 \section*{Círculo Dourado}
 
-Para explicitar o propósito do projeto, aplica-se o modelo do Círculo Dourado (\textit{Golden Circle}), de Simon Sinek, estruturado em três camadas: \textit{Why} (por quê), \textit{How} (como) e \textit{What} (o quê).
+Para explicitar o propósito do projeto, aplica-se o modelo do Círculo Dourado
+(\textit{Golden Circle}), de Simon Sinek, estruturado em três camadas:
+\textit{Why} (por quê), \textit{How} (como) e \textit{What} (o quê).
 
 \begin{alineas}
-    \item \textbf{Why (Por quê):} Acreditamos que responsáveis devem ter meios acessíveis e simples de proteger crianças e adolescentes na internet, independentemente de seu conhecimento técnico, sem que essa proteção dependa de configurações complexas em cada dispositivo individualmente.
-    \item \textbf{How (Como):} Isso é possível centralizando o controle de acesso na própria rede doméstica, por meio de um servidor local (Raspberry Pi) que aplica políticas de proteção a todos os dispositivos conectados, combinado a um motor de classificação de conteúdo baseado em inteligência artificial, que reduz a dependência de listas estáticas de bloqueio.
-    \item \textbf{What (O quê):} O resultado é uma plataforma de controle parental baseada em rede doméstica, com um painel administrativo simples, que permite cadastrar perfis, associar dispositivos, definir regras de proteção e visualizar tentativas de acesso bloqueadas, sustentada por um núcleo de classificação inteligente de conteúdo web.
+    \item \textbf{Why (Por quê):} Acreditamos que responsáveis devem possuir meios acessíveis de reduzir a exposição de crianças e adolescentes a conteúdos potencialmente inadequados na internet, sem depender exclusivamente de listas estáticas de bloqueio ou de configurações técnicas complexas.
+    \item \textbf{How (Como):} Neste semestre, isso será investigado por meio de um sistema em nível de máquina capaz de analisar o conteúdo textual de páginas acessadas no navegador e utilizar um modelo de inteligência artificial treinado ou ajustado pela equipe para classificá-las segundo categorias previamente definidas. A classificação será então utilizada por um mecanismo de políticas para determinar a ação de acesso.
+    \item \textbf{What (O quê):} O resultado deste semestre será um protótipo funcional de classificação e controle de conteúdo textual em nível de máquina, acompanhado de métricas de avaliação e, quando aplicável, uma interface para acompanhamento das classificações e bloqueios. Nos semestres seguintes, esse núcleo será integrado a uma infraestrutura de rede baseada em Raspberry Pi, com o objetivo de evoluir para uma solução centralizada de controle de acesso.
 \end{alineas}
-
 
 % ------------------------------------------------------------
 % 2 OBJETIVOS 
@@ -192,16 +268,25 @@ Para explicitar o propósito do projeto, aplica-se o modelo do Círculo Dourado 
 
 \section{Objetivo Geral}
 
-Desenvolver uma plataforma de controle parental centralizada na rede doméstica, baseada em Raspberry Pi, capaz de aplicar políticas de proteção de acesso a múltiplos dispositivos de forma simplificada, utilizando um motor de classificação inteligente de conteúdo web como apoio à identificação de conteúdos potencialmente inadequados para crianças e adolescentes.
+Desenvolver e validar um protótipo em nível de máquina capaz de analisar o
+conteúdo textual de páginas acessadas por meio de um navegador, utilizando um
+modelo de inteligência artificial treinado ou ajustado (\textit{fine-tuned})
+pela equipe para classificar conteúdos em categorias previamente definidas e
+aplicar políticas de permissão ou bloqueio a partir dessas classificações.
 
 \section{Objetivos Específicos}
 
 \begin{alineas}
-    \item Pesquisar, implementar e comparar técnicas de classificação automática de conteúdo web (baseadas em análise de URL/domínio, análise textual e, como evolução, análise visual), avaliando sua viabilidade por meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxa de falsos positivos e falsos negativos, e tempo de classificação;
-    \item Projetar e implementar uma infraestrutura de rede doméstica baseada em Raspberry Pi, responsável por identificar dispositivos conectados, associá-los a perfis de proteção e aplicar as regras de acesso definidas pelo responsável, com mecanismos de cache e \textit{fallback} para reduzir a latência e a dependência constante do serviço de classificação;
-    \item Desenvolver um painel administrativo simples e acessível, que permita ao responsável cadastrar crianças e dispositivos, definir perfis e categorias de conteúdo bloqueado, estabelecer horários de acesso e visualizar estatísticas e tentativas de acesso bloqueadas, sem exigir conhecimento técnico sobre a infraestrutura subjacente;
-    \item Identificar e documentar as limitações técnicas inerentes à abordagem proposta (como o uso de HTTPS, conteúdo dinâmico, CDNs e mecanismos de privacidade em dispositivos), propondo estratégias de mitigação sempre que tecnicamente viáveis;
-    \item Avaliar criticamente a integração entre os componentes desenvolvidos ao longo dos semestres (inteligência artificial, infraestrutura de rede e experiência do usuário), consolidando um produto funcional e mensurável ao final do projeto.
+    \item Pesquisar e selecionar técnicas de processamento de linguagem natural e modelos de inteligência artificial adequados à classificação de conteúdo textual de páginas web, considerando as restrições de execução e resposta esperadas para um sistema em nível de máquina;
+    \item Construir, preparar e documentar uma base de dados para treinamento, validação e teste do modelo, definindo categorias de conteúdo e procedimentos de pré-processamento compatíveis com o problema;
+    \item Treinar ou ajustar (\textit{fine-tune}) um modelo de inteligência artificial para classificar o conteúdo textual das páginas nas categorias definidas, buscando reduzir a dependência de listas estáticas de sites;
+    \item Desenvolver o mecanismo em nível de máquina responsável por obter o conteúdo textual das páginas acessadas pelo navegador e encaminhá-lo ao classificador, respeitando as limitações técnicas impostas pelo funcionamento da web e pelo uso de conexões criptografadas;
+    \item Desenvolver um mecanismo de políticas que utilize a classificação produzida pela inteligência artificial para determinar se determinado conteúdo deve ser permitido ou bloqueado, mantendo separadas as responsabilidades de classificação e decisão;
+    \item Implementar, quando aplicável ao protótipo, uma interface de acompanhamento das classificações e ações realizadas, permitindo visualizar informações como conteúdos analisados, bloqueios e estatísticas de uso;
+    \item Avaliar o desempenho do classificador por meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxa de falsos positivos, taxa de falsos negativos e tempo de classificação, analisando os resultados obtidos e suas limitações;
+    \item Realizar testes do sistema em diferentes situações de navegação, verificando a integração entre obtenção do conteúdo, classificação, aplicação das políticas e registro dos resultados;
+    \item Identificar e documentar as limitações técnicas, éticas e de privacidade da solução, especialmente aquelas relacionadas ao monitoramento de navegação, à obtenção de conteúdo textual, à classificação automatizada e ao uso de dados de navegação;
+    \item Estabelecer uma base arquitetural que permita, nos semestres seguintes, a integração do motor de classificação a uma infraestrutura de rede baseada em Raspberry Pi e a evolução da solução para aplicação centralizada de políticas em múltiplos dispositivos.
 \end{alineas}
 
 % ------------------------------------------------------------
