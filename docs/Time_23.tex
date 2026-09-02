@@ -15,6 +15,7 @@
 \usepackage{newtxtext}           % fonte Times New Roman
 \usepackage{pifont}              % ícones para tabela (check e cross)
 \usepackage{xcolor}              % suporte a cores
+\usepackage{longtable}           % tabelas que quebram entre páginas (requisitos)
 
 \usepackage[alf]{abntex2cite}
 
@@ -88,7 +89,7 @@
 
     \vfill
 
-    {\bfseries\fontsize{12}{14}\selectfont 
+    {\bfseries\fontsize{12}{14}\selectfont
         \imprimirtitulo\par}
 
     \vfill
@@ -108,7 +109,7 @@
 
     \vfill
 
-    {\bfseries\fontsize{12}{14}\selectfont 
+    {\bfseries\fontsize{12}{14}\selectfont
         CAMPINAS\par
         2º SEMESTRE DE 2026\par
     }
@@ -125,18 +126,22 @@
     capazes de identificar e reduzir a exposição a conteúdos potencialmente
     inadequados. Neste semestre, este projeto propõe o desenvolvimento e a
     validação de um sistema executado em nível de máquina, associado ao uso de
-    um navegador, capaz de obter o conteúdo textual das páginas acessadas e
-    submetê-lo a um modelo de inteligência artificial para classificação
-    automática. O modelo será treinado ou ajustado (\textit{fine-tuned}) pela
-    equipe para classificar conteúdos em categorias previamente definidas,
-    permitindo que um mecanismo de políticas determine se determinado conteúdo
-    deve ser permitido ou bloqueado. O sistema também deverá registrar
-    informações relevantes sobre as classificações e ações realizadas, de modo
-    a possibilitar a apresentação de estatísticas e histórico por meio de uma
+    um navegador, capaz de obter o conteúdo textual e as imagens das páginas
+    acessadas e submetê-los a modelos de inteligência artificial para
+    classificação automática, seguindo dois caminhos técnicos complementares:
+    processamento de linguagem natural, para o conteúdo textual, e visão
+    computacional, para o conteúdo visual. Os modelos serão treinados ou
+    ajustados (\textit{fine-tuned}) pela equipe para classificar conteúdos em
+    categorias previamente definidas, permitindo que um mecanismo de políticas
+    consolide as classificações e determine se determinado conteúdo deve ser
+    permitido ou bloqueado. O sistema também deverá registrar informações
+    relevantes sobre as classificações e ações realizadas, de modo a
+    possibilitar a apresentação de estatísticas e histórico por meio de uma
     interface de acompanhamento. O escopo deste semestre está concentrado na
-    construção e validação do motor de classificação textual e de sua aplicação
-    em nível de máquina, não contemplando ainda a implementação de um
-    \textit{gateway} de rede ou a identificação de usuários por endereço IP.
+    construção e validação dos motores de classificação textual e de imagem e
+    de sua aplicação em nível de máquina, não contemplando ainda a
+    implementação de um \textit{gateway} de rede ou a identificação de
+    usuários por endereço IP.
     Como evolução planejada para os semestres seguintes, o núcleo desenvolvido
     será integrado a uma infraestrutura baseada em Raspberry Pi, permitindo a
     aplicação centralizada de políticas a diferentes dispositivos de uma rede
@@ -148,7 +153,7 @@
     \vspace{\onelineskip}
     \noindent
 
-    \textbf{Palavras-chave}: Inteligência Artificial. Segurança digital. Controle parental. Classificação de conteúdo. Navegadores. Processamento de linguagem natural.
+    \textbf{Palavras-chave}: Inteligência Artificial. Segurança digital. Controle parental. Classificação de conteúdo. Navegadores. Processamento de linguagem natural. Visão computacional.
 \end{resumo}
 
 % ------------------------------------------------------------
@@ -177,49 +182,58 @@ realizadas individualmente em cada dispositivo. Essas abordagens podem
 apresentar limitações diante de páginas novas, conteúdos dinâmicos e situações
 em que um mesmo domínio disponibiliza materiais de naturezas distintas. Nesse
 contexto, técnicas de inteligência artificial podem ser utilizadas para analisar
-o conteúdo textual de uma página e estimar a quais categorias de conteúdo ele
-pertence, oferecendo uma camada adicional de decisão.
+o conteúdo textual e o conteúdo visual (imagens) de uma página e estimar a
+quais categorias de conteúdo ela pertence, oferecendo uma camada adicional de
+decisão.
 
 Este projeto tem como foco o desenvolvimento, neste semestre, de um sistema em
-nível de máquina voltado à análise do conteúdo textual de páginas acessadas por
-meio de um navegador. A proposta consiste em obter o conteúdo textual
-disponível durante a navegação, submetê-lo a um modelo de inteligência
-artificial treinado ou ajustado pela equipe e produzir uma classificação
-associada a categorias previamente definidas. A partir dessa classificação, um
-mecanismo de políticas poderá determinar se o conteúdo deve ser permitido ou
-bloqueado de acordo com as regras estabelecidas para o cenário de uso.
+nível de máquina voltado à análise do conteúdo textual e do conteúdo visual
+(imagens) de páginas acessadas por meio de um navegador. A proposta consiste
+em obter o conteúdo textual e as imagens disponíveis durante a navegação,
+submetê-los a modelos de inteligência artificial treinados ou ajustados pela
+equipe — um voltado ao texto e outro às imagens — e produzir classificações
+associadas a categorias previamente definidas. A partir dessas classificações,
+um mecanismo de políticas poderá determinar se o conteúdo deve ser permitido
+ou bloqueado de acordo com as regras estabelecidas para o cenário de uso.
 
 A arquitetura proposta separa a responsabilidade de classificação da
-responsabilidade de decisão. O modelo de inteligência artificial deverá
-responder à pergunta ``que tipo de conteúdo está presente?'', enquanto o
-mecanismo de políticas deverá responder ``esse conteúdo é permitido para este
-contexto?''. Essa separação permite que a mesma classificação seja utilizada
-por diferentes conjuntos de regras e possibilita a evolução posterior da
-solução para outros ambientes.
+responsabilidade de decisão. Os modelos de inteligência artificial deverão
+responder à pergunta ``que tipo de conteúdo está presente?'' — cada um a
+partir de sua modalidade (texto ou imagem) —, enquanto o mecanismo de
+políticas deverá responder ``esse conteúdo é permitido para este contexto?'',
+consolidando as classificações recebidas. Essa separação permite que as
+mesmas classificações sejam utilizadas por diferentes conjuntos de regras e
+possibilita a evolução posterior da solução para outros ambientes.
 
-Para este semestre, o foco da inteligência artificial será a análise textual,
-com a utilização de técnicas de processamento de linguagem natural. O modelo
-será treinado ou ajustado (\textit{fine-tuned}) a partir de dados apropriados
-para as categorias definidas pela equipe. Sua avaliação será realizada por
-meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxas de
-falsos positivos e falsos negativos e tempo de classificação, permitindo medir
-não apenas a capacidade de classificação, mas também a viabilidade de sua
-utilização em um cenário de navegação.
+Para este semestre, o projeto seguirá dois caminhos técnicos complementares
+de inteligência artificial: a análise textual, com a utilização de técnicas
+de processamento de linguagem natural (PLN), e a análise visual, com a
+utilização de técnicas de visão computacional aplicadas às imagens presentes
+nas páginas. Os dois modelos serão treinados ou ajustados
+(\textit{fine-tuned}) a partir de dados apropriados para as categorias
+definidas pela equipe. Suas avaliações serão realizadas por meio de métricas
+como precisão, \textit{recall}, F1-\textit{score}, taxas de falsos positivos
+e falsos negativos e tempo de classificação, permitindo medir não apenas a
+capacidade de classificação de cada modelo, mas também a viabilidade de sua
+utilização conjunta em um cenário de navegação.
 
 O projeto também poderá disponibilizar uma interface de acompanhamento, na
-qual informações como classificações realizadas, conteúdos bloqueados e
-estatísticas de uso possam ser consultadas. Essa interface tem caráter de
-apoio ao acompanhamento e à avaliação do protótipo, não constituindo, neste
-semestre, um painel de administração de uma rede doméstica.
+qual informações como classificações realizadas (textuais e de imagem),
+conteúdos bloqueados e estatísticas de uso possam ser consultadas. Essa
+interface tem caráter de apoio ao acompanhamento e à avaliação do protótipo,
+não constituindo, neste semestre, um painel de administração de uma rede
+doméstica.
 
 É importante delimitar o escopo desta etapa. O sistema desenvolvido terá como
 escopo: (i) um mecanismo em nível de máquina associado à navegação por
-navegador; (ii) a obtenção e o processamento do conteúdo textual das páginas
-acessadas; (iii) um modelo de inteligência artificial treinado ou ajustado pela
-equipe para classificação do conteúdo em categorias definidas; (iv) um
-mecanismo de aplicação de políticas capaz de permitir ou bloquear conteúdos
-de acordo com a classificação; e (v) o registro e a apresentação de informações
-necessárias para testes, validação e acompanhamento do sistema.
+navegador; (ii) a obtenção e o processamento do conteúdo textual e das
+imagens das páginas acessadas; (iii) um modelo de processamento de linguagem
+natural e um modelo de visão computacional, treinados ou ajustados pela
+equipe, para classificação do conteúdo textual e visual, respectivamente, em
+categorias definidas; (iv) um mecanismo de aplicação de políticas capaz de
+consolidar as classificações textual e de imagem e de permitir ou bloquear
+conteúdos de acordo com elas; e (v) o registro e a apresentação de
+informações necessárias para testes, validação e acompanhamento do sistema.
 
 Não fazem parte do escopo deste semestre: a implementação do Raspberry Pi como
 \textit{gateway} de rede; a identificação de usuários ou dispositivos por
@@ -228,16 +242,17 @@ múltiplos dispositivos; e a análise do tráfego criptografado ponto a ponto.
 Também não se pretende garantir o bloqueio absoluto de todo conteúdo
 inadequado presente na internet. A solução será apresentada como um mecanismo
 de redução da exposição a conteúdos potencialmente inadequados, considerando
-as limitações inerentes à obtenção de conteúdo textual, ao funcionamento dos
-navegadores, ao uso de HTTPS e à natureza dinâmica da web.
+as limitações inerentes à obtenção de conteúdo textual e de imagens, ao
+funcionamento dos navegadores, ao uso de HTTPS e à natureza dinâmica da web.
 
 \section*{Evolução planejada do projeto}
 
 A solução desenvolvida neste semestre constitui o núcleo inicial de uma
 proposta de maior abrangência para os semestres seguintes. Como evolução
-planejada, o motor de classificação deverá ser integrado a uma infraestrutura
-baseada em Raspberry Pi, que atuará como ponto central de controle em uma rede
-doméstica. Nessa etapa futura, será possível associar dispositivos e,
+planejada, os motores de classificação textual e de imagem deverão ser
+integrados a uma infraestrutura baseada em Raspberry Pi, que atuará como
+ponto central de controle em uma rede doméstica. Nessa etapa futura, será
+possível associar dispositivos e,
 posteriormente, usuários ou perfis a políticas específicas e aplicar as
 decisões de acesso de maneira centralizada.
 
@@ -257,36 +272,38 @@ Para explicitar o propósito do projeto, aplica-se o modelo do Círculo Dourado
 
 \begin{alineas}
     \item \textbf{Why (Por quê):} Acreditamos que responsáveis devem possuir meios acessíveis de reduzir a exposição de crianças e adolescentes a conteúdos potencialmente inadequados na internet, sem depender exclusivamente de listas estáticas de bloqueio ou de configurações técnicas complexas.
-    \item \textbf{How (Como):} Neste semestre, isso será investigado por meio de um sistema em nível de máquina capaz de analisar o conteúdo textual de páginas acessadas no navegador e utilizar um modelo de inteligência artificial treinado ou ajustado pela equipe para classificá-las segundo categorias previamente definidas. A classificação será então utilizada por um mecanismo de políticas para determinar a ação de acesso.
-    \item \textbf{What (O quê):} O resultado deste semestre será um protótipo funcional de classificação e controle de conteúdo textual em nível de máquina, acompanhado de métricas de avaliação e, quando aplicável, uma interface para acompanhamento das classificações e bloqueios. Nos semestres seguintes, esse núcleo será integrado a uma infraestrutura de rede baseada em Raspberry Pi, com o objetivo de evoluir para uma solução centralizada de controle de acesso.
+    \item \textbf{How (Como):} Neste semestre, isso será investigado por meio de um sistema em nível de máquina capaz de analisar o conteúdo textual e o conteúdo visual (imagens) de páginas acessadas no navegador, utilizando um modelo de processamento de linguagem natural e um modelo de visão computacional, treinados ou ajustados pela equipe, para classificá-los segundo categorias previamente definidas. As classificações serão então consolidadas e utilizadas por um mecanismo de políticas para determinar a ação de acesso.
+    \item \textbf{What (O quê):} O resultado deste semestre será um protótipo funcional de classificação e controle de conteúdo textual e visual em nível de máquina, acompanhado de métricas de avaliação de cada modalidade e, quando aplicável, uma interface para acompanhamento das classificações e bloqueios. Nos semestres seguintes, esse núcleo será integrado a uma infraestrutura de rede baseada em Raspberry Pi, com o objetivo de evoluir para uma solução centralizada de controle de acesso.
 \end{alineas}
 
 % ------------------------------------------------------------
-% 2 OBJETIVOS 
+% 2 OBJETIVOS
 % ------------------------------------------------------------
 \chapter{Objetivos}
 
 \section{Objetivo Geral}
 
 Desenvolver e validar um protótipo em nível de máquina capaz de analisar o
-conteúdo textual de páginas acessadas por meio de um navegador, utilizando um
-modelo de inteligência artificial treinado ou ajustado (\textit{fine-tuned})
-pela equipe para classificar conteúdos em categorias previamente definidas e
-aplicar políticas de permissão ou bloqueio a partir dessas classificações.
+conteúdo textual e o conteúdo visual (imagens) de páginas acessadas por meio
+de um navegador, utilizando um modelo de processamento de linguagem natural e
+um modelo de visão computacional, treinados ou ajustados (\textit{fine-tuned})
+pela equipe, para classificar conteúdos em categorias previamente definidas e
+aplicar políticas de permissão ou bloqueio a partir da consolidação dessas
+classificações.
 
 \section{Objetivos Específicos}
 
 \begin{alineas}
-    \item Pesquisar e selecionar técnicas de processamento de linguagem natural e modelos de inteligência artificial adequados à classificação de conteúdo textual de páginas web, considerando as restrições de execução e resposta esperadas para um sistema em nível de máquina;
-    \item Construir, preparar e documentar uma base de dados para treinamento, validação e teste do modelo, definindo categorias de conteúdo e procedimentos de pré-processamento compatíveis com o problema;
-    \item Treinar ou ajustar (\textit{fine-tune}) um modelo de inteligência artificial para classificar o conteúdo textual das páginas nas categorias definidas, buscando reduzir a dependência de listas estáticas de sites;
-    \item Desenvolver o mecanismo em nível de máquina responsável por obter o conteúdo textual das páginas acessadas pelo navegador e encaminhá-lo ao classificador, respeitando as limitações técnicas impostas pelo funcionamento da web e pelo uso de conexões criptografadas;
-    \item Desenvolver um mecanismo de políticas que utilize a classificação produzida pela inteligência artificial para determinar se determinado conteúdo deve ser permitido ou bloqueado, mantendo separadas as responsabilidades de classificação e decisão;
-    \item Implementar, quando aplicável ao protótipo, uma interface de acompanhamento das classificações e ações realizadas, permitindo visualizar informações como conteúdos analisados, bloqueios e estatísticas de uso;
-    \item Avaliar o desempenho do classificador por meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxa de falsos positivos, taxa de falsos negativos e tempo de classificação, analisando os resultados obtidos e suas limitações;
-    \item Realizar testes do sistema em diferentes situações de navegação, verificando a integração entre obtenção do conteúdo, classificação, aplicação das políticas e registro dos resultados;
-    \item Identificar e documentar as limitações técnicas, éticas e de privacidade da solução, especialmente aquelas relacionadas ao monitoramento de navegação, à obtenção de conteúdo textual, à classificação automatizada e ao uso de dados de navegação;
-    \item Estabelecer uma base arquitetural que permita, nos semestres seguintes, a integração do motor de classificação a uma infraestrutura de rede baseada em Raspberry Pi e a evolução da solução para aplicação centralizada de políticas em múltiplos dispositivos.
+    \item Pesquisar e selecionar técnicas de processamento de linguagem natural e de visão computacional, bem como modelos de inteligência artificial adequados à classificação de conteúdo textual e visual de páginas web, considerando as restrições de execução e resposta esperadas para um sistema em nível de máquina;
+    \item Construir, preparar e documentar bases de dados (textual e de imagens) para treinamento, validação e teste dos modelos, definindo categorias de conteúdo e procedimentos de pré-processamento compatíveis com cada modalidade;
+    \item Treinar ou ajustar (\textit{fine-tune}) um modelo de processamento de linguagem natural e um modelo de visão computacional para classificar, respectivamente, o conteúdo textual e as imagens das páginas nas categorias definidas, buscando reduzir a dependência de listas estáticas de sites;
+    \item Desenvolver o mecanismo em nível de máquina responsável por obter o conteúdo textual e as imagens das páginas acessadas pelo navegador e encaminhá-los aos respectivos classificadores, respeitando as limitações técnicas impostas pelo funcionamento da web e pelo uso de conexões criptografadas;
+    \item Desenvolver um mecanismo de políticas que utilize e consolide as classificações textual e de imagem produzidas pela inteligência artificial para determinar se determinado conteúdo deve ser permitido ou bloqueado, mantendo separadas as responsabilidades de classificação e decisão;
+    \item Implementar, quando aplicável ao protótipo, uma interface de acompanhamento das classificações e ações realizadas, permitindo visualizar informações como conteúdos analisados (por modalidade), bloqueios e estatísticas de uso;
+    \item Avaliar o desempenho dos classificadores textual e de imagem por meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxa de falsos positivos, taxa de falsos negativos e tempo de classificação, analisando os resultados obtidos, isoladamente e em conjunto, e suas limitações;
+    \item Realizar testes do sistema em diferentes situações de navegação, verificando a integração entre obtenção do conteúdo textual e visual, classificação, consolidação das classificações, aplicação das políticas e registro dos resultados;
+    \item Identificar e documentar as limitações técnicas, éticas e de privacidade da solução, especialmente aquelas relacionadas ao monitoramento de navegação, à obtenção de conteúdo textual e de imagens, à classificação automatizada e ao uso de dados de navegação;
+    \item Estabelecer uma base arquitetural que permita, nos semestres seguintes, a integração dos motores de classificação textual e de imagem a uma infraestrutura de rede baseada em Raspberry Pi e a evolução da solução para aplicação centralizada de políticas em múltiplos dispositivos.
 \end{alineas}
 
 % ------------------------------------------------------------
@@ -299,7 +316,7 @@ definição, das entrevistas, da definição dos requisitos, da validação dos 
 validação final do projeto).
 
 Nome, contato (e-mail) e cargo do profissional/pessoa e o nome e CNPJ da organização
-onde ele(a) atua (2 a 5 profissionais). 
+onde ele(a) atua (2 a 5 profissionais).
 
 % ------------------------------------------------------------
 % 4 Fundamentação Teórica
@@ -317,20 +334,178 @@ utilizadas.
 % ------------------------------------------------------------
 \chapter{Levantamento e Análise de Requisitos}
 
+Os requisitos apresentados a seguir foram derivados do escopo definido para este
+semestre (Capítulo~1) e serão validados junto aos representantes da comunidade
+externa (Capítulo~3). Cada requisito recebe um código único e uma prioridade,
+classificada segundo a técnica MoSCoW em: \textbf{Essencial} (indispensável para
+o protótipo deste semestre), \textbf{Importante} (deve ser entregue, mas
+admite solução simplificada) e \textbf{Desejável} (agrega valor, mas pode ser
+postergado para semestres futuros).
+
+O projeto adota, neste semestre, \textbf{dois caminhos técnicos complementares
+de inteligência artificial}: (i) a análise do \textbf{conteúdo textual} das
+páginas, por meio de técnicas de processamento de linguagem natural (PLN); e
+(ii) a análise do \textbf{conteúdo visual} (imagens) presente nas páginas, por
+meio de técnicas de visão computacional. Os dois modelos operam de forma
+independente sobre suas respectivas modalidades de entrada e têm suas saídas
+consolidadas pelo mecanismo de políticas, que utiliza as classificações
+textual e de imagem para decidir se o conteúdo deve ser permitido ou
+bloqueado. Essa divisão está refletida nos requisitos funcionais, não
+funcionais e específicos de inteligência artificial apresentados a seguir.
+
 \section{Requisitos Funcionais}
-Listar e descrever os requisitos funcionais do sistema (Casos de Uso e demais definições –
-histórias de usuários e outros).
+
+Os requisitos funcionais descrevem as capacidades que o sistema deve
+oferecer, cobrindo o fluxo completo de obtenção do conteúdo textual e do
+conteúdo visual (imagens), classificação por PLN e por visão computacional,
+consolidação dos resultados, aplicação de políticas e acompanhamento pelo
+usuário.
+
+\begin{longtable}{|p{1.6cm}|p{9.8cm}|p{2.3cm}|}
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RF01 & O sistema deve obter o conteúdo textual das páginas acessadas pelo navegador durante a navegação do usuário. & Essencial \\ \hline
+RF02 & O sistema deve pré-processar o conteúdo textual obtido (limpeza, normalização, remoção de ruído) antes de submetê-lo ao classificador. & Essencial \\ \hline
+RF03 & O sistema deve submeter o conteúdo textual pré-processado ao modelo de processamento de linguagem natural (PLN) para classificação em categorias previamente definidas. & Essencial \\ \hline
+RF04 & O sistema deve associar a cada classificação textual um nível de confiança (\textit{score}) atribuído pelo modelo de PLN. & Essencial \\ \hline
+RF05 & O sistema deve aplicar um mecanismo de políticas que determine, a partir das classificações textual e de imagem recebidas, se o conteúdo deve ser permitido ou bloqueado. & Essencial \\ \hline
+RF06 & O sistema deve permitir a configuração de regras de política por categoria de conteúdo (permitir, bloquear ou alertar). & Importante \\ \hline
+RF07 & O sistema deve bloquear o acesso ao conteúdo e exibir uma mensagem informativa ao usuário quando a política determinar o bloqueio. & Essencial \\ \hline
+RF08 & O sistema deve registrar (log) cada classificação realizada, incluindo URL/domínio, modalidade (texto e/ou imagem), categoria atribuída, nível de confiança, ação tomada e data/hora. & Essencial \\ \hline
+RF09 & O sistema deve disponibilizar uma interface de acompanhamento para consulta do histórico de classificações e bloqueios realizados. & Importante \\ \hline
+RF10 & O sistema deve apresentar estatísticas de uso na interface de acompanhamento (ex.: total de páginas analisadas, distribuição por categoria, percentual bloqueado por modalidade, período consultado). & Importante \\ \hline
+RF11 & O sistema deve permitir que o usuário/responsável inicie ou pause o monitoramento em nível de máquina. & Importante \\ \hline
+RF12 & O sistema deve tratar páginas das quais não seja possível extrair conteúdo textual e/ou imagens em quantidade suficiente, aplicando uma política padrão definida pela equipe. & Importante \\ \hline
+RF13 & O sistema deve permitir a atualização independente das versões dos modelos de classificação (textual e de imagem) sem exigir reinstalação completa do sistema. & Desejável \\ \hline
+RF14 & O sistema deve obter as imagens presentes nas páginas acessadas pelo navegador durante a navegação do usuário. & Essencial \\ \hline
+RF15 & O sistema deve pré-processar as imagens obtidas (redimensionamento, normalização e descarte de elementos irrelevantes, como ícones e imagens de interface) antes de submetê-las ao classificador de visão computacional. & Essencial \\ \hline
+RF16 & O sistema deve submeter as imagens pré-processadas a um modelo de visão computacional para classificação em categorias previamente definidas. & Essencial \\ \hline
+RF17 & O sistema deve associar a cada classificação de imagem um nível de confiança (\textit{score}) atribuído pelo modelo de visão computacional. & Essencial \\ \hline
+RF18 & O sistema deve consolidar as classificações textual e de imagem de uma mesma página em uma decisão única a ser utilizada pelo mecanismo de políticas, definindo um critério de precedência para os casos em que as duas classificações divergirem. & Essencial \\ \hline
+
+\caption{Requisitos Funcionais}
+\label{tab:requisitos-funcionais}
+\end{longtable}
 
 \section{Requisitos Não Funcionais}
-Listar requisitos de desempenho, segurança, usabilidade, escalabilidade, disponibilidade,
-entre outros.
+
+Os requisitos não funcionais descrevem atributos de qualidade do sistema,
+organizados a partir de categorias inspiradas na norma ISO/IEC~25010.
+
+\begin{longtable}{|p{1.7cm}|p{2.1cm}|p{7.5cm}|p{1.9cm}|}
+\hline
+\textbf{Código} & \textbf{Categoria} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{Código} & \textbf{Categoria} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RNF01 & Desempenho & A classificação textual e a classificação de imagem de uma página devem ser concluídas em tempo compatível com a experiência de navegação, com metas numéricas a serem validadas experimentalmente durante a avaliação dos modelos (ver RIA05 e RIC05). & Essencial \\ \hline
+RNF02 & Desempenho & O sistema deve operar em nível de máquina com consumo de CPU, memória e (quando aplicável) GPU compatível com o uso doméstico, sem degradar de forma perceptível o desempenho do computador, mesmo executando os módulos de PLN e de visão computacional em conjunto. & Importante \\ \hline
+RNF03 & Segurança & O conteúdo textual, as imagens coletadas e os registros de navegação armazenados localmente devem ser protegidos contra acesso não autorizado (ex.: permissões de arquivo restritas). & Essencial \\ \hline
+RNF04 & Privacidade & O sistema não deve transmitir o conteúdo textual e as imagens coletados a servidores externos sem consentimento explícito, priorizando processamento local quando viável. & Essencial \\ \hline
+RNF05 & Privacidade & O sistema deve minimizar a coleta e a retenção de dados de navegação (textuais e de imagem) ao estritamente necessário para classificação, auditoria e apresentação de estatísticas, em conformidade com a LGPD. & Essencial \\ \hline
+RNF06 & Usabilidade & A interface de acompanhamento deve apresentar as informações de forma clara e compreensível para usuários sem conhecimento técnico avançado. & Importante \\ \hline
+RNF07 & Confiabilidade & O sistema deve continuar operando em modo degradado (ex.: aplicando uma política padrão) em caso de falha de qualquer um dos módulos de classificação (textual ou de imagem), evitando bloquear indevidamente toda a navegação. & Importante \\ \hline
+RNF08 & Manutenibilidade & A arquitetura deve manter separadas as responsabilidades de classificação textual (PLN), classificação de imagem (visão computacional) e de aplicação de políticas, permitindo evolução e substituição independente de cada módulo. & Essencial \\ \hline
+RNF09 & Escalabilidade & O sistema deve ser projetado de modo a permitir, em semestres futuros, sua integração a uma infraestrutura baseada em Raspberry Pi sem redesenho dos motores de classificação textual e de imagem. & Importante \\ \hline
+RNF10 & Compatibilidade & O sistema deve ser compatível com pelo menos um navegador amplamente utilizado (a definir pela equipe, ex.: Chrome/Chromium ou Firefox). & Essencial \\ \hline
+RNF11 & Auditabilidade & Todos os registros de log gerados devem ser íntegros e rastreáveis, permitindo auditoria posterior das decisões tomadas pelo sistema. & Importante \\ \hline
+
+\caption{Requisitos Não Funcionais}
+\label{tab:requisitos-nao-funcionais}
+\end{longtable}
 
 \section{Requisitos Específicos para Inteligência Artificial}
-Definir métricas de qualidade do modelo (ex.: acurácia mínima, tempo de resposta, entre
-outros).
+
+Os requisitos a seguir definem critérios de qualidade e de processo
+específicos dos modelos de inteligência artificial, complementando os
+requisitos funcionais e não funcionais já apresentados. Como o projeto adota
+dois caminhos técnicos complementares, os requisitos estão organizados em
+três grupos: os específicos do modelo de \textbf{processamento de linguagem
+natural} (texto), os específicos do modelo de \textbf{visão computacional}
+(imagens) e os relativos à \textbf{integração} entre as duas modalidades. Os
+valores numéricos indicados como \textit{a definir} deverão ser fixados pela
+equipe em conjunto com a orientadora, a partir dos primeiros experimentos com
+as bases de dados construídas (Capítulo~11).
+
+\subsection{Modelo de Processamento de Linguagem Natural (Texto)}
+
+\begin{longtable}{|p{1.7cm}|p{9.8cm}|p{2.1cm}|}
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RIA01 & O modelo de PLN deve atingir acurácia mínima de \textit{X\%} (a definir) no conjunto de teste, considerando as categorias de conteúdo estabelecidas pela equipe. & Essencial \\ \hline
+RIA02 & O modelo deve atingir F1-\textit{score} mínimo de \textit{X} (a definir) por categoria, priorizando o \textit{recall} nas categorias de conteúdo sensível. & Essencial \\ \hline
+RIA03 & A taxa de falsos negativos para categorias sensíveis (conteúdo potencialmente inadequado) deve ser inferior a \textit{X\%} (a definir), priorizando a redução de exposição em detrimento de bloqueios excessivos. & Essencial \\ \hline
+RIA04 & A taxa de falsos positivos deve ser mantida abaixo de \textit{X\%} (a definir), de modo a preservar a usabilidade do sistema e evitar bloqueios indevidos de conteúdo legítimo. & Importante \\ \hline
+RIA05 & O tempo de inferência do modelo para o texto de uma única página deve ser inferior a \textit{X} milissegundos/segundos (a definir), em hardware de referência estabelecido pela equipe. & Essencial \\ \hline
+RIA06 & O modelo deve ser treinado ou ajustado (\textit{fine-tuned}) a partir de uma base de dados textual rotulada, documentada quanto à origem, ao volume e à distribuição entre categorias. & Essencial \\ \hline
+RIA07 & O processo de treinamento deve utilizar conjuntos distintos de treino, validação e teste, evitando vazamento de dados (\textit{data leakage}) entre eles. & Essencial \\ \hline
+RIA08 & O modelo utilizado em cada classificação textual registrada deve ser identificável por versão, permitindo rastrear qual versão gerou determinado resultado. & Importante \\ \hline
+RIA09 & O sistema deve registrar o nível de confiança (\textit{score}) de cada classificação textual, possibilitando a definição de limiares (\textit{thresholds}) distintos por categoria no mecanismo de políticas. & Importante \\ \hline
+RIA10 & O desempenho do modelo diante de conteúdos ambíguos ou com pouco texto disponível deve ser avaliado e documentado, junto às limitações identificadas. & Importante \\ \hline
+RIA11 & O sistema deve permitir a reavaliação periódica do modelo de PLN com novos dados, sem comprometer a disponibilidade do mecanismo de classificação durante a atualização. & Desejável \\ \hline
+
+\caption{Requisitos Específicos do Modelo de Processamento de Linguagem Natural}
+\label{tab:requisitos-ia}
+\end{longtable}
+
+\subsection{Modelo de Visão Computacional (Imagens)}
+
+\begin{longtable}{|p{1.7cm}|p{9.8cm}|p{2.1cm}|}
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RIC01 & O modelo de visão computacional deve atingir acurácia mínima de \textit{X\%} (a definir) no conjunto de teste, considerando as categorias de conteúdo estabelecidas pela equipe. & Essencial \\ \hline
+RIC02 & O modelo deve atingir F1-\textit{score} mínimo de \textit{X} (a definir) por categoria, priorizando o \textit{recall} nas categorias de conteúdo visual sensível. & Essencial \\ \hline
+RIC03 & A taxa de falsos negativos para categorias sensíveis (imagens potencialmente inadequadas) deve ser inferior a \textit{X\%} (a definir), priorizando a redução de exposição em detrimento de bloqueios excessivos. & Essencial \\ \hline
+RIC04 & A taxa de falsos positivos deve ser mantida abaixo de \textit{X\%} (a definir), de modo a preservar a usabilidade do sistema e evitar bloqueios indevidos de imagens legítimas. & Importante \\ \hline
+RIC05 & O tempo de inferência do modelo para uma única imagem deve ser inferior a \textit{X} milissegundos/segundos (a definir), em hardware de referência estabelecido pela equipe. & Essencial \\ \hline
+RIC06 & O modelo deve ser treinado ou ajustado (\textit{fine-tuned}) a partir de uma base de dados de imagens rotulada, documentada quanto à origem, ao volume e à distribuição entre categorias. & Essencial \\ \hline
+RIC07 & O processo de treinamento deve utilizar conjuntos distintos de treino, validação e teste, evitando vazamento de dados (\textit{data leakage}) entre eles. & Essencial \\ \hline
+RIC08 & O modelo utilizado em cada classificação de imagem registrada deve ser identificável por versão, permitindo rastrear qual versão gerou determinado resultado. & Importante \\ \hline
+RIC09 & O sistema deve registrar o nível de confiança (\textit{score}) de cada classificação de imagem, possibilitando a definição de limiares (\textit{thresholds}) distintos por categoria no mecanismo de políticas. & Importante \\ \hline
+RIC10 & O desempenho do modelo diante de imagens de baixa resolução, parcialmente carregadas ou de conteúdo ambíguo deve ser avaliado e documentado, junto às limitações identificadas. & Importante \\ \hline
+RIC11 & O sistema deve permitir a reavaliação periódica do modelo de visão computacional com novos dados, sem comprometer a disponibilidade do mecanismo de classificação durante a atualização. & Desejável \\ \hline
+
+\caption{Requisitos Específicos do Modelo de Visão Computacional}
+\label{tab:requisitos-ic}
+\end{longtable}
+
+\subsection{Integração entre as Modalidades Textual e Visual}
+
+\begin{longtable}{|p{1.7cm}|p{9.8cm}|p{2.1cm}|}
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endfirsthead
+\hline
+\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\endhead
+
+RIM01 & A equipe deve definir e documentar o critério de consolidação (ex.: predomínio da categoria mais restritiva, combinação ponderada dos \textit{scores}) utilizado quando as classificações textual e de imagem de uma mesma página divergirem. & Essencial \\ \hline
+RIM02 & O sistema deve continuar operando e produzindo uma decisão de política válida quando apenas uma das modalidades (texto ou imagem) estiver disponível para uma página (ex.: página sem imagens relevantes ou sem texto suficiente). & Importante \\ \hline
+RIM03 & A avaliação do sistema deve reportar, além das métricas de cada modelo isoladamente, o impacto da combinação das duas modalidades sobre a acurácia e as taxas de falsos positivos/negativos da decisão final. & Importante \\ \hline
+
+\caption{Requisitos de Integração entre PLN e Visão Computacional}
+\label{tab:requisitos-integracao}
+\end{longtable}
 
 % ------------------------------------------------------------
-% 6 Benchmarking 
+% 6 Benchmarking
 % ------------------------------------------------------------
 \chapter{Benchmarking}
 
@@ -352,6 +527,8 @@ Funcionalidade & & & & \\ \hline
 \textbf{Func4} & \cmark & \xmark & \cmark & \xmark \\ \hline
 \textbf{Func5} & \cmark & \cmark & \cmark & \xmark \\ \hline
 \end{tabular}
+\caption{Comparativo de funcionalidades entre o sistema proposto e concorrentes do mercado.}
+\label{tab:benchmarking}
 \end{table}
 
 Descrever qual é o diferencial do seu software em relação aos softwares já existentes.
