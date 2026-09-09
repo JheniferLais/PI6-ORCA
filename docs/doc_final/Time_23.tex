@@ -539,118 +539,95 @@ Apontar o caráter inovador ou atual do projeto.
 % ------------------------------------------------------------
 \chapter{Definição das Personas}
 
-As personas a seguir foram construídas a partir do público-alvo identificado
-para o sistema: famílias e responsáveis que buscam apoio ao uso seguro da
-internet por crianças e adolescentes, incluindo o \emph{usuário adversário}
-que tenta contornar os mecanismos de proteção -- perfil relevante para
-validar os requisitos de segurança e auditabilidade (RNF03, RNF11).
-
-
 \section{Persona 1 -- Renata Souza, a Mãe Vigilante}
 
-\begin{description}
-  \item[Idade] 38 anos
-  \item[Ocupação] Analista financeira, trabalha em regime híbrido (\textit{home office} 3x por semana)
-  \item[Contexto familiar] Mãe de Lucas (8) e Beatriz (12); o notebook do trabalho e o tablet da casa são compartilhados pelos filhos fora do horário escolar
-  \item[Nível técnico] Básico a intermediário; usa aplicativos do dia a dia, mas não configura software avançado sem tutorial
-\end{description}
+\noindent
+\hspace{0.7cm}%
+\begin{minipage}{0.38\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{mulher.jpg}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.6\textwidth}
+    \begin{itemize}
+        \item \textbf{Nome:} Renata Souza
+        \item \textbf{Idade:} 38 anos
+        \item \textbf{Sexo:} Feminino
+        \item \textbf{Estado Civil:} Casada
+        \item \textbf{Ocupação/Trabalho:} Analista financeira, trabalha em regime híbrido (\textit{home office} 3x por semana)
+        \item \textbf{Biografia:} Atua na área financeira e gerencia a rotina familiar. Mãe de Lucas (8) e Beatriz (12); o notebook do trabalho e o tablet da casa são compartilhados pelos filhos fora do horário escolar.
+    \end{itemize}
+\end{minipage}
 
-\begin{quote}
-\textit{``Eu não quero espiar cada clique dos meus filhos, só quero saber
-que, se algo errado aparecer na tela, alguém -- ou alguma coisa -- vai me
-avisar antes que vire um problema.''}
-\end{quote}
-
-\textbf{Objetivos}
 \begin{itemize}
-  \item Ter tranquilidade para trabalhar sem precisar ficar ao lado das crianças durante a navegação.
-  \item Entender, de forma simples, quais tipos de conteúdo os filhos estão encontrando.
-  \item Confiar que o sistema toma decisões corretas sem bloquear conteúdo escolar legítimo.
-\end{itemize}
-
-\textbf{Frustrações}
-\begin{itemize}
-  \item Soluções de controle parental existentes são complexas de configurar ou geram alertas em excesso.
-  \item Falta de transparência sobre por que um conteúdo foi bloqueado.
-  \item Medo de que os filhos aprendam a burlar as restrições sem que ela perceba.
-\end{itemize}
-
-\textbf{Como o ORCA ajuda}
-\begin{itemize}
-  \item Interface de acompanhamento (RF09, RF10) resume o histórico sem exigir leitura técnica.
-  \item Classificação combinada de texto e imagem (RIM01--RIM03) reduz falsos positivos que bloqueariam conteúdo escolar.
-  \item Registros auditáveis (RNF11) permitem revisar decisões quando necessário.
+    \item \textbf{Hobbies:} Leitura, jardinagem e passar tempo em família.
+    \item \textbf{Conhecimento em tecnologia:} Médio.
+    \item \textbf{Conhecimento no domínio do negócio:} Alto.
+    \item \textbf{Dispositivos que mais utiliza:} Notebook e celular.
+    \item \textbf{Objetivos dentro do sistema:} Ter tranquilidade para trabalhar sem precisar ficar ao lado das crianças durante a navegação, entendendo de forma simples quais tipos de conteúdo os filhos estão encontrando e confiando que o sistema toma decisões corretas.
+    \item \textbf{Motivos para utilizar o sistema:} Soluções de controle parental tradicionais são complexas ou geram alertas em excesso. O sistema oferece transparência, facilidade de uso e redução de falsos positivos em conteúdos escolares.
 \end{itemize}
 
 
 \section{Persona 2 -- Dona Marlene, Responsável por um Lar com Várias Crianças}
 
-\begin{description}
-  \item[Idade] 58 anos
-  \item[Ocupação] Aposentada; cuida informalmente dos netos e sobrinhos-netos enquanto os pais trabalham, funcionando como uma espécie de ``creche familiar''
-  \item[Contexto familiar] Recebe em casa até 5 crianças com idades entre 6 e 14 anos, em horários distintos; há um único computador de mesa e um tablet compartilhados entre todas elas
-  \item[Nível técnico] Baixo; depende dos netos mais velhos ou de um dos pais para configurar aparelhos
-\end{description}
+\noindent
+\hspace{0.7cm}%
+\begin{minipage}{0.38\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{senhora.jpg}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.6\textwidth}
+    \begin{itemize}
+        \item \textbf{Nome:} Marlene da Silva (Dona Marlene)
+        \item \textbf{Idade:} 58 anos
+        \item \textbf{Sexo:} Feminino
+        \item \textbf{Estado Civil:} Viúva
+        \item \textbf{Ocupação/Trabalho:} Aposentada; cuida informalmente dos netos e sobrinhos-netos enquanto os pais trabalham
+        \item \textbf{Biografia:} Funciona como uma espécie de ``creche familiar'', recebendo em casa até 5 crianças com idades entre 6 e 14 anos em horários distintos, contando com um único computador e um tablet compartilhados.
+    \end{itemize}
+\end{minipage}
 
-\begin{quote}
-\textit{``São cinco crianças, idades diferentes, um computador só. Eu não
-tenho como saber o que cada uma está vendo a cada minuto -- preciso de algo
-que cuide disso comigo.''}
-\end{quote}
-
-\textbf{Objetivos}
 \begin{itemize}
-  \item Um sistema que funcione ``no piloto automático'', sem exigir troca de perfil a cada criança.
-  \item Proteção consistente mesmo quando ela não está por perto o tempo todo.
-  \item Configuração simples o suficiente para ser feita uma única vez pelo filho ou neto mais velho.
-\end{itemize}
-
-\textbf{Frustrações}
-\begin{itemize}
-  \item Dispositivo compartilhado dificulta perfis individuais de controle parental.
-  \item Diferença de maturidade entre as crianças (6 a 14 anos) exige critérios de bloqueio distintos, mas ela não sabe ajustar isso sozinha.
-  \item Preocupação em ser responsabilizada pelos pais caso algo inadequado passe despercebido.
-\end{itemize}
-
-\textbf{Como o ORCA ajuda}
-\begin{itemize}
-  \item Operação em nível de máquina (RNF02, RF11) protege o dispositivo compartilhado independentemente de quem está usando.
-  \item Modo degradado em caso de falha de um classificador (RNF07) mantém alguma proteção mesmo em uso intenso e simultâneo.
-  \item Política padrão para páginas sem conteúdo suficiente (RF12) cobre casos ambíguos sem exigir intervenção manual constante.
+    \item \textbf{Hobbies:} Tricô, culinária e cuidar das plantas.
+    \item \textbf{Conhecimento em tecnologia:} Baixo.
+    \item \textbf{Conhecimento no domínio do negócio:} Médio.
+    \item \textbf{Dispositivos que mais utiliza:} Computador de mesa compartilhado.
+    \item \textbf{Objetivos dentro do sistema:} Um sistema que funcione no ``piloto automático'', sem exigir troca de perfil a cada criança, garantindo proteção consistente sem configurações complexas.
+    \item \textbf{Motivos para utilizar o sistema:} Necessidade de proteção automática em dispositivos compartilhados por crianças de diferentes faixas etárias, sem exigir conhecimentos técnicos avançados de sua parte.
 \end{itemize}
 
 
 \section{Persona 3 -- Caio ``Modo Anônimo'', o Adversário}
 
-\begin{description}
-  \item[Idade] 13 anos
-  \item[Ocupação] Estudante do 8º ano, autoproclamado ``especialista em TI'' da família
-  \item[Contexto familiar] Usa o tablet da casa compartilhado com os pais e um irmão mais novo; já trocou o DNS do roteador duas vezes ``só para ver o que acontecia''
-  \item[Nível técnico] Alto para a idade; sabe abrir aba anônima, testa extensões de navegador e assiste tutoriais de ``como burlar bloqueio de site''
-\end{description}
+\noindent
+\hspace{0.7cm}%
+\begin{minipage}{0.38\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{menino.jpg}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.6\textwidth}
+    \begin{itemize}
+        \item \textbf{Nome:} Caio Mendes
+        \item \textbf{Idade:} 13 anos
+        \item \textbf{Sexo:} Masculino
+        \item \textbf{Estado Civil:} Solteiro (Estudante)
+        \item \textbf{Ocupação/Trabalho:} Estudante do 8º ano
+        \item \textbf{Biografia:} Autoproclamado ``especialista em TI'' da família. Usa o tablet da casa compartilhado com os pais e irmão mais novo; já alterou configurações de rede por curiosidade para testar limites.
+    \end{itemize}
+\end{minipage}
 
-\begin{quote}
-\textit{``Bloqueou? Beleza, eu acho um jeito. É basicamente o meu hobby.''}
-\end{quote}
-
-\textbf{Objetivos (do ponto de vista dele)}
 \begin{itemize}
-  \item Acessar conteúdo sem restrição, por curiosidade ou para ``testar os limites'' do sistema.
-  \item Entender como a ferramenta decide o que bloquear, para tentar prever ou contornar.
+    \item \textbf{Hobbies:} Jogos eletrônicos, vídeos de tecnologia e exploração de softwares.
+    \item \textbf{Conhecimento em tecnologia:} Alto para a idade.
+    \item \textbf{Conhecimento no domínio do negócio:} Baixo.
+    \item \textbf{Dispositivos que mais utiliza:} Tablet e smartphone.
+    \item \textbf{Objetivos dentro do sistema:} Acessar conteúdo sem restrição por curiosidade ou para testar os limites do sistema, entendendo como a ferramenta decide o que bloquear.
+    \item \textbf{Motivos para testar o sistema:} Representa o caso de uso adversarial essencial para validar os requisitos de segurança, integridade de registros e robustez da arquitetura de IA.
 \end{itemize}
 
-\textbf{Por que essa persona importa para o projeto}
-\begin{itemize}
-  \item Representa o caso de uso adversarial que valida os requisitos de segurança e integridade dos registros (RNF03, RNF11).
-  \item Testa os limites da separação de responsabilidades entre PLN, visão computacional e motor de políticas (RNF08): burlar um classificador não deve comprometer o outro.
-  \item Lembra a equipe de que ``criança'' não é um único perfil de risco -- adolescentes com mais autonomia técnica exigem defesas diferentes das de crianças pequenas.
-\end{itemize}
-
-\textbf{Como o ORCA responde}
-\begin{itemize}
-  \item Monitoramento em nível de máquina, e não apenas por extensão de navegador (RF11), dificulta contornar o bloqueio trocando de aba ou navegador.
-  \item Log íntegro e rastreável (RNF11) permite que o responsável perceba padrões de tentativa de burla, mesmo sem bloquear tudo em tempo real.
-\end{itemize}
 
 % ------------------------------------------------------------
 % 8 Protótipos das Interfaces
