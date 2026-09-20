@@ -10,7 +10,6 @@ nem decisão de política (isso é o POL-00X, mais pra frente).
 Mantido deliberadamente leve (sem dependências pesadas / download de modelo),
 já que este agente roda na máquina do usuário (ver INF-007: consumo de CPU/memória).
 """
-
 import hashlib
 import re
 from dataclasses import dataclass
@@ -33,6 +32,7 @@ MIN_TEXT_LENGTH = 40           # textos menores que isso não valem a pena class
 MAX_TEXT_LENGTH = 20_000       # trunca textos gigantes (limite de entrada do classificador)
 BOILERPLATE_MAX_LINE_LEN = 40  # só considera "boilerplate" linhas curtas (menu, cookies, etc.)
 BOILERPLATE_MIN_REPEATS = 3    # nº mínimo de repetições da mesma linha pra descartar
+MAX_IMAGES_PER_PAGE = 15       # limite de imagens (já deduplicadas) enviadas pro classificador de visão
 
 
 # ---------- Resultado da limpeza ----------
@@ -111,7 +111,9 @@ def clean_text(raw_text: str) -> CleanedText:
 
 def clean_images(images: List[dict]) -> List[CleanedImage]:
     """Deduplica imagens repetidas (mesmo src, ex.: logo/ícones que aparecem
-    em várias partes da página), mantendo a de maior resolução de cada grupo."""
+    em várias partes da página), mantendo a de maior resolução de cada grupo,
+    e depois limita a quantidade total às MAX_IMAGES_PER_PAGE maiores — páginas
+    com dezenas de imagens não devem mandar todas pro classificador de visão."""
     best_by_hash: Dict[str, CleanedImage] = {}
 
     for img in images:
@@ -128,4 +130,6 @@ def clean_images(images: List[dict]) -> List[CleanedImage]:
         if current is None or (candidate.width * candidate.height) > (current.width * current.height):
             best_by_hash[content_hash] = candidate
 
-    return list(best_by_hash.values())
+    deduplicated = list(best_by_hash.values())
+    deduplicated.sort(key=lambda img: img.width * img.height, reverse=True)
+    return deduplicated[:MAX_IMAGES_PER_PAGE]

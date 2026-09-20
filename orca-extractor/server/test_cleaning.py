@@ -13,19 +13,19 @@ def test_remove_menu_repetido():
     Repare que o menu aparece 3 vezes aqui — com só 2, a regra não considera
     boilerplate ainda (ver BOILERPLATE_MIN_REPEATS em cleaning.py)."""
     texto = """Menu
-            Início
-            Sobre
-            Contato
-            Menu
-            Início
-            Sobre
-            Contato
-            Este é o parágrafo principal da página, com informação de verdade que
-            interessa para a classificação de conteúdo.
-            Menu
-            Início
-            Sobre
-            Contato"""
+Início
+Sobre
+Contato
+Menu
+Início
+Sobre
+Contato
+Este é o parágrafo principal da página, com informação de verdade que
+interessa para a classificação de conteúdo.
+Menu
+Início
+Sobre
+Contato"""
 
     resultado = clean_text(texto)
 
@@ -106,3 +106,21 @@ def test_imagens_sem_repeticao_ficam_todas():
     resultado = clean_images(imagens)
 
     assert len(resultado) == 2
+
+
+def test_limite_de_quantidade_por_pagina():
+    """Página com mais imagens únicas do que MAX_IMAGES_PER_PAGE (15) deve
+    manter só as maiores, cortando o restante."""
+    imagens = [
+        {"src": f"https://site.com/img{i}.jpg", "alt": None, "width": 100 + i, "height": 100 + i}
+        for i in range(20)  # 20 imagens únicas, todas com tamanhos diferentes
+    ]
+
+    resultado = clean_images(imagens)
+
+    assert len(resultado) == 15
+    # deve ter mantido as maiores (img19 é a de maior resolução: 119x119)
+    assert resultado[0].src.endswith("img19.jpg")
+    # e descartado as menores (img0 a img4 não deveriam sobrar)
+    srcs_resultado = {img.src for img in resultado}
+    assert "https://site.com/img0.jpg" not in srcs_resultado
