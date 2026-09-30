@@ -7,3 +7,5 @@ imgClassifier/.venv/
 imgClassifier/__pycache__/
 
 orca-extractor/node_modules/
+
+.idea/

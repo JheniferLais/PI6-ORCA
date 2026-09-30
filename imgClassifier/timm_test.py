@@ -1,10 +1,22 @@
 # fonte: https://huggingface.co/OwenElliott/image-safety-classifier-s
 
+from urllib.request import urlopen, Request
 from PIL import Image
 import timm
 import torch
 
-img = Image.open("testImages/sexywoman.jpg")
+# URL da imagem, pode ser qualquer link de imagem da internet nesta variável que virá o url da imagem extraída
+url = "https://cozinharoman.com/wp-content/uploads/2015/10/Red-Velvet-Sangrento-cozinharoman-min-1536x851.jpg"
+
+# Usando o mozilla pra fazer o request da imagem para o domínio (não sei ainda se vai precisar dessa parte)
+request = Request(
+    url,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+)
+
+img = Image.open(urlopen(request))
 
 model = timm.create_model(
     "hf-hub:OwenElliott/image-safety-classifier-s",

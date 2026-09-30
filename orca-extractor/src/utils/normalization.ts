@@ -7,8 +7,8 @@ export function normalizeText(input: string): string {
     .replace(/\r\n?/g, '\n')
     .replace(/[^\S\n]+/g, ' ')
     .split('\n')
+      .join('\n')
     .map((line) => line.trim())
-    .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
