@@ -1,10 +1,8 @@
 .env
 
-imgClassifier/.idea/
+server/.idea/
 
-imgClassifier/.venv/
-
-imgClassifier/__pycache__/
+server/.venv/
 
 orca-extractor/node_modules/
 
