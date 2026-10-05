@@ -1,3 +1,5 @@
 fastapi
 uvicorn
-langdetect
+pillow
+timm
+torch
