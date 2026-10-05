@@ -29,7 +29,7 @@ import hashlib
 import io
 import threading
 import time
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -372,9 +372,14 @@ class ContentIn(BaseModel):
 def receive(content: ContentIn):
     response = process(content)
     s = response["summary"]
+    votes = Counter(i["label"] for i in response["images"] if i["status"] == "classified")
+    gravidade = {"SFW": 0, "NSFW": 1, "NSFL": 2}  # empate -> o pior ganha
+    maioria = max(votes, key=lambda k: (votes[k], gravidade[k])) if votes else "—"
     print(
         f"[ORCA] {content.url[:80]} | recebidas: {s['received']} | classificadas: {s['classified']} "
-        f"(cache: {s['cache_hits']}) | puladas: {s['skipped']} | erros: {s['errors']} | {s['elapsed_ms']} ms"
+        f"(cache: {s['cache_hits']}) | puladas: {s['skipped']} | erros: {s['errors']} | {s['elapsed_ms']} ms\n"
+        f"       -> maioria: {maioria} | "
+        + " | ".join(f"{k}: {votes.get(k, 0)}" for k in ("SFW", "NSFW", "NSFL"))
     )
     return response
 

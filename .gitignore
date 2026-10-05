@@ -6,7 +6,6 @@ orca-extractor/node_modules/
 
 orca-extractor/node_modules/
 
-models/vision/data/.idea/
-models/vision/data/.pytest_cache/
-models/vision/data/.venv/
-models/vision/data/__py_cache__/
+models/vision/.idea/
+models/vision/.venv/
+models/vision/__py_cache__/
