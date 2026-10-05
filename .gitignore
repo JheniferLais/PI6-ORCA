@@ -7,3 +7,5 @@ server/.venv/
 orca-extractor/node_modules/
 
 .idea/
+
+orca-extractor/node_modules/

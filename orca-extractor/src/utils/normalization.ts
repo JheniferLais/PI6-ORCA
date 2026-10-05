@@ -4,11 +4,11 @@
  */
 export function normalizeText(input: string): string {
   return input
-    .replace(/\r\n?/g, '\n')
-    .replace(/[^\S\n]+/g, ' ')
-    .split('\n')
+      .replace(/\r\n?/g, '\n')
+      .replace(/[^\S\n]+/g, ' ')
+      .split('\n')
+      .map((line) => line.trim())
       .join('\n')
-    .map((line) => line.trim())
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 }
