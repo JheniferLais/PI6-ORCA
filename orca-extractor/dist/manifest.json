@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "ORCA — Extração de Conteúdo",
+  "version": "0.1.0",
+  "description": "Extrai texto e imagens (<img>) do DOM das páginas.",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "http://localhost:8000/*"
+  ]
+}
