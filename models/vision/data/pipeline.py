@@ -1,6 +1,19 @@
-"""Servidor do ORCA: recebe o conteúdo da extensão e aplica a limpeza (INF)
-antes de repassar aos futuros classificadores de PLN/Visão (TXT-019 / IMG-021)."""
+"""
+ORCA — Pipeline completo: recebe o conteúdo da extensão, limpa/normaliza
+(pré-processamento) e expõe a rota do servidor local.
 
+Contexto no backlog: a extensão captura texto/imagens da página (INF-002/003/004)
+e envia para cá via POST /content. Antes desse conteúdo alimentar os futuros
+classificadores de PLN (TXT-019) e Visão Computacional (IMG-021), ele passa por
+esta limpeza — que só normaliza e filtra ruído, não faz nenhuma classificação
+nem decisão de política (isso é o POL-00X, mais pra frente).
+
+Mantido deliberadamente leve (sem dependências pesadas / download de modelo),
+já que este agente roda na máquina do usuário (ver INF-007: consumo de CPU/memória).
+
+Como rodar:
+    uvicorn pipeline:app --reload --port 8765
+"""
 import hashlib
 import re
 from dataclasses import dataclass
@@ -19,8 +32,6 @@ except ImportError:  # langdetect é opcional — se faltar, só pulamos a detec
     class LangDetectException(Exception):
         pass
 
-app = FastAPI()
-# ===== limpeza (veio do cleaning.py) =====
 
 # ---------- Configuração (ajuste aqui e reinicie o servidor) ----------
 
@@ -29,6 +40,7 @@ MAX_TEXT_LENGTH = 20_000       # trunca textos gigantes (limite de entrada do cl
 BOILERPLATE_MAX_LINE_LEN = 40  # só considera "boilerplate" linhas curtas (menu, cookies, etc.)
 BOILERPLATE_MIN_REPEATS = 3    # nº mínimo de repetições da mesma linha pra descartar
 MAX_IMAGES_PER_PAGE = 15       # limite de imagens (já deduplicadas) enviadas pro classificador de visão
+
 
 # ---------- Resultado da limpeza ----------
 
@@ -39,6 +51,7 @@ class CleanedText:
     discarded: bool
     discard_reason: Optional[str] = None
 
+
 @dataclass
 class CleanedImage:
     src: str
@@ -46,6 +59,7 @@ class CleanedImage:
     width: int
     height: int
     content_hash: str
+
 
 # ---------- Texto ----------
 
@@ -127,7 +141,11 @@ def clean_images(images: List[dict]) -> List[CleanedImage]:
     deduplicated.sort(key=lambda img: img.width * img.height, reverse=True)
     return deduplicated[:MAX_IMAGES_PER_PAGE]
 
-# ===== ROTA =====
+
+# ---------- Servidor / rota ----------
+
+app = FastAPI()
+
 
 class Image(BaseModel):
     src: str

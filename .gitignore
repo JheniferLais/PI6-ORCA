@@ -1,11 +1,12 @@
 .env
 
-server/.idea/
-
-server/.venv/
-
 orca-extractor/node_modules/
 
 .idea/
 
 orca-extractor/node_modules/
+
+models/vision/data/.idea/
+models/vision/data/.pytest_cache/
+models/vision/data/.venv/
+models/vision/data/_py_cache_/

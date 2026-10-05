@@ -1,17 +1,17 @@
 """
-Testes rápidos do server/main.py.
+Testes rápidos do server/pipeline.py.
 
 Rodar com:
-    pytest test_main.py -v
+    pytest test_pipeline.py -v
 """
-from main import clean_images, clean_text
+from pipeline import clean_images, clean_text
 
 
 def test_remove_menu_repetido():
     """Linhas curtas que se repetem 3+ vezes (menu/rodapé) devem sumir, mas
     o conteúdo principal (o parágrafo, que só aparece 1 vez) deve continuar.
     Repare que o menu aparece 3 vezes aqui — com só 2, a regra não considera
-    boilerplate ainda (ver BOILERPLATE_MIN_REPEATS em main.py)."""
+    boilerplate ainda (ver BOILERPLATE_MIN_REPEATS em cleaning.py)."""
     texto = """Menu
 Início
 Sobre
@@ -64,10 +64,10 @@ def test_espacos_e_linhas_sao_normalizados():
 
 def test_deteccao_de_idioma_portugues():
     """Só passa se o pacote langdetect estiver instalado (pip install -r
-    requirements.txt). Sem ele, main.py devolve language=None de propósito
+    requirements.txt). Sem ele, cleaning.py devolve language=None de propósito
     em vez de quebrar — então esse teste é pulado nesse caso."""
     import pytest
-    from main import detect as langdetect_disponivel
+    from pipeline import detect as langdetect_disponivel
 
     if langdetect_disponivel is None:
         pytest.skip("langdetect não instalado neste ambiente")
