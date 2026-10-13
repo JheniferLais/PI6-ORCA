@@ -6,7 +6,9 @@ const CONFIG = {
   /** Espera (ms) sem novas mudanças na página antes de extrair de novo. */
   debounceMs: 1e3,
   /** Para onde o service worker envia cada conteúdo extraído. */
-  serverUrl: "http://localhost:8000/content"
+  serverUrl: "http://localhost:8000/content",
+  /** Site aberto quando o usuário clica no ícone da extensão. */
+  dashboardUrl: "https://example.com"
 };
 async function handleContent(content) {
   console.log(`[ORCA] ${content.url} | texto: ${content.text.length} chars | imagens: ${content.images.length}`, content);
@@ -23,4 +25,7 @@ async function handleContent(content) {
 }
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === "CONTENT_EXTRACTED") void handleContent(message.payload);
+});
+chrome.action.onClicked.addListener(() => {
+  void chrome.tabs.create({ url: CONFIG.dashboardUrl });
 });
