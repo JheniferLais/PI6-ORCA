@@ -1,4 +1,8 @@
+"""
+Pipeline de processamento e preparação de dados para NLP.
 
+Executa as etapas de tratamento e preparação dos dados.
+"""
 import argparse
 import shutil
 import sys

@@ -1,0 +1,39 @@
+{
+  "versao": "nlp-v1",
+  "classes": ["seguro", "suicidio", "odio"],
+  "modelo_base": {
+    "id": "neuralmind/bert-base-portuguese-cased",
+    "revision": null,
+    "finalidade": "Encoder BERT pré-treinado em português do Brasil (BERTimbau Base), usado para classificação de sequência com 3 classes.",
+    "justificativa": "Textos em português; tarefa de classificação de textos curtos (p99 de cerca de 54 palavras); ~110 milhões de parâmetros, viável em CPU; compatível com a biblioteca transformers; o Large é lento demais para CPU."
+  },
+  "dados": {
+    "pasta": "data/datasets",
+    "origem": "S2-02 (models/nlp/data/pipeline.py): treino.csv, validacao.csv e teste.csv"
+  },
+  "normalizacao": "norm-v1",
+  "max_length": 128,
+  "hiperparametros": {
+    "learning_rate": 2e-5,
+    "num_train_epochs": 3,
+    "per_device_train_batch_size": 16,
+    "per_device_eval_batch_size": 32,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "lr_scheduler_type": "linear",
+    "max_grad_norm": 1.0,
+    "seed": 42,
+    "optim": "adamw_torch",
+    "fp16": false,
+    "bf16": false
+  },
+  "pesos_classe": { "metodo": "inversa_frequencia" },
+  "selecao": { "metrica": "macro_f1", "conjunto": "validacao" },
+  "teste_rapido": {
+    "id": "nlp-v1-teste",
+    "amostra_treino": 192,
+    "amostra_validacao": 96,
+    "num_train_epochs": 1
+  },
+  "saida": { "pasta": "artifacts" }
+}
