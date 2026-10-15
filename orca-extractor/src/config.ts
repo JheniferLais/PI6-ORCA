@@ -12,5 +12,5 @@ export const CONFIG = {
     serverUrl: 'http://localhost:8000/content',
 
     /** Site aberto quando o usuário clica no ícone da extensão. */
-    dashboardUrl: 'https://example.com',
+    dashboardUrl: 'https://pi-orca.vercel.app/',
 };
