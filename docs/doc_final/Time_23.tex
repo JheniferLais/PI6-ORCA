@@ -518,30 +518,76 @@ RIM03 & A avaliação do sistema deve reportar, além das métricas de cada mode
 % ------------------------------------------------------------
 \chapter{Benchmarking}
 
-Elaborar uma tabela para comparar as funcionalidades/benefícios do seu software em
-relação aos demais, já existentes no mercado (pelo menos 3 software do mercado).
+O benchmarking compara o ORCA com três soluções de controle parental
+disponíveis no mercado: Qustodio, Microsoft Family Safety e Net Nanny.
+A comparação considera funcionalidades de filtragem, análise de conteúdo,
+aplicação de regras, monitoramento e características técnicas relacionadas
+aos objetivos do projeto. O objetivo não é afirmar que o ORCA apresenta
+mais recursos que as soluções existentes, mas identificar diferenças entre
+as abordagens adotadas e a proposta técnica desenvolvida neste projeto.
 
-\vspace{1em}
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\renewcommand{\arraystretch}{1.6}
-\begin{tabular}{|p{3.5cm}|c|c|c|c|}
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|p{5.0cm}|c|c|c|c|}
 \hline
-Software & \textbf{Seu Software} & \textbf{Software1} & \textbf{Software2} & \textbf{Software3} \\ \hline
-Funcionalidade & & & & \\ \hline
-\textbf{Func1} & \cmark & \xmark & \cmark & \cmark \\ \hline
-\textbf{Func2} & \cmark & \cmark & \cmark & \cmark \\ \hline
-\textbf{Func3} & \xmark & \cmark & \xmark & \xmark \\ \hline
-\textbf{Func4} & \cmark & \xmark & \cmark & \xmark \\ \hline
-\textbf{Func5} & \cmark & \cmark & \cmark & \xmark \\ \hline
+\textbf{Funcionalidade} & \textbf{ORCA} & \textbf{Qustodio} & \textbf{Microsoft Family Safety} & \textbf{Net Nanny} \\
+\hline
+Filtragem de sites por categorias & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Análise contextual do conteúdo textual em tempo real & \cmark & -- & \xmark & \cmark \\
+\hline
+Modelo de processamento de linguagem natural treinado ou ajustado pela equipe & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Classificação de imagens por modelo de visão computacional & \cmark & -- & -- & -- \\
+\hline
+Modelo de visão computacional treinado ou ajustado pela equipe & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Mecanismo próprio para consolidar classificações textuais e visuais & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Regras para permitir ou bloquear conteúdo & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Bloqueio de sites específicos & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Controle de tempo de tela e uso de aplicativos & \xmark & \cmark & \cmark & \cmark \\
+\hline
+Histórico ou relatórios de atividade & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Avaliação dos classificadores por métricas de desempenho & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Controle centralizado por gateway Raspberry Pi & \xmark & -- & \xmark & \xmark \\
+\hline
 \end{tabular}
-\caption{Comparativo de funcionalidades entre o sistema proposto e concorrentes do mercado.}
+\caption{Comparativo entre o ORCA e soluções de controle parental do mercado.}
 \label{tab:benchmarking}
 \end{table}
 
-Descrever qual é o diferencial do seu software em relação aos softwares já existentes.
-Apontar o caráter inovador ou atual do projeto.
+O principal diferencial técnico do ORCA é a proposta de combinar dois
+classificadores de inteligência artificial: um baseado em processamento
+de linguagem natural (PLN), voltado à análise do conteúdo textual, e outro
+baseado em visão computacional, voltado à classificação das imagens presentes
+nas páginas acessadas pelo navegador. Os modelos serão treinados ou ajustados
+pela equipe com bases de dados preparadas para as categorias definidas no
+projeto. Como as soluções comerciais podem utilizar tecnologias proprietárias,
+a ausência de documentação pública sobre uma técnica específica não significa
+que ela não seja utilizada internamente; por isso, os campos sem confirmação
+foram indicados com um traço.
+
+Outra característica da proposta é a separação entre classificação e decisão.
+Os classificadores deverão identificar as categorias presentes no texto e nas
+imagens, enquanto um mecanismo de políticas consolidará os resultados e
+determinará se o conteúdo deve ser permitido ou bloqueado. Essa arquitetura
+será avaliada por meio de métricas como precisão, recall, F1-score, taxas de
+falsos positivos e falsos negativos e tempo de classificação.
+
+As soluções analisadas também oferecem funcionalidades que não fazem parte
+do escopo atual do ORCA, como controle de tempo de tela e uso de aplicativos.
+Além disso, a aplicação centralizada de políticas por meio de um gateway
+Raspberry Pi é uma evolução planejada para os próximos semestres, e não uma
+funcionalidade prevista para o protótipo deste semestre. Dessa forma, o
+benchmarking evidencia tanto as capacidades que o ORCA pretende investigar
+quanto os limites de seu escopo em relação às ferramentas existentes.
 
 % ------------------------------------------------------------
 % 7 Definição das Personas 
