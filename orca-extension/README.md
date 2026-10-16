@@ -40,7 +40,6 @@ src/content/extractor.ts       extractText / extractImages / extractMetadata / n
 src/content/observer.ts        MutationObserver + debounce (+ evento load das <img>)
 src/utils/normalization.ts     limpeza básica do texto
 src/background/service-worker.ts   recebe o conteúdo e faz POST para o servidor
-server/main.py                     recebe o POST  ← aqui entra a pipeline
 ```
 
 ## Formato do resultado

@@ -1,5 +1,5 @@
 # Dependências do treino do classificador de NLP (S2-03). Use SOMENTE no venv
-# models/nlp/.venv-treino, com Python 3.12. Não afeta orca-extractor/server.
+# models/nlp/.venv-treino, com Python 3.12. Não afeta orca-extension.
 #
 # 1) torch (CPU) primeiro:
 #      pip install torch --index-url https://download.pytorch.org/whl/cpu

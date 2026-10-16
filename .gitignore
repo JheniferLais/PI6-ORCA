@@ -1,11 +1,3 @@
 .env
-
-orca-extractor/node_modules/
-
 .idea/
-
-orca-extractor/node_modules/
-
-models/vision/.idea/
-models/vision/.venv/
-models/vision/__py_cache__/
+.venv
