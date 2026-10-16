@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pillow
+timm
+torch
+transformers>=4.46,<5
+accelerate>=0.26
+huggingface_hub
+scikit-learn
+numpy
+pandas
