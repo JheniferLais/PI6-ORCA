@@ -1,0 +1,17 @@
+# S2-03: dados e artefatos gerados (os CSVs são recriados por data/pipeline.py)
+data/datasets/
+.venv-treino/
+__pycache__/
+.pytest_cache/
+
+# Pesos e checkpoints ficam fora do Git; JSON/CSV leves de cada versão (config,
+# orca_model.json, colisoes_removidas.csv) e modelo-base.json continuam versionados.
+artifacts/**/*.safetensors
+artifacts/**/*.bin
+artifacts/**/checkpoints/
+artifacts/**/checkpoint-*/
+artifacts/*.anterior-*/
+artifacts/*-teste/
+
+# logs de execução
+*.log
