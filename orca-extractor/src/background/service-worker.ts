@@ -3,20 +3,25 @@ import { CONFIG } from '../config';
 import type { ContentExtractedMessage, ExtractedContent } from '../models/content';
 
 async function handleContent(content: ExtractedContent): Promise<void> {
-  console.log(`[ORCA] ${content.url} | texto: ${content.text.length} chars | imagens: ${content.images.length}`, content);
+    console.log(`[ORCA] ${content.url} | texto: ${content.text.length} chars | imagens: ${content.images.length}`, content);
 
-  try {
-    const response = await fetch(CONFIG.serverUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(content),
-    });
-    if (!response.ok) console.warn(`[ORCA] servidor respondeu ${response.status}`);
-  } catch (error) {
-    console.warn('[ORCA] servidor indisponível:', error);
-  }
+    try {
+        const response = await fetch(CONFIG.serverUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(content),
+        });
+        if (!response.ok) console.warn(`[ORCA] servidor respondeu ${response.status}`);
+    } catch (error) {
+        console.warn('[ORCA] servidor indisponível:', error);
+    }
 }
 
 chrome.runtime.onMessage.addListener((message: ContentExtractedMessage) => {
-  if (message?.type === 'CONTENT_EXTRACTED') void handleContent(message.payload);
+    if (message?.type === 'CONTENT_EXTRACTED') void handleContent(message.payload);
+});
+
+/** Clique no ícone da extensão: abre o site do ORCA em uma aba nova. */
+chrome.action.onClicked.addListener(() => {
+    void chrome.tabs.create({ url: CONFIG.dashboardUrl });
 });
