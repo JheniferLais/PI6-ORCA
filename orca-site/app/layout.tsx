@@ -8,8 +8,7 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
-// Fonte pixelada dos títulos. PROVISÓRIA: trocar quando confirmarmos
-// qual é a fonte usada no Figma.
+// Fonte pixelada dos títulos (Pixelify Sans, a mesma do Figma).
 const pixelify = Pixelify_Sans({
   variable: "--font-pixelify",
   subsets: ["latin"],
