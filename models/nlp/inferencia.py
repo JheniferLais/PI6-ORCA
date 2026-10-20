@@ -1,20 +1,19 @@
 """
-Carrega um modelo salvo pelo treino.py (ex.: artifacts/nlp-v1) e classifica textos.
+Carrega um modelo salvo pelo treino (ex.: artifacts/nlp-v1) e classifica textos,
+aplicando a MESMA normalização do treino (normalizacao.py).
 
-Aplica a MESMA normalização do treino (normalizacao.py). Não faz parte do
-endpoint /classify/text, que fica fora do escopo do S2-03: esta classe só
-permite recarregar o modelo salvo e servirá de base para a integração futura.
-Regras de texto mínimo/vazio ("indefinido") pertencem ao endpoint.
-
-Uso:
-    from inferencia import Classificador
-    clf = Classificador("models/nlp/artifacts/nlp-v1")
-    clf.classificar("texto")  # [{'category': ..., 'score': ..., 'model_version': 'nlp-v1', ...}]
+    from nlp.inferencia import Classificador
+    clf = Classificador("nlp/artifacts/nlp-v1")
+    clf.classificar(["texto"])   # [{'category', 'score', 'probabilidades'}]  (avaliação)
+    clf.classificar_longo("...") # {'category': 'odio', 'score': 0.97}  (servidor)
 """
 import json
 from pathlib import Path
 
-import normalizacao as norm
+from . import normalizacao as norm
+
+CLASSE_SEGURA = "seguro"
+LOTE = 32
 
 
 class Classificador:
@@ -41,20 +40,49 @@ class Classificador:
         self.max_length = self.meta["max_length"]
         self.model_version = self.meta["id"]
 
+    def _probabilidades(self, codificado):
+        with self._torch.no_grad():
+            return self._torch.softmax(self.modelo(**codificado).logits, dim=-1)
+
     def classificar(self, textos):
+        """Um resultado por texto. Textos maiores que max_length são truncados,
+        como no treino: é o que a avaliação do modelo mede."""
         if isinstance(textos, str):
             textos = [textos]
         codificado = self.tokenizer([norm.normalizar(t) for t in textos], truncation=True,
                                     max_length=self.max_length, padding=True, return_tensors="pt")
-        with self._torch.no_grad():
-            probs = self._torch.softmax(self.modelo(**codificado).logits, dim=-1)
         resultados = []
-        for linha in probs:
+        for linha in self._probabilidades(codificado):
             i = int(linha.argmax())
             resultados.append({
                 "category": self.classes[i],
                 "score": float(linha[i]),
-                "model_version": self.model_version,
                 "probabilidades": {c: float(p) for c, p in zip(self.classes, linha)},
             })
         return resultados
+
+    def classificar_longo(self, texto):
+        """Uma categoria para um texto de qualquer tamanho (ex.: uma página).
+
+        O texto é dividido em janelas de max_length tokens (as vizinhas repetem
+        1/4 da janela, para um trecho não ser cortado ao meio) e cada janela é
+        classificada. O texto vale pela janela mais grave: se alguma janela não
+        é 'seguro', vence a de maior score; senão é 'seguro' com o score da
+        janela menos confiante. Texto vazio após normalizar devolve None."""
+        texto = norm.normalizar(texto)
+        if not texto:
+            return None
+        janelas = self.tokenizer(texto, truncation=True, max_length=self.max_length,
+                                 stride=self.max_length // 4, return_overflowing_tokens=True,
+                                 padding=True, return_tensors="pt")
+        janelas.pop("overflow_to_sample_mapping")
+        probs = self._torch.cat([self._probabilidades({k: v[i:i + LOTE] for k, v in janelas.items()})
+                                 for i in range(0, len(janelas["input_ids"]), LOTE)])
+        scores, indices = probs.max(dim=-1)
+        segura = self.classes.index(CLASSE_SEGURA)
+        risco = indices != segura
+        if risco.any():
+            j = int(self._torch.where(risco, scores, -1.0).argmax())
+        else:
+            j = int(scores.argmin())
+        return {"category": self.classes[int(indices[j])], "score": float(scores[j])}

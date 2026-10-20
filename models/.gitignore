@@ -1,1 +1,7 @@
+__pycache__/
 nlp/data/datasets/
+# pesos do modelo (~440 MB) e restos de treino: grandes demais para o git
+nlp/artifacts/**/*.safetensors
+nlp/artifacts/**/checkpoints/
+nlp/artifacts/*-teste/
+nlp/artifacts/*.anterior-*/

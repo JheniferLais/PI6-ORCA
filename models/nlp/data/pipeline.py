@@ -1,7 +1,11 @@
 """
-Pipeline de processamento e preparação de dados para NLP.
+Gera o dataset multiclasse (seguro, suicidio, odio) e as divisões 70/15/15.
 
-Executa as etapas de tratamento e preparação dos dados.
+    python nlp/data/pipeline.py
+
+Fontes (CC BY 4.0):
+    Boamente: https://zenodo.org/records/18343886
+    TuPyE:    https://huggingface.co/datasets/Silly-Machine/TuPyE-Dataset
 """
 import argparse
 import shutil
@@ -20,12 +24,6 @@ URL_BOAMENTE = ("https://zenodo.org/records/18343886/files/"
 URL_TUPYE = ("https://huggingface.co/datasets/Silly-Machine/TuPyE-Dataset/"
              "resolve/main/binary/tupye_binary_vote.csv")
 
-"""
-Fontes:
-    Boamente: https://zenodo.org/records/18343886 (CC BY 4.0)
-    TuPyE:    https://huggingface.co/datasets/Silly-Machine/TuPyE-Dataset (CC BY 4.0)
-"""
-
 # ---------------------------------------------------------------- download
 
 def baixar(url, destino, forcar):
@@ -37,7 +35,7 @@ def baixar(url, destino, forcar):
     print(f"{destino.name}: baixando de {url}")
     destino.parent.mkdir(parents=True, exist_ok=True)
     parcial = destino.with_name(destino.name + ".parcial")
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (preparar_dataset.py)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (orca pipeline.py)"})
     try:
         with urllib.request.urlopen(req, timeout=120) as resposta, open(parcial, "wb") as f:
             shutil.copyfileobj(resposta, f)

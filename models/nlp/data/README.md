@@ -11,7 +11,7 @@ Dataset de textos curtos em português para classificação em três classes, cr
 ## Estrutura
 
 ```
-preparar_dataset.py
+pipeline.py
 README.md
 datasets/
 ├── boamente.csv              original
@@ -22,7 +22,7 @@ datasets/
 └── teste.csv                 15%
 ```
 
-Todos os CSVs ficam na pasta `datasets`. `preparar_dataset.py` cria a pasta, baixa os dois datasets originais e gera os outros quatro arquivos a partir deles.
+Todos os CSVs ficam na pasta `datasets`. `pipeline.py` cria a pasta, baixa os dois datasets originais e gera os outros quatro arquivos a partir deles.
 
 | Arquivo | Textos | % | seguro | suicidio | odio |
 |---|---|---|---|---|---|
@@ -60,11 +60,11 @@ A divisão é 70/15/15, com semente 42, e é estratificada por classe e por data
 
 ## Como reproduzir
 
-Requer Python 3 com `pandas` e `scikit-learn`:
+Requer Python 3 com `pandas` e `scikit-learn` (rode a partir de `models/`):
 
 ```bash
 pip install pandas scikit-learn
-python preparar_dataset.py
+python nlp/data/pipeline.py
 ```
 
 O script baixa `boamente.csv` e `tupye_binary_vote.csv` das fontes originais para a pasta `datasets`, confere as colunas e o número de linhas e depois gera o dataset e as divisões na mesma pasta. Se os dois CSVs já estiverem lá, o download é pulado.
@@ -72,7 +72,7 @@ O script baixa `boamente.csv` e `tupye_binary_vote.csv` das fontes originais par
 A pasta `datasets` é criada ao lado do script, não importa de onde ele seja executado. Para usar outra pasta:
 
 ```bash
-python preparar_dataset.py --pasta caminho/da/pasta
+python nlp/data/pipeline.py --pasta caminho/da/pasta
 ```
 
 | Opção | Padrão | Descrição |

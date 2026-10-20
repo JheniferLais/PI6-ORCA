@@ -1,34 +1,20 @@
 """
-Dados do S2-03: leitura e validação dos CSVs de S2-02, tratamento de colisões
-entre divisões após a normalização e cálculo dos pesos de classe.
+Leitura e validação dos CSVs gerados por data/pipeline.py, tratamento de
+colisões entre divisões após a normalização e cálculo dos pesos de classe.
 
-Não depende de torch/transformers: tudo aqui roda só com pandas, numpy e
-scikit-learn, e é coberto por test_nlp.py.
+Não depende de torch/transformers: roda só com pandas, numpy e scikit-learn.
 """
 import hashlib
-import importlib.util
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from normalizacao import chave_comparacao
+from .data.pipeline import CLASSES  # fonte única da ordem: 0 = seguro, 1 = suicidio, 2 = odio
+from .normalizacao import chave_comparacao
 
-PASTA_NLP = Path(__file__).resolve().parent
-
-
-def _classes_do_pipeline():
-    """Lê CLASSES de data/pipeline.py (S2-02), fonte única da ordem dos rótulos:
-    índice 0 = seguro, 1 = suicidio, 2 = odio."""
-    spec = importlib.util.spec_from_file_location(
-        "orca_pipeline_s2_02", PASTA_NLP / "data" / "pipeline.py")
-    modulo = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(modulo)
-    return list(modulo.CLASSES)
-
-
-CLASSES = _classes_do_pipeline()
+PASTA_DATASETS = Path(__file__).resolve().parent / "data" / "datasets"
 
 POLITICA_COLISOES = [
     "chave de comparação = texto normalizado (norm-v1) sem diferenciar maiúsculas",
@@ -56,7 +42,7 @@ def sha256_arquivo(caminho):
 
 
 def carregar_split(caminho):
-    """Lê um CSV de S2-02 e valida colunas e one-hot. Ignora a coluna 'origem'
+    """Lê um CSV de data/pipeline.py e valida colunas e one-hot. Ignora a coluna 'origem'
     (não é rótulo nem entrada do modelo). Devolve text, as colunas de classe,
     'y' (índice da classe) e 'indice' (posição da linha de dados no CSV)."""
     df = pd.read_csv(caminho, keep_default_na=False)
@@ -213,15 +199,16 @@ def amostra_estratificada(df, n, seed):
     return amostra.sort_values("indice").reset_index(drop=True)
 
 
-def preparar_dados(pasta_datasets):
-    """Carrega treino, validação e teste, registra hashes e trata colisões."""
-    pasta = Path(pasta_datasets)
+def preparar_dados(pasta=PASTA_DATASETS):
+    """Carrega treino, validação e teste, registra hashes e trata colisões.
+    O teste volta inalterado e só deve ser usado na avaliação final."""
+    pasta = Path(pasta)
     arquivos, splits = {}, {}
     for nome in ("treino", "validacao", "teste"):
         caminho = pasta / f"{nome}.csv"
         if not caminho.exists():
             raise FileNotFoundError(
-                f"{caminho} não existe. Gere os datasets com: python data/pipeline.py")
+                f"{caminho} não existe. Gere os datasets com: python nlp/data/pipeline.py")
         splits[nome] = carregar_split(caminho)
         arquivos[caminho.name] = {**sha256_arquivo(caminho), "linhas": len(splits[nome])}
     completo = pasta / "dataset_multiclasse.csv"
@@ -229,5 +216,5 @@ def preparar_dados(pasta_datasets):
         arquivos[completo.name] = sha256_arquivo(completo)
     tr, va, relatorio, removidos = tratar_colisoes(
         splits["treino"], splits["validacao"], splits["teste"])
-    return {"treino": tr, "validacao": va, "arquivos": arquivos,
+    return {"treino": tr, "validacao": va, "teste": splits["teste"], "arquivos": arquivos,
             "colisoes": relatorio, "removidos": removidos}

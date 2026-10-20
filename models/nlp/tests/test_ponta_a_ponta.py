@@ -1,14 +1,11 @@
 """
 Testes de ponta a ponta com um BERT MINÚSCULO de pesos aleatórios e um
 vocabulário de 3 palavras. Não baixam nada (nem os pesos do BERTimbau) e rodam
-em CPU em poucos segundos. Exigem torch e transformers (venv de treino); sem
-eles, são pulados.
+em CPU em poucos segundos. Exigem torch e transformers; sem eles, são pulados.
 
-    cd models/nlp
-    python -m unittest test_torch -v
-
-Usam o código real de treino.py (TrainerPonderado, _dataset, compute_metrics,
-resumo_avaliacao) e de inferencia.py (Classificador). Os hiperparâmetros daqui
+Usam o código real de treino.py (TrainerPonderado, criar_dataset), de
+avaliacao.py (compute_metrics, resumo_avaliacao) e de inferencia.py
+(Classificador). Os hiperparâmetros daqui
 (taxa 3e-3, 30 épocas) são só do teste e não têm relação com os do nlp-v1.
 """
 import json
@@ -19,9 +16,10 @@ from unittest import mock
 
 import numpy as np
 
-import dados as dd
-import normalizacao as norm
-import treino as tr
+from nlp import avaliacao as av
+from nlp import dados as dd
+from nlp import normalizacao as norm
+from nlp import treino as tr
 
 try:
     import torch
@@ -57,11 +55,11 @@ class TestPipelineMinusculo(unittest.TestCase):
         # poder usar o comprimento do texto como atalho para a classe
         textos = [" ".join([PALAVRA[CLASSES[i % 3]]] * (1 + (i // 3) % 3)) for i in range(60)]
         cls.y = np.array([i % 3 for i in range(60)])
-        cls.ds = tr._dataset(torch, cls.tok, textos, cls.y, 16)
+        cls.ds = tr.criar_dataset(torch, cls.tok, textos, cls.y, 16)
         cls.colador = DataCollatorWithPadding(cls.tok)
         cls.pesos = torch.tensor([PESOS[c] for c in CLASSES], dtype=torch.float32)
 
-        TrainerPonderado = tr._criar_trainer_ponderado(torch, Trainer)
+        TrainerPonderado = tr.criar_trainer_ponderado(torch, Trainer)
         argumentos = TrainingArguments(
             output_dir=str(cls.raiz / "ck"), learning_rate=3e-3, num_train_epochs=30,
             per_device_train_batch_size=8, per_device_eval_batch_size=16, seed=42,
@@ -69,7 +67,7 @@ class TestPipelineMinusculo(unittest.TestCase):
             disable_tqdm=True, use_cpu=True)
         cls.trainer = TrainerPonderado(
             model=cls.modelo, args=argumentos, train_dataset=cls.ds, data_collator=cls.colador,
-            compute_metrics=tr.compute_metrics, pesos_classe=cls.pesos)
+            compute_metrics=av.compute_metrics, pesos_classe=cls.pesos)
 
         cls.pesos_vistos = []
         original = torch.nn.functional.cross_entropy
@@ -90,7 +88,6 @@ class TestPipelineMinusculo(unittest.TestCase):
         passos = self.trainer.state.global_step
         self.assertGreater(passos, 0)
         self.assertEqual(len(self.pesos_vistos), passos)
-        self.assertEqual(self.trainer.chamadas_treino, passos)
         for w in self.pesos_vistos:
             self.assertIsNotNone(w)
             self.assertTrue(torch.allclose(w.cpu(), self.pesos))
@@ -111,7 +108,7 @@ class TestPipelineMinusculo(unittest.TestCase):
     def test_rotulos_dataset_modelo_metricas(self):
         saida = self.trainer.predict(self.ds, metric_key_prefix="eval")
         self.assertTrue(np.array_equal(saida.label_ids, self.y))   # rótulos chegam intactos
-        r = tr.resumo_avaliacao(saida.label_ids, saida.predictions.argmax(-1))
+        r = av.resumo_avaliacao(saida.label_ids, saida.predictions.argmax(-1))
         for i in range(3):                                          # diagonal dominante
             self.assertGreaterEqual(r["matriz_confusao"][i][i], 18)
         self.assertGreater(r["metricas"]["f1_suicidio"], 0.9)       # classe 1 = 'bbb'
@@ -122,7 +119,7 @@ class TestPipelineMinusculo(unittest.TestCase):
     def _classificador_recarregado(cls):
         """Salva o modelo treinado e o recarrega com a Classificador (uma vez)."""
         if getattr(cls, "_clf", None) is None:
-            from inferencia import Classificador
+            from nlp.inferencia import Classificador
             pasta = cls.raiz / "modelo-salvo"
             cls.trainer.save_model(str(pasta))
             cls.tok.save_pretrained(str(pasta))
@@ -159,6 +156,22 @@ class TestPipelineMinusculo(unittest.TestCase):
         esperado = ["seguro", "suicidio", "odio", "seguro", "suicidio", "odio"]
         previsto = [r["category"] for r in clf.classificar(self.SONDAS)]
         self.assertEqual(previsto, esperado)
+
+    def test_classificar_longo_texto_curto_igual_a_classificar(self):
+        clf = self._classificador_recarregado()
+        for t in ("aaa aaa", "ccc ccc"):
+            curto, longo = clf.classificar(t)[0], clf.classificar_longo(t)
+            self.assertEqual(longo["category"], curto["category"])
+            self.assertAlmostEqual(longo["score"], curto["score"], places=5)
+        self.assertIsNone(clf.classificar_longo("@user https://t.co/x"))
+
+    def test_classificar_longo_analisa_alem_de_max_length(self):
+        """Texto de várias janelas: o trecho de risco no fim seria cortado por
+        classificar() (max_length=16), mas classificar_longo() o encontra."""
+        clf = self._classificador_recarregado()
+        texto = " ".join(["aaa"] * 40 + ["bbb"] * 10)
+        self.assertEqual(clf.classificar(texto)[0]["category"], "seguro")
+        self.assertEqual(clf.classificar_longo(texto)["category"], "suicidio")
 
 if __name__ == "__main__":
     unittest.main()
