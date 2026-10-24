@@ -2,10 +2,10 @@
 export default function TituloSecao({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <h2 className="font-pixel text-[28px] leading-[0.963] xl:text-[length:calc(43.65*var(--u))]">
+      <h2 className="font-pixel text-3xl leading-none md:text-4xl">
         {children}
       </h2>
-      <div className="mt-3 h-[6px] w-[70px] bg-black xl:mt-[calc(12*var(--u))] xl:h-[calc(9*var(--u))] xl:w-[calc(100*var(--u))]" />
+      <div className="mt-3 h-1.5 w-16 bg-black" />
     </>
   );
 }

@@ -1,16 +1,11 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   ESCALA DA PÁGINA INICIAL
-   O Figma foi desenhado em 1920px. "--escala" diz quanto desse tamanho
-   queremos na tela:  1 = idêntico ao Figma em 100%,  0.8 = 80%, etc.
-   É o ÚNICO número para mexer se achar tudo grande ou pequeno.
+   TAMANHOS
+   Usamos a escala padrão do Tailwind (texto 16px, títulos 30–36px,
+   botões 40px, conteúdo com no máximo 1152px). Os tamanhos são fixos e
+   não crescem com a largura da janela.
    ------------------------------------------------------------------ */
-:root {
-  --escala: 0.8;
-  /* 1 "pixel do design" na tela atual (cresce com a janela até 1920px) */
-  --u: calc(var(--escala) * min(100vw, 1920px) / 1920);
-}
 
 /* Cores do design (Figma) */
 :root {
@@ -22,8 +17,8 @@
   --orca-azul: #273441;
 
   /* Bloqueios e alertas (tela de logs) */
-  --orca-vermelho: #d35d5d;
-  --orca-amarelo: #e0c95a;
+  --orca-vermelho: #cb5959;
+  --orca-amarelo: #dfca5a;
 }
 
 @theme inline {
@@ -76,10 +71,4 @@ body {
 /* Sombra "dura" dos cards: preta, deslocada, sem desfoque. */
 .sombra-dura {
   box-shadow: 6px 6px 0 0 #000;
-}
-
-@media (min-width: 1280px) {
-  .sombra-dura {
-    box-shadow: calc(9 * var(--u)) calc(9 * var(--u)) 0 0 #000;
-  }
 }

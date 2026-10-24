@@ -6,10 +6,10 @@ const GITHUB_URL = "https://github.com/JheniferLais/PI6-ORCA";
 export default function Hero() {
   return (
     <section className="hero-fundo text-white">
-      <div className="px-6 pt-8 pb-24 xl:pt-[calc(48*var(--u))] xl:pr-[calc(86*var(--u))] xl:pb-[calc(210*var(--u))] xl:pl-[calc(120*var(--u))]">
+      <div className="mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 md:pb-28 lg:px-8">
         {/* Barra do topo: significado da sigla + ícone da orca */}
         <div className="flex items-center justify-end gap-3">
-          <p className="text-[11px] text-white/80 xl:text-[length:calc(20*var(--u))]">
+          <p className="text-xs text-white/80 sm:text-sm">
             Organization of Requests &amp; Communication Analysis
           </p>
           <Image
@@ -18,12 +18,12 @@ export default function Hero() {
             width={83}
             height={67}
             unoptimized
-            className="h-auto w-11 xl:w-[calc(83*var(--u))]"
+            className="h-auto w-10 sm:w-12"
           />
         </div>
 
         {/* Logotipo */}
-        <h1 className="mt-10 xl:mt-[calc(110*var(--u))]">
+        <h1 className="mt-12 md:mt-16">
           <Image
             src="/logo-orca.svg"
             alt="ORCA"
@@ -31,19 +31,19 @@ export default function Hero() {
             height={145}
             priority
             unoptimized
-            className="h-auto w-full max-w-[342px] xl:w-[calc(516*var(--u))] xl:max-w-none"
+            className="h-auto w-full max-w-[360px]"
           />
         </h1>
 
         {/* Texto de apresentação */}
-        <p className="mt-6 max-w-[68ch] text-[15px] leading-[1.25] xl:mt-[calc(24*var(--u))] xl:text-[length:calc(26*var(--u))]">
+        <p className="mt-6 max-w-2xl text-base leading-relaxed md:text-lg">
           O ORCA é um sistema que utiliza inteligência artificial,
           processamento de linguagem natural e visão computacional para
           analisar conteúdos digitais e auxiliar no controle de acesso à web.
         </p>
 
         {/* Botões */}
-        <div className="mt-8 flex flex-wrap gap-4 xl:mt-[calc(32*var(--u))] xl:gap-[calc(16*var(--u))]">
+        <div className="mt-8 flex flex-wrap gap-3">
           <BotaoPixel href="#como-funciona" icone="/icones/info.svg">
             Conheça o Projeto
           </BotaoPixel>

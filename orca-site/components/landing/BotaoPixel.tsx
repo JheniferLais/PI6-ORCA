@@ -11,7 +11,7 @@ type Props = {
 };
 
 const classes =
-  "inline-flex h-11 items-stretch border-2 border-white text-[15px] text-white transition-colors hover:bg-white/10 xl:h-[calc(56*var(--u))] xl:text-[length:calc(24*var(--u))]";
+  "inline-flex h-10 items-stretch border-2 border-white text-sm text-white transition-colors hover:bg-white/10";
 
 /** Botão do design: contorno branco, quadrado branco com ícone e o texto. */
 export default function BotaoPixel({ href, icone, externo, children }: Props) {
@@ -25,7 +25,7 @@ export default function BotaoPixel({ href, icone, externo, children }: Props) {
         unoptimized
         className="h-full w-auto"
       />
-      <span className="flex items-center pr-3 pl-2 xl:pr-[calc(16*var(--u))] xl:pl-[calc(12*var(--u))]">
+      <span className="flex items-center pr-4 pl-3">
         {children}
       </span>
     </>
