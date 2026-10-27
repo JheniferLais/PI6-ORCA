@@ -76,10 +76,16 @@
 }
 .logs-numero strong {
   display: block;
-  font-family: var(--font-pixelify), monospace;
-  font-size: 36px;
-  font-weight: 600;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 40px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
+}
+.logs-periodoResumo {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
 }
 .logs-numero span {
   display: block;
@@ -374,7 +380,7 @@
     padding: 0 20px;
   }
   .logs-numero strong {
-    font-size: 32px;
+    font-size: 36px;
   }
   .logs-numero span {
     font-size: 16px;

@@ -30,6 +30,11 @@ const PERIODOS = [
   { valor: "tudo", rotulo: "Todo o período", horas: Infinity },
 ] as const;
 
+// 1234 -> "1.234"
+function formatarNumero(n: number) {
+  return n.toLocaleString("pt-BR");
+}
+
 function formatarData(iso: string) {
   const d = new Date(iso);
   return {
@@ -128,24 +133,27 @@ export default function LogsPanel() {
           </button>
         </header>
 
+        <p className={s.periodoResumo}>
+          Período: {PERIODOS.find((p) => p.valor === periodo)!.rotulo.toLowerCase()}
+        </p>
         <section className={s.numeros} aria-label="Resumo">
           <div className={s.numero}>
             <div>
-              <strong>{base.length}</strong>
+              <strong>{formatarNumero(base.length)}</strong>
               <span>Ocorrências</span>
             </div>
             <PixelIcon desenho={ICONES.funil} />
           </div>
           <div className={`${s.numero} ${s.numeroBloqueio}`}>
             <div>
-              <strong>{bloqueios}</strong>
+              <strong>{formatarNumero(bloqueios)}</strong>
               <span>Bloqueios</span>
             </div>
             <PixelIcon desenho={ICONES.bloqueio} />
           </div>
           <div className={`${s.numero} ${s.numeroAlerta}`}>
             <div>
-              <strong>{alertas}</strong>
+              <strong>{formatarNumero(alertas)}</strong>
               <span>Alertas</span>
             </div>
             <PixelIcon desenho={ICONES.alerta} />
@@ -327,7 +335,7 @@ function ItemOcorrencia({
       {aberto && (
         <dl className={s.detalhes}>
           <div>
-            <dt>Confiança</dt>
+            <dt>Certeza da IA</dt>
             <dd>{e.score === null ? "—" : `${Math.round(e.score * 100)}%`}</dd>
           </div>
           <div>
@@ -335,8 +343,10 @@ function ItemOcorrencia({
             <dd>{e.modalidade === "image" ? "Imagem" : "Texto"}</dd>
           </div>
           <div>
-            <dt>Modelo</dt>
-            <dd>{e.modelo}</dd>
+            <dt>Analisado por</dt>
+            <dd title={`Modelo: ${e.modelo}`}>
+              {e.modalidade === "image" ? "IA de imagens" : "IA de texto"}
+            </dd>
           </div>
           <div>
             <dt>Ação</dt>

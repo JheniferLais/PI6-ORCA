@@ -21,10 +21,10 @@ const etapas: Etapa[] = [
     titulo: "Captura",
     icone: "/icones/tesoura.svg",
     itens: [
-      { rotulo: "Orca Extractor", texto: "Extensão de navegador" },
+      { rotulo: "Extensão ORCA", texto: "Instalada no navegador da criança" },
       {
-        rotulo: "Captura de DOM",
-        texto: "Imagens e Texto de todas as páginas acessadas",
+        rotulo: "Leitura da página",
+        texto: "Copia os textos e imagens de cada site visitado",
       },
     ],
     mascote: { src: "/mascotes/captura.png", largura: 391, altura: 372, exibir: 180, sobra: 0.5 },
@@ -33,8 +33,14 @@ const etapas: Etapa[] = [
     titulo: "Análise",
     icone: "/icones/olho.svg",
     itens: [
-      { rotulo: "Análise Textual (NLP)", texto: "Conteúdo de ódio/impróprio" },
-      { rotulo: "Análise de Imagens (CV)", texto: "SFW, NSFW e NSFL" },
+      {
+        rotulo: "Análise de texto",
+        texto: "Uma IA lê o texto e procura ódio ou conteúdo impróprio",
+      },
+      {
+        rotulo: "Análise de imagens",
+        texto: "Uma IA separa as imagens em seguras, sexuais ou violentas",
+      },
     ],
     mascote: { src: "/mascotes/analise.png", largura: 280, altura: 325, exibir: 150, sobra: 0.565 },
   },
@@ -43,8 +49,8 @@ const etapas: Etapa[] = [
     icone: "/icones/varinha.svg",
     itens: [
       {
-        rotulo: "Políticas e viés",
-        texto: "Políticas de bloqueio, e mínimo score aceitável das IAs",
+        rotulo: "Regras de bloqueio",
+        texto: "O responsável escolhe o que bloquear e o quanto a IA precisa ter certeza",
       },
     ],
     mascote: { src: "/mascotes/decisao.png", largura: 328, altura: 347, exibir: 172, sobra: 0.465 },

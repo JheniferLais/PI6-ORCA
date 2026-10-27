@@ -12,8 +12,8 @@ type Alvo = {
 const alvos: Alvo[] = [
   { titulo: "Discurso de ódio", texto: "Texto ofensivo e discriminatório" },
   { titulo: "Linguagem imprópria", texto: "Palavrões e conteúdo inadequado" },
-  { titulo: "Conteúdo NSFW", texto: "Imagens de cunho sexual" },
-  { titulo: "Conteúdo NSFL", texto: "Violência e cenas perturbadoras" },
+  { titulo: "Conteúdo sexual", texto: "Imagens de cunho sexual" },
+  { titulo: "Violência extrema", texto: "Cenas violentas e perturbadoras" },
 ];
 
 export default function Objetivos() {
