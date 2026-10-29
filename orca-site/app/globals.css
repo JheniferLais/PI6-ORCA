@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   ESCALA DA PÁGINA INICIAL
+   O Figma foi desenhado em 1920px. "--escala" diz quanto desse tamanho
+   queremos na tela:  1 = idêntico ao Figma em 100%,  0.8 = 80%, etc.
+   É o ÚNICO número para mexer se achar tudo grande ou pequeno.
+   ------------------------------------------------------------------ */
+:root {
+  --escala: 0.8;
+  /* 1 "pixel do design" na tela atual (cresce com a janela até 1920px) */
+  --u: calc(var(--escala) * min(100vw, 1920px) / 1920);
+}
+
+/* Cores do design (Figma) */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --orca-cinza: #585651;
+  --orca-areia: #e3e0d8;
+  --orca-azul: #273441;
+
+  /* Bloqueios e alertas (tela de logs) */
+  --orca-vermelho: #d35d5d;
+  --orca-amarelo: #e0c95a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-orca-cinza: var(--orca-cinza);
+  --color-orca-areia: var(--orca-areia);
+  --color-orca-azul: var(--orca-azul);
+  --color-orca-vermelho: var(--orca-vermelho);
+  --color-orca-amarelo: var(--orca-amarelo);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Texto: IBM Plex Mono. Títulos: Pixelify Sans (como no Figma). */
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-pixel: var(--font-pixelify), ui-monospace, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-mono);
+}
+
+/* Fundo do topo: preto, brilho suave no alto e grade de pontinhos
+   que vai sumindo para baixo. */
+.hero-fundo {
+  position: relative;
+  isolation: isolate;
+  background-color: #0a0a0a;
+  background-image: radial-gradient(
+    ellipse 60% 75% at 55% 0%,
+    rgba(255, 255, 255, 0.28),
+    transparent 70%
+  );
+}
+
+.hero-fundo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.22) 1.2px,
+    transparent 1.7px
+  );
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
+}
+
+/* Sombra "dura" dos cards: preta, deslocada, sem desfoque. */
+.sombra-dura {
+  box-shadow: 6px 6px 0 0 #000;
+}
+
+@media (min-width: 1280px) {
+  .sombra-dura {
+    box-shadow: calc(9 * var(--u)) calc(9 * var(--u)) 0 0 #000;
+  }
 }

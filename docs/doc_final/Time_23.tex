@@ -518,30 +518,76 @@ RIM03 & A avaliação do sistema deve reportar, além das métricas de cada mode
 % ------------------------------------------------------------
 \chapter{Benchmarking}
 
-Elaborar uma tabela para comparar as funcionalidades/benefícios do seu software em
-relação aos demais, já existentes no mercado (pelo menos 3 software do mercado).
+O benchmarking compara o ORCA com três soluções de controle parental
+disponíveis no mercado: Qustodio, Microsoft Family Safety e Net Nanny.
+A comparação considera funcionalidades de filtragem, análise de conteúdo,
+aplicação de regras, monitoramento e características técnicas relacionadas
+aos objetivos do projeto. O objetivo não é afirmar que o ORCA apresenta
+mais recursos que as soluções existentes, mas identificar diferenças entre
+as abordagens adotadas e a proposta técnica desenvolvida neste projeto.
 
-\vspace{1em}
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\renewcommand{\arraystretch}{1.6}
-\begin{tabular}{|p{3.5cm}|c|c|c|c|}
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|p{5.0cm}|c|c|c|c|}
 \hline
-Software & \textbf{Seu Software} & \textbf{Software1} & \textbf{Software2} & \textbf{Software3} \\ \hline
-Funcionalidade & & & & \\ \hline
-\textbf{Func1} & \cmark & \xmark & \cmark & \cmark \\ \hline
-\textbf{Func2} & \cmark & \cmark & \cmark & \cmark \\ \hline
-\textbf{Func3} & \xmark & \cmark & \xmark & \xmark \\ \hline
-\textbf{Func4} & \cmark & \xmark & \cmark & \xmark \\ \hline
-\textbf{Func5} & \cmark & \cmark & \cmark & \xmark \\ \hline
+\textbf{Funcionalidade} & \textbf{ORCA} & \textbf{Qustodio} & \textbf{Microsoft Family Safety} & \textbf{Net Nanny} \\
+\hline
+Filtragem de sites por categorias & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Análise contextual do conteúdo textual em tempo real & \cmark & -- & \xmark & \cmark \\
+\hline
+Modelo de processamento de linguagem natural treinado ou ajustado pela equipe & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Classificação de imagens por modelo de visão computacional & \cmark & -- & -- & -- \\
+\hline
+Modelo de visão computacional treinado ou ajustado pela equipe & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Mecanismo próprio para consolidar classificações textuais e visuais & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Regras para permitir ou bloquear conteúdo & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Bloqueio de sites específicos & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Controle de tempo de tela e uso de aplicativos & \xmark & \cmark & \cmark & \cmark \\
+\hline
+Histórico ou relatórios de atividade & \cmark & \cmark & \cmark & \cmark \\
+\hline
+Avaliação dos classificadores por métricas de desempenho & \cmark & \xmark & \xmark & \xmark \\
+\hline
+Controle centralizado por gateway Raspberry Pi & \xmark & -- & \xmark & \xmark \\
+\hline
 \end{tabular}
-\caption{Comparativo de funcionalidades entre o sistema proposto e concorrentes do mercado.}
+\caption{Comparativo entre o ORCA e soluções de controle parental do mercado.}
 \label{tab:benchmarking}
 \end{table}
 
-Descrever qual é o diferencial do seu software em relação aos softwares já existentes.
-Apontar o caráter inovador ou atual do projeto.
+O principal diferencial técnico do ORCA é a proposta de combinar dois
+classificadores de inteligência artificial: um baseado em processamento
+de linguagem natural (PLN), voltado à análise do conteúdo textual, e outro
+baseado em visão computacional, voltado à classificação das imagens presentes
+nas páginas acessadas pelo navegador. Os modelos serão treinados ou ajustados
+pela equipe com bases de dados preparadas para as categorias definidas no
+projeto. Como as soluções comerciais podem utilizar tecnologias proprietárias,
+a ausência de documentação pública sobre uma técnica específica não significa
+que ela não seja utilizada internamente; por isso, os campos sem confirmação
+foram indicados com um traço.
+
+Outra característica da proposta é a separação entre classificação e decisão.
+Os classificadores deverão identificar as categorias presentes no texto e nas
+imagens, enquanto um mecanismo de políticas consolidará os resultados e
+determinará se o conteúdo deve ser permitido ou bloqueado. Essa arquitetura
+será avaliada por meio de métricas como precisão, recall, F1-score, taxas de
+falsos positivos e falsos negativos e tempo de classificação.
+
+As soluções analisadas também oferecem funcionalidades que não fazem parte
+do escopo atual do ORCA, como controle de tempo de tela e uso de aplicativos.
+Além disso, a aplicação centralizada de políticas por meio de um gateway
+Raspberry Pi é uma evolução planejada para os próximos semestres, e não uma
+funcionalidade prevista para o protótipo deste semestre. Dessa forma, o
+benchmarking evidencia tanto as capacidades que o ORCA pretende investigar
+quanto os limites de seu escopo em relação às ferramentas existentes.
 
 % ------------------------------------------------------------
 % 7 Definição das Personas 
@@ -676,27 +722,225 @@ desenvolvimento do sistema (frontend, protótipos, backend, banco de dados, clou
 \chapter{Descrição da Solução Tecnologica Atual do Projeto}
 
 \section{Base de Dados}
-Descrever a origem, características, volume e tratamento dos dados utilizados.
 
-\section{Pré-processamento dos Dados (se utilizar IA)}
-Explicar as técnicas de limpeza, normalização e preparação dos dados.
+\section*{Processamento de Linguagem Natural (PLN)}
+O projeto PI6-ORCA utiliza uma base de dados textual para o desenvolvimento de um modelo
+de Inteligência Artificial capaz de classificar textos em três categorias: seguro, suicídio
+e ódio. A solução combina dados de duas fontes principais: o conjunto Boamente e o conjunto TuPyE.
 
-\section{Modelos de IA Utilizados (se utilizar IA)}
-Descrever os algoritmos, modelos e hiperparâmetros adotados.
+Os dados são consolidados e organizados por meio do pipeline de preparação de dados do projeto.
+Durante esse processo, os rótulos originais são convertidos para as três classes utilizadas pelo
+classificador, permitindo que as diferentes fontes sejam integradas em uma estrutura comum.
 
-\section{Treinamento e Validação (se utilizar IA)}
-Explicar o processo de treinamento, validação e teste dos modelos.
+Após a preparação inicial, os dados são divididos em três conjuntos: treinamento, validação e
+teste, utilizando a proporção de 70%, 15% e 15%, respectivamente, com estratificação por classe e fonte dos dados.
 
-\section{Métricas de Avaliação (se utilizar IA)}
-Apresentar e justificar as métricas utilizadas para avaliação do desempenho.
+A divisão inicial registrada contém 40.178 textos, distribuídos da seguinte forma:
+\begin{itemize}
+    \item Treinamento: 28.124 textos.
+    \item Validação: 6.027 textos.
+    \item Teste: 6.027 textos.
+\end{itemize}
 
-\section{Estrutura definida para Blockchain (se utilizar Blockchain)IA)}
-Apresentar e justificar a estrutura e seus relacionamentos definidos para Blockchain.
+Durante a execução do treinamento, são aplicadas verificações adicionais para evitar que textos
+iguais ou equivalentes, após a normalização, apareçam em diferentes conjuntos. Com isso, o
+treinamento oficial utilizou efetivamente 28.090 textos, enquanto a validação utilizou 6.025 textos.
+O conjunto de teste permaneceu com 6.027 textos.
 
-\section{Definir se considera ataque ou defesa e como (se envolver
-Cibersegurança}
-Apresentar e justificar se o projeto envolve mecanismos para ataque e/ou defesa p/
-Cibersegurança.
+A base apresenta um desequilíbrio na quantidade de exemplos por classe, com predominância da
+categoria “seguro” e menor quantidade de exemplos da categoria “suicídio”. Para reduzir o impacto
+desse desequilíbrio durante o aprendizado, o treinamento utiliza pesos de classe calculados a partir
+da frequência de cada categoria.
+
+\section{Pré-processamento dos Dados}
+
+\section*{Processamento de Linguagem Natural (PLN)}
+O pré-processamento tem como objetivo padronizar os textos, reduzir inconsistências e evitar que
+informações repetidas entre os conjuntos comprometam a avaliação do modelo.
+
+A normalização utilizada, identificada como norm-v1, aplica as seguintes operações:
+\begin{itemize}
+    \item Normalização Unicode no formato NFC.
+    \item Remoção de links iniciados por http://, https:// ou www..
+    \item Remoção do marcador @user, sem distinção entre letras maiúsculas e minúsculas.
+    \item Substituição de sequências de espaços e quebras de linha por espaços padronizados.
+    \item Remoção de espaços no início e no final dos textos.
+    \item Preservação de letras maiúsculas e minúsculas, pois o modelo utilizado diferencia essas características.
+\end{itemize}
+
+Além da normalização, o pipeline verifica textos vazios, duplicidades e divergências de classificação.
+Quando um mesmo texto normalizado aparece em conjuntos diferentes, são aplicadas regras para evitar
+vazamento de dados entre treinamento, validação e teste.
+
+O conjunto de teste permanece inalterado e é utilizado apenas para detectar possíveis colisões durante
+essa verificação. As linhas removidas dos conjuntos de treinamento e validação são registradas em um
+arquivo específico de auditoria, sem modificar os arquivos CSV originais.
+
+Os textos são tokenizados de acordo com o tokenizador associado ao modelo BERTimbau Base. O comprimento
+máximo configurado é de 128 tokens por sequência. Textos que ultrapassam esse limite são truncados,
+conforme a configuração do treinamento.
+
+\section{Modelos de IA Utilizados}
+
+\section*{Processamento de Linguagem Natural (PLN)}
+O projeto utiliza o modelo pré-treinado BERTimbau Base, disponibilizado pelo identificador
+neuralmind/bert-base-portuguese-cased. Trata-se de um modelo baseado na arquitetura BERT, pré-treinado
+em português brasileiro e adaptado, por meio de fine-tuning, para a tarefa de classificação de textos.
+
+O modelo foi escolhido por ser adequado ao processamento de textos em português, ser compatível com
+as bibliotecas utilizadas no projeto e apresentar um custo computacional mais viável do que a versão
+Large para a execução em CPU.
+
+A camada de classificação é configurada para produzir uma das três categorias definidas pelo projeto:
+\begin{itemize}
+    \item seguro;
+    \item suicidio;
+    \item odio.
+\end{itemize}
+
+O treinamento é realizado com PyTorch e Transformers. A configuração oficial, identificada como nlp-v1,
+utiliza os seguintes parâmetros:
+
+\begin{table}[!htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parâmetros} & \textbf{Configuração} \\
+\hline
+Modelo base & BERTimbau Base \\
+\hline
+Comprimento máximo & 128 tokens \\
+\hline
+Número de épocas & 3 \\
+\hline
+Batch size de treinamento & 16 \\
+\hline
+Batch size de avaliação & 32 \\
+\hline
+Taxa de aprendizado & 0,00002 \\
+\hline
+Otimizador & AdamW (adamw\_torch) \\
+\hline
+Weight decay & 0,01 \\
+\hline
+Warmup ratio & 0,1 \\
+\hline
+Agendador da taxa de aprendizado & Linear \\
+\hline
+Limite de norma do gradiente & 1,0 \\
+\hline
+Semente aleatória & 42 \\
+\hline
+Precisão mista FP16/BF16 & Desativada \\
+\hline
+Ponderação das classes & Inversa da frequência \\
+\hline
+\end{tabular}
+\caption{Exemplo de dados do projeto}
+\label{tab:exemplo}
+\end{table}
+
+\vspace{2cm}
+
+Os pesos das classes são calculados pela fórmula:
+
+\[
+\mathbf{Peso\ da\ classe} = \frac{N}{K \times n^c}
+\]
+
+Nessa expressão, $N$ representa o número total de exemplos utilizados no treinamento, $K$ representa
+a quantidade de classes e $n^c$ representa a quantidade de exemplos da classe considerada. Essa
+estratégia aumenta a contribuição das classes menos frequentes para a função de perda.
+
+
+\section{Treinamento e Validação}
+
+\section*{Processamento de Linguagem Natural (PLN)}
+O treinamento consiste no ajuste dos parâmetros do BERTimbau Base para a classificação dos textos nas
+três categorias definidas. Durante esse processo, o modelo aprende padrões linguísticos presentes nos
+exemplos rotulados, utilizando a função de perda ponderada para considerar o desequilíbrio entre as
+classes.
+
+O treinamento oficial registrado foi executado em CPU durante três épocas, totalizando 5.268 passos.
+A configuração efetivamente utilizada corresponde à configuração definida no arquivo nlp-v1.json, sem
+diferenças registradas entre os parâmetros configurados e os parâmetros efetivos.
+
+Ao final de cada época, o desempenho é avaliado no conjunto de validação. A seleção do melhor checkpoint
+utiliza a métrica Macro F1, que calcula a média do F1-score das classes, atribuindo a mesma importância
+a cada uma delas. Dessa forma, a seleção não depende exclusivamente do desempenho na classe majoritária.
+
+O melhor resultado de validação foi registrado na terceira época, no checkpoint checkpoint-5268, com
+Macro F1 de aproximadamente 0,7995. Esse checkpoint foi reavaliado, e as métricas registradas foram
+consistentes com as métricas utilizadas na seleção.
+
+Além do treinamento oficial, foi realizado um teste rápido identificado como nlp-v1-teste. Essa execução
+utilizou uma amostra reduzida de 192 textos para treinamento, 96 para validação e apenas uma época. Seu
+objetivo foi verificar o funcionamento do fluxo de treinamento, não substituir a avaliação do modelo
+oficial.
+
+O conjunto de teste possui 6.027 textos. Entretanto, os metadados disponibilizados registram as métricas
+de validação do modelo oficial, não os resultados de uma avaliação final nesse conjunto de teste.
+Portanto, o desempenho no teste independente deve ser documentado após a execução e o registro dessa
+avaliação.
+
+\section{Métricas de Avaliação}
+
+\section*{Processamento de Linguagem Natural (PLN)}
+A avaliação do classificador utiliza métricas que permitem analisar tanto o desempenho geral quanto a
+capacidade de identificar cada uma das três categorias.
+
+As principais métricas adotadas são:
+\begin{itemize}
+    \item \textbf{Acurácia}: proporção de previsões corretas em relação ao total de exemplos avaliados.
+    \item \textbf{Precisão}: proporção de previsões de determinada classe que realmente pertencem a essa classe.
+    \item \textbf{Recall}: proporção de exemplos reais de determinada classe que foram identificados corretamente.
+    \item \textbf{F1-score}: média harmônica entre precisão e revocação, permitindo avaliar o equilíbrio entre essas duas métricas.
+    \item \textbf{Macro F1}: média dos F1-scores das classes, atribuindo o mesmo peso a cada categoria.
+    \item \textbf{Matriz de confusão}: tabela que compara as classes reais com as classes previstas pelo modelo, permitindo observar acertos e confusões entre categorias.
+\end{itemize}
+
+Na avaliação oficial de validação, o modelo apresentou os seguintes resultados:
+\begin{table}[!htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Métrica} & \textbf{Resultado} \\
+\hline
+Acurácia & 89,56\% \\
+\hline
+Macro F1 & 79,95\% \\
+\hline
+F1-score - seguro & 93,83\% \\
+\hline
+F1-score - suicídio & 82,11\% \\
+\hline
+F1-score — ódio & 63,92\% \\
+\hline
+\end{tabular}
+\caption{Resultados da avaliação do modelo no conjunto de validação}
+\label{tab:resultados-validacao}
+\end{table}
+
+\vspace{4cm}
+
+Os resultados indicam um desempenho elevado na identificação de textos classificados como “seguro” e um F1-score
+de 82,11\% para a classe “suicídio”. A classe “ódio” apresentou o menor F1-score, de 63,92\%, indicando maior
+dificuldade de classificação nessa categoria.
+
+A matriz de confusão da validação também permite observar que parte dos textos reais da classe “ódio” foi
+classificada como “seguro”. Esse comportamento evidencia a necessidade de acompanhar o desempenho individual
+das classes, em vez de considerar apenas a acurácia geral.
+
+Os resultados apresentados nesta seção correspondem exclusivamente à validação do modelo oficial nlp-v1. O
+resultado do teste rápido, com Macro F1 de aproximadamente 32,41\%, não é utilizado como medida final de
+desempenho, pois foi obtido com uma amostra reduzida e somente uma época de treinamento.
+
+A avaliação final no conjunto de teste permanece como uma etapa necessária para verificar a capacidade de
+generalização do modelo em dados que não foram utilizados no treinamento nem na seleção do checkpoint.
 
 
 % ------------------------------------------------------------
