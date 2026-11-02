@@ -341,65 +341,242 @@ utilizadas.
 % ------------------------------------------------------------
 % 5 Levantamento e Análise de Requisitos
 % ------------------------------------------------------------
+
+% --- Macros do template de requisitos funcionais (sem pacotes extras) ---
+\newenvironment{dadoslista}{%
+  \begin{itemize}%
+  \setlength{\leftmargin}{1.1em}\setlength{\labelwidth}{0.7em}%
+  \setlength{\labelsep}{0.4em}\setlength{\itemsep}{0pt}%
+  \setlength{\parsep}{0pt}\setlength{\topsep}{0pt}\setlength{\partopsep}{0pt}}%
+  {\end{itemize}}
+
+\newcommand{\reqfunc}[5]{%
+  \par\medskip\noindent
+  \begin{tabular}{|p{3.3cm}|p{10.4cm}|}
+  \hline
+  \textbf{Identificador} & \textbf{#1} \\ \hline
+  \textbf{Nome} & #2 \\ \hline
+  \textbf{Descrição Geral} & #3 \\ \hline
+  \textbf{Atores} & #4 \\ \hline
+  \textbf{Informações / Dados} & #5 \\ \hline
+  \end{tabular}
+  \par\medskip}
+
 \chapter{Levantamento e Análise de Requisitos}
-
-Os requisitos apresentados a seguir foram derivados do escopo definido para este
-semestre (Capítulo~1) e serão validados junto aos representantes da comunidade
-externa (Capítulo~3). Cada requisito recebe um código único e uma prioridade,
-classificada segundo a técnica MoSCoW em: \textbf{Essencial} (indispensável para
-o protótipo deste semestre), \textbf{Importante} (deve ser entregue, mas
-admite solução simplificada) e \textbf{Desejável} (agrega valor, mas pode ser
-postergado para semestres futuros).
-
-O projeto adota, neste semestre, \textbf{dois caminhos técnicos complementares
-de inteligência artificial}: (i) a análise do \textbf{conteúdo textual} das
-páginas, por meio de técnicas de processamento de linguagem natural (PLN); e
-(ii) a análise do \textbf{conteúdo visual} (imagens) presente nas páginas, por
-meio de técnicas de visão computacional. Os dois modelos operam de forma
-independente sobre suas respectivas modalidades de entrada e têm suas saídas
-consolidadas pelo mecanismo de políticas, que utiliza as classificações
-textual e de imagem para decidir se o conteúdo deve ser permitido ou
-bloqueado. Essa divisão está refletida nos requisitos funcionais, não
-funcionais e específicos de inteligência artificial apresentados a seguir.
 
 \section{Requisitos Funcionais}
 
-Os requisitos funcionais descrevem as capacidades que o sistema deve
-oferecer, cobrindo o fluxo completo de obtenção do conteúdo textual e do
-conteúdo visual (imagens), classificação por PLN e por visão computacional,
-consolidação dos resultados, aplicação de políticas e acompanhamento pelo
-usuário.
+Os requisitos funcionais são descritos no formato de histórias de usuário da
+metodologia ágil (\textit{``Eu, enquanto <quem>, quero <o quê>, para <por quê>''}).
+O Quadro~\ref{tab:requisitos-funcionais} resume os requisitos e suas prioridades;
+o detalhamento de cada um segue logo após.
 
 \begin{longtable}{|p{1.6cm}|p{9.8cm}|p{2.3cm}|}
 \hline
-\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\textbf{Código} & \textbf{Nome} & \textbf{Prioridade} \\ \hline
 \endfirsthead
 \hline
-\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
+\textbf{Código} & \textbf{Nome} & \textbf{Prioridade} \\ \hline
 \endhead
 
-RF01 & O sistema deve obter o conteúdo textual das páginas acessadas pelo navegador durante a navegação do usuário. & Essencial \\ \hline
-RF02 & O sistema deve pré-processar o conteúdo textual obtido (limpeza, normalização, remoção de ruído) antes de submetê-lo ao classificador. & Essencial \\ \hline
-RF03 & O sistema deve submeter o conteúdo textual pré-processado ao modelo de processamento de linguagem natural (PLN) para classificação em categorias previamente definidas. & Essencial \\ \hline
-RF04 & O sistema deve associar a cada classificação textual um nível de confiança (\textit{score}) atribuído pelo modelo de PLN. & Essencial \\ \hline
-RF05 & O sistema deve aplicar um mecanismo de políticas que determine, a partir das classificações textual e de imagem recebidas, se o conteúdo deve ser permitido ou bloqueado. & Essencial \\ \hline
-RF06 & O sistema deve permitir a configuração de regras de política por categoria de conteúdo (permitir, bloquear ou alertar). & Importante \\ \hline
-RF07 & O sistema deve bloquear o acesso ao conteúdo e exibir uma mensagem informativa ao usuário quando a política determinar o bloqueio. & Essencial \\ \hline
-RF08 & O sistema deve registrar (log) cada classificação realizada, incluindo URL/domínio, modalidade (texto e/ou imagem), categoria atribuída, nível de confiança, ação tomada e data/hora. & Essencial \\ \hline
-RF09 & O sistema deve disponibilizar uma interface de acompanhamento para consulta do histórico de classificações e bloqueios realizados. & Importante \\ \hline
-RF10 & O sistema deve apresentar estatísticas de uso na interface de acompanhamento (ex.: total de páginas analisadas, distribuição por categoria, percentual bloqueado por modalidade, período consultado). & Importante \\ \hline
-RF11 & O sistema deve permitir que o usuário/responsável inicie ou pause o monitoramento em nível de máquina. & Importante \\ \hline
-RF12 & O sistema deve tratar páginas das quais não seja possível extrair conteúdo textual e/ou imagens em quantidade suficiente, aplicando uma política padrão definida pela equipe. & Importante \\ \hline
-RF13 & O sistema deve permitir a atualização independente das versões dos modelos de classificação (textual e de imagem) sem exigir reinstalação completa do sistema. & Desejável \\ \hline
-RF14 & O sistema deve obter as imagens presentes nas páginas acessadas pelo navegador durante a navegação do usuário. & Essencial \\ \hline
-RF15 & O sistema deve pré-processar as imagens obtidas (redimensionamento, normalização e descarte de elementos irrelevantes, como ícones e imagens de interface) antes de submetê-las ao classificador de visão computacional. & Essencial \\ \hline
-RF16 & O sistema deve submeter as imagens pré-processadas a um modelo de visão computacional para classificação em categorias previamente definidas. & Essencial \\ \hline
-RF17 & O sistema deve associar a cada classificação de imagem um nível de confiança (\textit{score}) atribuído pelo modelo de visão computacional. & Essencial \\ \hline
-RF18 & O sistema deve consolidar as classificações textual e de imagem de uma mesma página em uma decisão única a ser utilizada pelo mecanismo de políticas, definindo um critério de precedência para os casos em que as duas classificações divergirem. & Essencial \\ \hline
+RF001 & Captura de conteúdo das páginas & Essencial \\ \hline
+RF002 & Pré-processamento do conteúdo textual & Essencial \\ \hline
+RF003 & Classificação textual (PLN) & Essencial \\ \hline
+RF004 & Nível de confiança da classificação textual & Essencial \\ \hline
+RF005 & Pré-processamento de imagens & Essencial \\ \hline
+RF006 & Classificação de imagens (visão computacional) & Essencial \\ \hline
+RF007 & Nível de confiança da classificação de imagem & Essencial \\ \hline
+RF008 & Consolidação das classificações de texto e imagem & Essencial \\ \hline
+RF009 & Aplicação do mecanismo de políticas & Essencial \\ \hline
+RF010 & Configuração de regras de política por categoria & Importante \\ \hline
+RF011 & Bloqueio de acesso com mensagem informativa & Essencial \\ \hline
+RF012 & Registro (log) das classificações & Essencial \\ \hline
+RF013 & Consulta do histórico de classificações e bloqueios & Importante \\ \hline
+RF014 & Estatísticas de uso & Importante \\ \hline
+RF015 & Início e pausa do monitoramento & Importante \\ \hline
 
 \caption{Requisitos Funcionais}
 \label{tab:requisitos-funcionais}
 \end{longtable}
+
+\reqfunc{RF001}
+{Captura de conteúdo das páginas}
+{Eu, enquanto responsável pelo monitoramento, quero que o sistema obtenha o conteúdo textual e as imagens das páginas acessadas durante a navegação, para que esse conteúdo possa ser analisado e classificado.}
+{\begin{dadoslista}
+\item Usuário monitorado (navega pelas páginas)
+\item Extensão do navegador (coleta o conteúdo)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} URL/domínio e DOM da página acessada
+\item \textbf{Saída:} texto bruto da página, lista de imagens (origem e dimensões) e data/hora da captura
+\end{dadoslista}}
+
+\reqfunc{RF002}
+{Pré-processamento do conteúdo textual}
+{Eu, enquanto responsável pelo monitoramento, quero que o texto obtido seja limpo e normalizado antes da classificação, para que o classificador receba conteúdo livre de ruído e produza resultados mais precisos.}
+{\begin{dadoslista}
+\item Módulo de pré-processamento textual (sistema)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} texto bruto (com marcações HTML, menus, rodapés e \textit{scripts})
+\item \textbf{Saída:} texto limpo e normalizado
+\item \textbf{Parâmetros:} tamanho mínimo e máximo de texto (ex.: mínimo de 50 palavras; máximo de 512 \textit{tokens})
+\end{dadoslista}}
+
+\reqfunc{RF003}
+{Classificação textual (PLN)}
+{Eu, enquanto responsável pelo monitoramento, quero que o texto pré-processado seja classificado por um modelo de PLN em categorias previamente definidas, para identificar conteúdo textual potencialmente inadequado.}
+{\begin{dadoslista}
+\item Módulo de PLN (sistema)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} texto pré-processado
+\item \textbf{Saída:} categoria textual atribuída e versão do modelo utilizada
+\item \textbf{Categorias:} definidas pela equipe (ex.: seguro, sexual, violência, drogas, jogos de azar, discurso de ódio)
+\end{dadoslista}}
+
+\reqfunc{RF004}
+{Nível de confiança da classificação textual}
+{Eu, enquanto responsável pelo monitoramento, quero que cada classificação textual tenha um nível de confiança associado, para que a decisão do sistema leve em conta a certeza do modelo de PLN.}
+{\begin{dadoslista}
+\item Módulo de PLN (sistema)
+\item Mecanismo de políticas (consome o \textit{score})
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} saída do modelo de PLN
+\item \textbf{Saída:} \textit{score} de confiança no intervalo [0, 1] associado à categoria atribuída
+\end{dadoslista}}
+
+\reqfunc{RF005}
+{Pré-processamento de imagens}
+{Eu, enquanto responsável pelo monitoramento, quero que as imagens obtidas sejam redimensionadas, normalizadas e filtradas antes da classificação, para que apenas imagens relevantes sejam analisadas e o tempo de resposta seja adequado.}
+{\begin{dadoslista}
+\item Módulo de pré-processamento de imagens (sistema)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} imagens brutas da página
+\item \textbf{Saída:} imagens redimensionadas e normalizadas no formato de entrada do modelo
+\item \textbf{Critérios de descarte:} ícones e imagens de interface; dimensão mínima (ex.: 100$\times$100 px); limite de imagens por página (ex.: as 10 a 20 maiores)
+\item \textbf{Parâmetro:} tamanho de entrada do modelo (ex.: 224$\times$224 px)
+\end{dadoslista}}
+
+\reqfunc{RF006}
+{Classificação de imagens (visão computacional)}
+{Eu, enquanto responsável pelo monitoramento, quero que as imagens pré-processadas sejam classificadas por um modelo de visão computacional em categorias previamente definidas, para identificar conteúdo visual potencialmente inadequado.}
+{\begin{dadoslista}
+\item Módulo de visão computacional (sistema)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} imagens pré-processadas
+\item \textbf{Saída:} categoria visual atribuída a cada imagem e versão do modelo utilizada
+\item \textbf{Categorias:} definidas pela equipe, com mapeamento para as categorias textuais
+\end{dadoslista}}
+
+\reqfunc{RF007}
+{Nível de confiança da classificação de imagem}
+{Eu, enquanto responsável pelo monitoramento, quero que cada classificação de imagem tenha um nível de confiança associado, para que a decisão do sistema leve em conta a certeza do modelo de visão computacional.}
+{\begin{dadoslista}
+\item Módulo de visão computacional (sistema)
+\item Mecanismo de políticas (consome o \textit{score})
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} saída do modelo de visão computacional
+\item \textbf{Saída:} \textit{score} de confiança no intervalo [0, 1] associado à categoria atribuída
+\end{dadoslista}}
+
+\reqfunc{RF008}
+{Consolidação das classificações de texto e imagem}
+{Eu, enquanto responsável pelo monitoramento, quero que as classificações textual e de imagem de uma mesma página sejam consolidadas em uma decisão única, com critério de precedência para os casos de divergência, para que o mecanismo de políticas receba um resultado coerente.}
+{\begin{dadoslista}
+\item Módulo de consolidação (sistema)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} categoria e \textit{score} textuais; categoria(s) e \textit{score}(s) de imagem
+\item \textbf{Regra de precedência:} em caso de divergência, prevalece a classificação associada à ação mais restritiva da política (bloquear $>$ alertar $>$ permitir)
+\item \textbf{Saída:} decisão consolidada (categoria, \textit{score} e modalidade de origem)
+\end{dadoslista}}
+
+\reqfunc{RF009}
+{Aplicação do mecanismo de políticas}
+{Eu, enquanto responsável pelo monitoramento, quero que um mecanismo de políticas determine, a partir da decisão consolidada, se o conteúdo deve ser permitido, bloqueado ou alertado, para que a navegação do usuário seja controlada de acordo com as regras definidas.}
+{\begin{dadoslista}
+\item Mecanismo de políticas (sistema)
+\item Responsável (define as regras)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} decisão consolidada (RF008) e regras por categoria (RF010)
+\item \textbf{Parâmetros:} limiares de confiança (ex.: $\geq$ 0,80 bloqueia; entre 0,50 e 0,80 alerta; $<$ 0,50 permite; limiar de bloqueio menor nas categorias sensíveis)
+\item \textbf{Saída:} ação a ser tomada (permitir, bloquear ou alertar)
+\end{dadoslista}}
+
+\reqfunc{RF010}
+{Configuração de regras de política por categoria}
+{Eu, enquanto responsável pelo monitoramento, quero configurar a ação (permitir, bloquear ou alertar) para cada categoria de conteúdo, para adequar a proteção ao perfil do usuário monitorado.}
+{\begin{dadoslista}
+\item Responsável
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} categoria, ação desejada e, opcionalmente, limiar de confiança
+\item \textbf{Saída:} conjunto de regras persistido e aplicado pelo mecanismo de políticas
+\end{dadoslista}}
+
+\reqfunc{RF011}
+{Bloqueio de acesso com mensagem informativa}
+{Eu, enquanto responsável pelo monitoramento, quero que o acesso seja bloqueado e uma mensagem informativa seja exibida ao usuário quando a política determinar o bloqueio, para impedir a exposição ao conteúdo e deixar claro o motivo da restrição.}
+{\begin{dadoslista}
+\item Usuário monitorado (visualiza a mensagem)
+\item Extensão do navegador (executa o bloqueio)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} ação ``bloquear'', URL da página e categoria atribuída
+\item \textbf{Saída:} página de bloqueio com mensagem informativa
+\end{dadoslista}}
+
+\reqfunc{RF012}
+{Registro (log) das classificações}
+{Eu, enquanto responsável pelo monitoramento, quero que cada classificação realizada seja registrada, para permitir o acompanhamento e a auditoria das decisões do sistema.}
+{\begin{dadoslista}
+\item Módulo de registro (sistema)
+\item Responsável (consulta os registros)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Campos:} URL/domínio, modalidade (texto e/ou imagem), categoria atribuída, nível de confiança, ação tomada, data/hora e versão do modelo
+\item \textbf{Observação:} o conteúdo integral (texto e imagens) não deve ser armazenado além do necessário (RNF003)
+\end{dadoslista}}
+
+\reqfunc{RF013}
+{Consulta do histórico de classificações e bloqueios}
+{Eu, enquanto responsável pelo monitoramento, quero consultar o histórico de classificações e bloqueios em uma interface de acompanhamento, para saber quais conteúdos foram analisados e quais ações foram tomadas.}
+{\begin{dadoslista}
+\item Responsável
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} filtros opcionais (período, categoria, ação, modalidade, domínio)
+\item \textbf{Saída:} lista de registros de classificação conforme os filtros
+\end{dadoslista}}
+
+\reqfunc{RF014}
+{Estatísticas de uso}
+{Eu, enquanto responsável pelo monitoramento, quero visualizar estatísticas de uso na interface de acompanhamento, para entender o padrão de navegação e a atuação do sistema ao longo do tempo.}
+{\begin{dadoslista}
+\item Responsável
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} período consultado (ex.: 24 h, 7 dias, 30 dias ou personalizado)
+\item \textbf{Saída:} total de páginas analisadas, distribuição por categoria e percentual bloqueado por modalidade
+\end{dadoslista}}
+
+\reqfunc{RF015}
+{Início e pausa do monitoramento}
+{Eu, enquanto responsável pelo monitoramento, quero iniciar ou pausar o monitoramento, para controlar quando a análise da navegação está ativa.}
+{\begin{dadoslista}
+\item Responsável
+\item Usuário monitorado (afetado pelo estado do monitoramento)
+\end{dadoslista}}
+{\begin{dadoslista}
+\item \textbf{Entrada:} comando de iniciar ou pausar e, se aplicável, autenticação do responsável (ex.: PIN)
+\item \textbf{Saída:} estado atual (ativo ou pausado) e registro da alteração com data/hora
+\end{dadoslista}}
 
 \section{Requisitos Não Funcionais}
 
@@ -414,34 +591,29 @@ organizados a partir de categorias inspiradas na norma ISO/IEC~25010.
 \textbf{Código} & \textbf{Categoria} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
 \endhead
 
-RNF01 & Desempenho & A classificação textual e a classificação de imagem de uma página devem ser concluídas em tempo compatível com a experiência de navegação, com metas numéricas a serem validadas experimentalmente durante a avaliação dos modelos (ver RIA05 e RIC05). & Essencial \\ \hline
-RNF02 & Desempenho & O sistema deve operar em nível de máquina com consumo de CPU, memória e (quando aplicável) GPU compatível com o uso doméstico, sem degradar de forma perceptível o desempenho do computador, mesmo executando os módulos de PLN e de visão computacional em conjunto. & Importante \\ \hline
-RNF03 & Segurança & O conteúdo textual, as imagens coletadas e os registros de navegação armazenados localmente devem ser protegidos contra acesso não autorizado (ex.: permissões de arquivo restritas). & Essencial \\ \hline
-RNF04 & Privacidade & O sistema não deve transmitir o conteúdo textual e as imagens coletados a servidores externos sem consentimento explícito, priorizando processamento local quando viável. & Essencial \\ \hline
-RNF05 & Privacidade & O sistema deve minimizar a coleta e a retenção de dados de navegação (textuais e de imagem) ao estritamente necessário para classificação, auditoria e apresentação de estatísticas, em conformidade com a LGPD. & Essencial \\ \hline
-RNF06 & Usabilidade & A interface de acompanhamento deve apresentar as informações de forma clara e compreensível para usuários sem conhecimento técnico avançado. & Importante \\ \hline
-RNF07 & Confiabilidade & O sistema deve continuar operando em modo degradado (ex.: aplicando uma política padrão) em caso de falha de qualquer um dos módulos de classificação (textual ou de imagem), evitando bloquear indevidamente toda a navegação. & Importante \\ \hline
-RNF08 & Manutenibilidade & A arquitetura deve manter separadas as responsabilidades de classificação textual (PLN), classificação de imagem (visão computacional) e de aplicação de políticas, permitindo evolução e substituição independente de cada módulo. & Essencial \\ \hline
-RNF09 & Escalabilidade & O sistema deve ser projetado de modo a permitir, em semestres futuros, sua integração a uma infraestrutura baseada em Raspberry Pi sem redesenho dos motores de classificação textual e de imagem. & Importante \\ \hline
-RNF10 & Compatibilidade & O sistema deve ser compatível com pelo menos um navegador amplamente utilizado (a definir pela equipe, ex.: Chrome/Chromium ou Firefox). & Essencial \\ \hline
-RNF11 & Auditabilidade & Todos os registros de log gerados devem ser íntegros e rastreáveis, permitindo auditoria posterior das decisões tomadas pelo sistema. & Importante \\ \hline
+RNF001 & Desempenho & A classificação textual e a classificação de imagem de uma página devem ser concluídas em tempo compatível com a experiência de navegação, com metas numéricas a serem validadas experimentalmente durante a avaliação dos modelos (ver RIA005 e RIC005). & Essencial \\ \hline
+
+RNF002 & Segurança & O conteúdo textual, as imagens coletadas e os registros de navegação armazenados localmente devem ser protegidos contra acesso não autorizado (ex.: permissões de arquivo restritas). & Essencial \\ \hline
+
+RNF003 & Privacidade & O sistema deve minimizar a coleta e a retenção de dados de navegação (textuais e de imagem) ao estritamente necessário para classificação, auditoria e apresentação de estatísticas, em conformidade com a LGPD. & Essencial \\ \hline
+
+RNF004 & Usabilidade & A interface de acompanhamento deve apresentar as informações de forma clara e compreensível para usuários sem conhecimento técnico avançado. & Importante \\ \hline
+
+RNF005 & Confiabilidade & O sistema deve continuar operando em modo degradado (ex.: aplicando uma política padrão) em caso de falha de qualquer um dos módulos de classificação (textual ou de imagem), evitando bloquear indevidamente toda a navegação. & Importante \\ \hline
+
+RNF006 & Manutenibilidade & A arquitetura deve manter separadas as responsabilidades de classificação textual (PLN), classificação de imagem (visão computacional) e de aplicação de políticas, permitindo evolução e substituição independente de cada módulo. & Essencial \\ \hline
+
+RNF007 & Escalabilidade & O sistema deve ser projetado de modo a permitir, em semestres futuros, sua integração a uma infraestrutura baseada em Raspberry Pi sem redesenho dos motores de classificação textual e de imagem. & Importante \\ \hline
+
+RNF008 & Compatibilidade & O sistema deve ser compatível com pelo menos um navegador amplamente utilizado (a definir pela equipe, ex.: Chrome/Chromium ou Firefox). & Essencial \\ \hline
+
+RNF009 & Auditabilidade & Todos os registros de log gerados devem ser íntegros e rastreáveis, permitindo auditoria posterior das decisões tomadas pelo sistema. & Importante \\ \hline
 
 \caption{Requisitos Não Funcionais}
 \label{tab:requisitos-nao-funcionais}
 \end{longtable}
 
 \section{Requisitos Específicos para Inteligência Artificial}
-
-Os requisitos a seguir definem critérios de qualidade e de processo
-específicos dos modelos de inteligência artificial, complementando os
-requisitos funcionais e não funcionais já apresentados. Como o projeto adota
-dois caminhos técnicos complementares, os requisitos estão organizados em
-três grupos: os específicos do modelo de \textbf{processamento de linguagem
-natural} (texto), os específicos do modelo de \textbf{visão computacional}
-(imagens) e os relativos à \textbf{integração} entre as duas modalidades. Os
-valores numéricos indicados como \textit{a definir} deverão ser fixados pela
-equipe em conjunto com a orientadora, a partir dos primeiros experimentos com
-as bases de dados construídas (Capítulo~11).
 
 \subsection{Modelo de Processamento de Linguagem Natural (Texto)}
 
@@ -453,17 +625,17 @@ as bases de dados construídas (Capítulo~11).
 \textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
 \endhead
 
-RIA01 & O modelo de PLN deve atingir acurácia mínima de \textit{X\%} (a definir) no conjunto de teste, considerando as categorias de conteúdo estabelecidas pela equipe. & Essencial \\ \hline
-RIA02 & O modelo deve atingir F1-\textit{score} mínimo de \textit{X} (a definir) por categoria, priorizando o \textit{recall} nas categorias de conteúdo sensível. & Essencial \\ \hline
-RIA03 & A taxa de falsos negativos para categorias sensíveis (conteúdo potencialmente inadequado) deve ser inferior a \textit{X\%} (a definir), priorizando a redução de exposição em detrimento de bloqueios excessivos. & Essencial \\ \hline
-RIA04 & A taxa de falsos positivos deve ser mantida abaixo de \textit{X\%} (a definir), de modo a preservar a usabilidade do sistema e evitar bloqueios indevidos de conteúdo legítimo. & Importante \\ \hline
-RIA05 & O tempo de inferência do modelo para o texto de uma única página deve ser inferior a \textit{X} milissegundos/segundos (a definir), em hardware de referência estabelecido pela equipe. & Essencial \\ \hline
-RIA06 & O modelo deve ser treinado ou ajustado (\textit{fine-tuned}) a partir de uma base de dados textual rotulada, documentada quanto à origem, ao volume e à distribuição entre categorias. & Essencial \\ \hline
-RIA07 & O processo de treinamento deve utilizar conjuntos distintos de treino, validação e teste, evitando vazamento de dados (\textit{data leakage}) entre eles. & Essencial \\ \hline
-RIA08 & O modelo utilizado em cada classificação textual registrada deve ser identificável por versão, permitindo rastrear qual versão gerou determinado resultado. & Importante \\ \hline
-RIA09 & O sistema deve registrar o nível de confiança (\textit{score}) de cada classificação textual, possibilitando a definição de limiares (\textit{thresholds}) distintos por categoria no mecanismo de políticas. & Importante \\ \hline
-RIA10 & O desempenho do modelo diante de conteúdos ambíguos ou com pouco texto disponível deve ser avaliado e documentado, junto às limitações identificadas. & Importante \\ \hline
-RIA11 & O sistema deve permitir a reavaliação periódica do modelo de PLN com novos dados, sem comprometer a disponibilidade do mecanismo de classificação durante a atualização. & Desejável \\ \hline
+RIA001 & O modelo de PLN deve atingir acurácia mínima de \textit{85\%} no conjunto de teste, considerando as categorias de conteúdo estabelecidas pela equipe. & Essencial \\ \hline
+RIA002 & O modelo deve atingir F1-\textit{score} mínimo de \textit{0,80} ($\geq$ 0,85 nas categorias sensíveis) por categoria, priorizando o \textit{recall} nas categorias de conteúdo sensível. & Essencial \\ \hline
+RIA003 & A taxa de falsos negativos para categorias sensíveis (conteúdo potencialmente inadequado) deve ser inferior a \textit{10\%} (\textit{recall} $\geq$ 0,90), priorizando a redução de exposição em detrimento de bloqueios excessivos. & Essencial \\ \hline
+RIA004 & A taxa de falsos positivos deve ser mantida abaixo de \textit{10\%}, de modo a preservar a usabilidade do sistema e evitar bloqueios indevidos de conteúdo legítimo. & Importante \\ \hline
+RIA005 & O tempo de inferência do modelo para o texto de uma única página deve ser inferior a \textit{500 milissegundos}, em hardware de referência estabelecido pela equipe. & Essencial \\ \hline
+RIA006 & O modelo deve ser treinado ou ajustado (\textit{fine-tuned}) a partir de uma base de dados textual rotulada, documentada quanto à origem, ao volume e à distribuição entre categorias. & Essencial \\ \hline
+RIA007 & O processo de treinamento deve utilizar conjuntos distintos de treino, validação e teste, evitando vazamento de dados (\textit{data leakage}) entre eles. & Essencial \\ \hline
+RIA008 & O modelo utilizado em cada classificação textual registrada deve ser identificável por versão, permitindo rastrear qual versão gerou determinado resultado. & Importante \\ \hline
+RIA009 & O sistema deve registrar o nível de confiança (\textit{score}) de cada classificação textual, possibilitando a definição de limiares (\textit{thresholds}) distintos por categoria no mecanismo de políticas. & Importante \\ \hline
+RIA010 & O desempenho do modelo diante de conteúdos ambíguos ou com pouco texto disponível deve ser avaliado e documentado, junto às limitações identificadas. & Importante \\ \hline
+RIA011 & O sistema deve permitir a reavaliação periódica do modelo de PLN com novos dados, sem comprometer a disponibilidade do mecanismo de classificação durante a atualização. & Desejável \\ \hline
 
 \caption{Requisitos Específicos do Modelo de Processamento de Linguagem Natural}
 \label{tab:requisitos-ia}
@@ -479,38 +651,20 @@ RIA11 & O sistema deve permitir a reavaliação periódica do modelo de PLN com 
 \textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
 \endhead
 
-RIC01 & O modelo de visão computacional deve atingir acurácia mínima de \textit{X\%} (a definir) no conjunto de teste, considerando as categorias de conteúdo estabelecidas pela equipe. & Essencial \\ \hline
-RIC02 & O modelo deve atingir F1-\textit{score} mínimo de \textit{X} (a definir) por categoria, priorizando o \textit{recall} nas categorias de conteúdo visual sensível. & Essencial \\ \hline
-RIC03 & A taxa de falsos negativos para categorias sensíveis (imagens potencialmente inadequadas) deve ser inferior a \textit{X\%} (a definir), priorizando a redução de exposição em detrimento de bloqueios excessivos. & Essencial \\ \hline
-RIC04 & A taxa de falsos positivos deve ser mantida abaixo de \textit{X\%} (a definir), de modo a preservar a usabilidade do sistema e evitar bloqueios indevidos de imagens legítimas. & Importante \\ \hline
-RIC05 & O tempo de inferência do modelo para uma única imagem deve ser inferior a \textit{X} milissegundos/segundos (a definir), em hardware de referência estabelecido pela equipe. & Essencial \\ \hline
-RIC06 & O modelo deve ser treinado ou ajustado (\textit{fine-tuned}) a partir de uma base de dados de imagens rotulada, documentada quanto à origem, ao volume e à distribuição entre categorias. & Essencial \\ \hline
-RIC07 & O processo de treinamento deve utilizar conjuntos distintos de treino, validação e teste, evitando vazamento de dados (\textit{data leakage}) entre eles. & Essencial \\ \hline
-RIC08 & O modelo utilizado em cada classificação de imagem registrada deve ser identificável por versão, permitindo rastrear qual versão gerou determinado resultado. & Importante \\ \hline
-RIC09 & O sistema deve registrar o nível de confiança (\textit{score}) de cada classificação de imagem, possibilitando a definição de limiares (\textit{thresholds}) distintos por categoria no mecanismo de políticas. & Importante \\ \hline
-RIC10 & O desempenho do modelo diante de imagens de baixa resolução, parcialmente carregadas ou de conteúdo ambíguo deve ser avaliado e documentado, junto às limitações identificadas. & Importante \\ \hline
-RIC11 & O sistema deve permitir a reavaliação periódica do modelo de visão computacional com novos dados, sem comprometer a disponibilidade do mecanismo de classificação durante a atualização. & Desejável \\ \hline
+RIC001 & O modelo de visão computacional deve atingir acurácia mínima de \textit{90\%} no conjunto de teste, considerando as categorias de conteúdo estabelecidas pela equipe. & Essencial \\ \hline
+RIC002 & O modelo deve atingir F1-\textit{score} mínimo de \textit{0,80} ($\geq$ 0,85 nas categorias sensíveis) por categoria, priorizando o \textit{recall} nas categorias de conteúdo visual sensível. & Essencial \\ \hline
+RIC003 & A taxa de falsos negativos para categorias sensíveis (imagens potencialmente inadequadas) deve ser inferior a \textit{5\%} (\textit{recall} $\geq$ 0,95), priorizando a redução de exposição em detrimento de bloqueios excessivos. & Essencial \\ \hline
+RIC004 & A taxa de falsos positivos deve ser mantida abaixo de \textit{5\%}, de modo a preservar a usabilidade do sistema e evitar bloqueios indevidos de imagens legítimas. & Importante \\ \hline
+RIC005 & O tempo de inferência do modelo para uma única imagem deve ser inferior a \textit{300 milissegundos}, em hardware de referência estabelecido pela equipe. & Essencial \\ \hline
+RIC006 & O modelo deve ser treinado ou ajustado (\textit{fine-tuned}) a partir de uma base de dados de imagens rotulada, documentada quanto à origem, ao volume e à distribuição entre categorias. & Essencial \\ \hline
+RIC007 & O processo de treinamento deve utilizar conjuntos distintos de treino, validação e teste, evitando vazamento de dados (\textit{data leakage}) entre eles. & Essencial \\ \hline
+RIC008 & O modelo utilizado em cada classificação de imagem registrada deve ser identificável por versão, permitindo rastrear qual versão gerou determinado resultado. & Importante \\ \hline
+RIC009 & O sistema deve registrar o nível de confiança (\textit{score}) de cada classificação de imagem, possibilitando a definição de limiares (\textit{thresholds}) distintos por categoria no mecanismo de políticas. & Importante \\ \hline
+RIC010 & O desempenho do modelo diante de imagens de baixa resolução, parcialmente carregadas ou de conteúdo ambíguo deve ser avaliado e documentado, junto às limitações identificadas. & Importante \\ \hline
+RIC011 & O sistema deve permitir a reavaliação periódica do modelo de visão computacional com novos dados, sem comprometer a disponibilidade do mecanismo de classificação durante a atualização. & Desejável \\ \hline
 
 \caption{Requisitos Específicos do Modelo de Visão Computacional}
 \label{tab:requisitos-ic}
-\end{longtable}
-
-\subsection{Integração entre as Modalidades Textual e Visual}
-
-\begin{longtable}{|p{1.7cm}|p{9.8cm}|p{2.1cm}|}
-\hline
-\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
-\endfirsthead
-\hline
-\textbf{Código} & \textbf{Descrição} & \textbf{Prioridade} \\ \hline
-\endhead
-
-RIM01 & A equipe deve definir e documentar o critério de consolidação (ex.: predomínio da categoria mais restritiva, combinação ponderada dos \textit{scores}) utilizado quando as classificações textual e de imagem de uma mesma página divergirem. & Essencial \\ \hline
-RIM02 & O sistema deve continuar operando e produzindo uma decisão de política válida quando apenas uma das modalidades (texto ou imagem) estiver disponível para uma página (ex.: página sem imagens relevantes ou sem texto suficiente). & Importante \\ \hline
-RIM03 & A avaliação do sistema deve reportar, além das métricas de cada modelo isoladamente, o impacto da combinação das duas modalidades sobre a acurácia e as taxas de falsos positivos/negativos da decisão final. & Importante \\ \hline
-
-\caption{Requisitos de Integração entre PLN e Visão Computacional}
-\label{tab:requisitos-integracao}
 \end{longtable}
 
 % ------------------------------------------------------------
