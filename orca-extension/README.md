@@ -15,19 +15,21 @@ Para ver o resultado: no card da extensão, clique em **service worker** e abra 
 
 Depois de mudar o código: `npm run build`, recarregue a extensão e **recarregue a aba**.
 
-## Servidor (Python)
+## Servidores (Python)
 
-```bash
-cd server
-python -m venv .venv
-.venv\Scripts\activate          # Windows   (Mac/Linux: source .venv/bin/activate)
-pip install -r requirements.txt
-uvicorn main:app --port 8000
-```
+O mesmo conteúdo é enviado para os dois servidores, cada um independente do outro
+(se um estiver fora do ar, o outro continua recebendo):
 
-Deixe rodando. A cada página aberta o terminal mostra `[ORCA] url | texto: … | imagens: …`.
-O endereço fica em `src/config.ts` (`serverUrl`) e a permissão em `public/manifest.json` (`host_permissions`);
-se mudar a porta, mude nos dois e rode `npm run build`.
+| IA | Endereço | Como subir (a partir de `models/`, com o `.venv` ativo) |
+|---|---|---|
+| imagem | `http://localhost:8000/content` | `python vision/pipeline.py` |
+| texto | `http://localhost:8001/classify/text` | `python server.py` |
+
+Deixe rodando. A cada página aberta o terminal de cada servidor mostra um resumo
+(`[ORCA] …` no de imagem, `[ORCA texto] …` no de texto), e o console do service worker
+mostra a resposta de cada um.
+Os endereços ficam em `src/config.ts` (`serverUrls`) e as permissões em `public/manifest.json`
+(`host_permissions`); se mudar uma porta, mude nos dois e rode `npm run build`.
 
 ## Arquivos
 

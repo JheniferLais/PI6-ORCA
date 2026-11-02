@@ -5,3 +5,6 @@ nlp/artifacts/**/*.safetensors
 nlp/artifacts/**/checkpoints/
 nlp/artifacts/*-teste/
 nlp/artifacts/*.anterior-*/
+.env
+.venv
+*.pyc

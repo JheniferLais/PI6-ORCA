@@ -1,28 +1,27 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from config import *
-from nlp.inferencia import Classificador
 
-app = FastAPI()
+from app.routes.analise import router as analise_router
+from app.routes.auth import router as auth_router
+from app.routes.logs import router as logs_router
+from nlp.nlp_router import router as nlp_router
+
+app = FastAPI(
+    title="Orca API",
+    description="API de controle parental e gerenciamento de logs",
+    version="1.0.0"
+)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-clf = Classificador(MODELO_NLP_PASTA)
+app.include_router(auth_router)  # /auth/register, /auth/login, /auth/me
+app.include_router(logs_router)  # /logs, /logs/stats, /logs/{id_log}
+app.include_router(nlp_router)   # POST /classify/
 
-@app.post("/classify/text", response_model=ClassificacaoResponse)
-def classify_text(req: TextoClassificacaoRequest):
+# app.include_router(img_router)   # POST /classify/img
+app.include_router(analise_router)  # POST /analyze (texto + imagem -> log)
 
-    # texto curto demais (ou vazio após normalizar) não é classificado
-    resultado = clf.classificar_longo(req.text) if len(req.text.split()) >= MIN_PALAVRAS else None
-    if resultado is None:
-        resultado = {"category": TEXTO_PEQUENO, "score": None}
 
-    return {
-        "modality": MODALIDADE_NLP,
-        "category": resultado["category"],
-        "score": resultado["score"],
-        "model_version": MODELO_NLP_VERSION
-    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8001)
