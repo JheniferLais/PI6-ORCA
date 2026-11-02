@@ -1,16 +1,17 @@
 """
 Normalização de texto do classificador de NLP (versão norm-v1).
 
-Função pura, sem dependências externas, para ser usada de forma idêntica no
-treinamento (treino.py) e, futuramente, na inferência (/classify/text).
+Função pura, sem dependências externas, usada de forma idêntica no treino
+(treino.py) e na inferência (inferencia.py).
 Qualquer mudança de regra deve incrementar VERSAO, porque um modelo só é
 coerente com a normalização com que foi treinado.
 
-Regras (S2-03):
+Regras:
   1. Unicode em forma NFC (acentos compostos).
   2. Remove links (http://, https:// e www.).
-  3. Remove o marcador "@user" do TuPyE (ver "Pontos de atenção" do README
-     de S2-02). Outras menções não existem no dataset e não são alteradas.
+  3. Remove o marcador "@user" do TuPyE (anonimização das menções; sem
+     isso o modelo pode aprender a fonte em vez do conteúdo). Outras
+     menções não existem no dataset e não são alteradas.
   4. Colapsa qualquer sequência de espaços/quebras de linha em um espaço e
      remove espaços nas pontas.
 

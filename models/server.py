@@ -2,30 +2,25 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import *
+from nlp.inferencia import Classificador
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-@app.post("/classify/text")
+clf = Classificador(MODELO_NLP_PASTA)
+
+@app.post("/classify/text", response_model=ClassificacaoResponse)
 def classify_text(req: TextoClassificacaoRequest):
 
-    # verifica se o texto tem tamanho minimo
-    if len(req.text.split()) < MIN_PALAVRAS:
-        return {
-            "modality": MODALIDADE_NLP,
-            "category": CATEGORIA_NAO_DEFINIDA,
-            "score": None,
-            "model_version": MODELO_NLP_VERSION
-        }
+    # texto curto demais (ou vazio após normalizar) não é classificado
+    resultado = clf.classificar_longo(req.text) if len(req.text.split()) >= MIN_PALAVRAS else None
+    if resultado is None:
+        resultado = {"category": TEXTO_PEQUENO, "score": None}
 
-    # classifica baseado na IA
-    categoria, score = classificar_texto(req.text)
-
-    # retorna o valor da IA
     return {
         "modality": MODALIDADE_NLP,
-        "category": categoria,
-        "score": score,
+        "category": resultado["category"],
+        "score": resultado["score"],
         "model_version": MODELO_NLP_VERSION
     }
 
