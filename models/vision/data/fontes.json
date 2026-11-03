@@ -1,0 +1,58 @@
+{
+  "_comentario": "Fontes do dataset de imagens. 'mapeamento' liga o nome de uma PASTA da fonte a uma classe (SFW, NSFW ou NSFL); pastas que não aparecem aqui são ignoradas e '*' pega qualquer imagem. Veja data/README.md.",
+  "fontes": [
+    {
+      "nome": "deepghs-nsfw-detect",
+      "ativa": true,
+      "tipo": "arquivo_url",
+      "url": "https://huggingface.co/datasets/deepghs/nsfw_detect/resolve/main/nsfw_dataset_v1.zip",
+      "arquivo": "deepghs_nsfw_dataset_v1.zip",
+      "mapeamento": {
+        "neutral": "SFW",
+        "drawing": "SFW",
+        "porn": "NSFW",
+        "hentai": "NSFW"
+      },
+      "pagina": "https://huggingface.co/datasets/deepghs/nsfw_detect",
+      "licenca": "MIT (declarada na página do dataset)",
+      "observacao": "Cinco pastas: drawing, hentai, neutral, porn, sexy. A pasta 'sexy' (sugestiva, não explícita) fica de fora de propósito: é a fronteira SFW/NSFW e rotulá-la de qualquer jeito contaminaria a avaliação."
+    },
+    {
+      "nome": "manual",
+      "ativa": true,
+      "tipo": "pasta_local",
+      "caminho": "manual",
+      "mapeamento": {
+        "SFW": "SFW",
+        "NSFW": "NSFW",
+        "NSFL": "NSFL"
+      },
+      "observacao": "Imagens que o grupo mesmo coletou e revisou, em data/datasets/manual/SFW, manual/NSFW e manual/NSFL. É o caminho recomendado para NSFL, que não tem fonte pública confiável. Se a pasta não existir, a fonte é pulada."
+    },
+    {
+      "nome": "gore-blood-neuralshell",
+      "ativa": false,
+      "tipo": "hf_repo",
+      "repo_id": "NeuralShell/Gore-Blood-Dataset-v1.0",
+      "mapeamento": {
+        "*": "NSFL"
+      },
+      "pagina": "https://huggingface.co/datasets/NeuralShell/Gore-Blood-Dataset-v1.0",
+      "licenca": "MIT (declarada na página do dataset)",
+      "observacao": "DESLIGADA de propósito. A página não documenta classes, origem nem contagem (menos de 1 mil imagens, marcada 'art', 'blood', 'death'), então rotular tudo como NSFL pode misturar ilustração e outros conteúdos. Antes de ligar: rode 'python -m vision dados --inspecionar --fontes ...' e revise o conteúdo. Requer 'pip install huggingface_hub'."
+    },
+    {
+      "nome": "imagenette-sfw-extra",
+      "ativa": false,
+      "tipo": "arquivo_url",
+      "url": "https://s3.amazonaws.com/fast-ai-imageclas/imagenette2-320.tgz",
+      "arquivo": "imagenette2-320.tgz",
+      "mapeamento": {
+        "*": "SFW"
+      },
+      "pagina": "https://github.com/fastai/imagenette",
+      "licenca": "não verificada (as imagens vêm do ImageNet; confira antes de redistribuir)",
+      "observacao": "DESLIGADA por padrão. Fotos comuns de 10 classes de objetos, útil para ter SFW fora do universo de arte/anime do deepghs. O endereço vem da documentação do fastai e não foi testado."
+    }
+  ]
+}

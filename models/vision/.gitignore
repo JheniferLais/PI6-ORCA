@@ -1,0 +1,4 @@
+# imagens (conteúdo explícito/violento!), downloads e resultados: NUNCA vão para o git
+data/datasets/
+__pycache__/
+*.pyc

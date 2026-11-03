@@ -1,13 +1,12 @@
 """
-ORCA — pipeline de imagens: recebe o POST da extensão, filtra as imagens e
-classifica cada uma como SFW / NSFW / NSFL com o image-safety-classifier-s.
+ORCA — pipeline de imagens (servidor): recebe o POST da extensão, filtra as imagens
+e devolve, para cada uma, as pontuações de SFW, NSFW e NSFL (3 floats de 0 a 1).
 
 Só imagens: o campo "text" que a extensão manda é ignorado.
 
-Como rodar (porta que a extensão espera: localhost:8000):
-    pip install fastapi uvicorn pillow timm torch
-    python pipeline.py
-    # ou: uvicorn pipeline:app --port 8000
+Como rodar (a partir de models/, porta que a extensão espera: localhost:8000):
+    pip install -r vision/requirements.txt
+    python -m vision                     # ou: python vision/pipeline.py
 
 Fluxo de cada POST /content (do mais barato pro mais caro, pra gastar o mínimo
 de tempo de modelo):
@@ -16,375 +15,317 @@ de tempo de modelo):
     2. agrupa URLs repetidas (o mesmo ícone 8x na página vira 1)
     3. cache por URL: a extensão reenvia a página a cada mudança no DOM, então
        o que já foi classificado volta na hora
-    4. limita as imagens novas às MAX_IMAGES_PER_PAGE maiores
+    4. limita as imagens novas às MAX_IMAGENS_POR_PAGINA maiores
     5. baixa em paralelo (data: URI é decodificado direto, sem rede)
     6. cache por conteúdo (hash dos bytes): URL diferente, mesma imagem -> 1 só
     7. UMA chamada do modelo em lote com tudo que sobrou
 
 Imagem que não deu pra baixar/abrir volta com status "error", NUNCA como SFW:
-quem decide o que fazer com isso é a camada de política, mais pra frente.
+quem decide o que fazer com isso é a camada de política (app/decisao.py).
+
+Resposta (uma entrada por imagem recebida, na ordem original):
+    {"index": 0, "src": "...", "status": "classified", "label": "NSFW",
+     "scores": {"SFW": 0.03, "NSFW": 0.95, "NSFL": 0.02}, "cached": false}
+    status: "classified" | "skipped" | "error"   (skipped/error trazem "reason")
+Mais "summary" (contagens e tempo) e "page" (resumo da página inteira, no formato
+das outras IAs: {"modality", "category", "score", "model_version"}).
 """
-import base64
 import hashlib
-import io
-import threading
+import sys
 import time
-from collections import Counter, OrderedDict
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, List, Optional
-from urllib.error import HTTPError
-from urllib.parse import unquote_to_bytes, urlparse
-from urllib.request import Request, urlopen
+
+if not __package__:
+    # executado como arquivo (python vision/pipeline.py): torna o pacote importável
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi import FastAPI
-from PIL import Image
 from pydantic import BaseModel
+
+from vision.cache import CacheLRU
+from vision.classificador import (CLASSES, GRAVIDADE, MODALIDADE, MODELO_VERSAO,
+                                  Classificador, Pontuacoes)
+from vision.download import abrir_imagem, baixar
+from vision.filtro import motivo_rejeicao
 
 # ---------- Configuração (ajuste aqui e reinicie o servidor) ----------
 
-HOST, PORT = "127.0.0.1", 8000
+HOST, PORTA = "127.0.0.1", 8000
 
-MODEL_ID = "hf-hub:OwenElliott/image-safety-classifier-s"
-
-MIN_SIDE = 100              # lado mínimo (px); a extensão já filtra, aqui é segunda camada
-MIN_AREA = 10_000
-MAX_ASPECT_RATIO = 8.0      # banners/divisórias (ex.: 1600x100) não vão pro modelo
-MAX_IMAGES_PER_PAGE = 15    # máximo de imagens NOVAS (fora do cache) por requisição
-
-DOWNLOAD_TIMEOUT_S = 5
-MAX_DOWNLOAD_BYTES = 10 * 1024 * 1024
-DOWNLOAD_WORKERS = 8
-BATCH_SIZE = 8              # imagens por chamada do modelo
-DRAFT_SIZE = 448            # JPEG grande é decodificado já reduzido (bem mais rápido)
-CACHE_SIZE = 2000
-ERROR_RETRY_S = 60          # URL que falhou não é tentada de novo por este tempo
-USER_AGENT = "Mozilla/5.0"
-
-Image.MAX_IMAGE_PIXELS = 50_000_000  # proteção contra "decompression bomb"
+MAX_IMAGENS_POR_PAGINA = 15   # máximo de imagens NOVAS (fora do cache) por requisição
+TAMANHO_CACHE = 2000
+TRABALHADORES_DOWNLOAD = 8
+REPETIR_ERRO_APOS_S = 60      # URL que falhou não é tentada de novo por este tempo
+CASAS_DECIMAIS = 4            # arredondamento dos scores na resposta
 
 
-# ---------- Modelo ----------
+# ---------- Entrada (o que a extensão manda) ----------
 
-class Classifier:
-    """Carrega o modelo UMA vez (no startup) e classifica em lote."""
-
-    def __init__(self, model_id: str = MODEL_ID):
-        import timm
-        import torch
-
-        self.torch = torch
-        self.model = timm.create_model(model_id, pretrained=True).eval()
-        config = timm.data.resolve_model_data_config(self.model)
-        self.transform = timm.data.create_transform(**config, is_training=False)
-        self.labels: List[str] = list(self.model.pretrained_cfg["label_names"])
-        self.lock = threading.Lock()  # 1 inferência por vez, mesmo com POSTs simultâneos
-        self.predict([self.preprocess(Image.new("RGB", (224, 224)))])  # aquecimento
-
-    def preprocess(self, img: Image.Image):
-        return self.transform(img)
-
-    def predict(self, tensors: list) -> List[List[float]]:
-        out: List[List[float]] = []
-        with self.lock, self.torch.inference_mode():
-            for i in range(0, len(tensors), BATCH_SIZE):
-                batch = self.torch.stack(tensors[i:i + BATCH_SIZE])
-                out.extend(self.model(batch).softmax(dim=-1).cpu().tolist())
-        return out
-
-
-CLASSIFIER: Optional[Classifier] = None
-
-
-# ---------- Cache (LRU simples) ----------
-
-class LRU:
-    def __init__(self, size: int):
-        self.size = size
-        self.data: "OrderedDict[str, dict]" = OrderedDict()
-        self.lock = threading.Lock()
-
-    def get(self, key: str) -> Optional[dict]:
-        with self.lock:
-            value = self.data.get(key)
-            if value is not None:
-                self.data.move_to_end(key)
-            return value
-
-    def set(self, key: str, value: dict) -> None:
-        with self.lock:
-            self.data[key] = value
-            self.data.move_to_end(key)
-            while len(self.data) > self.size:
-                self.data.popitem(last=False)
-
-
-URL_CACHE = LRU(CACHE_SIZE)      # sha1(url)   -> resultado
-CONTENT_CACHE = LRU(CACHE_SIZE)  # sha1(bytes) -> resultado
-ERROR_CACHE = LRU(CACHE_SIZE)    # sha1(url)   -> falha recente (evita re-tentar a cada repost)
-EXECUTOR = ThreadPoolExecutor(max_workers=DOWNLOAD_WORKERS)
-
-
-# ---------- Filtro (sem rede, sem modelo) ----------
-
-@dataclass
-class Candidate:
-    key: str                      # sha1 da URL
-    src: str
-    width: int
-    height: int
-    indices: List[int] = field(default_factory=list)  # posições dessa URL no POST
-
-
-def _sha1(data) -> str:
-    if isinstance(data, str):
-        data = data.encode("utf-8")
-    return hashlib.sha1(data).hexdigest()
-
-
-def reject_reason(src: str, width: int, height: int) -> Optional[str]:
-    if src.startswith("data:"):
-        if not src.startswith("data:image/"):
-            return "data_uri_nao_e_imagem"
-        if src.startswith("data:image/svg"):
-            return "svg"
-    else:
-        parsed = urlparse(src)
-        if parsed.scheme not in ("http", "https"):
-            return "esquema_nao_suportado"  # blob:, file:, etc. — o servidor não alcança
-        if parsed.path.lower().endswith(".svg"):
-            return "svg"                    # vetor/ícone; o PIL nem abre
-
-    if min(width, height) < MIN_SIDE or width * height < MIN_AREA:
-        return "pequena_demais"
-    if max(width, height) / max(1, min(width, height)) > MAX_ASPECT_RATIO:
-        return "proporcao_extrema"
-    return None
-
-
-def select_images(images: List["ImageIn"], skipped: Dict[int, str]) -> List[Candidate]:
-    """Remove o que não vale classificar e agrupa URLs repetidas."""
-    by_key: Dict[str, Candidate] = {}
-    for i, img in enumerate(images):
-        reason = reject_reason(img.src, img.width, img.height)
-        if reason:
-            skipped[i] = reason
-            continue
-        key = _sha1(img.src)
-        if key in by_key:
-            by_key[key].indices.append(i)
-        else:
-            by_key[key] = Candidate(key, img.src, img.width, img.height, [i])
-    return list(by_key.values())
-
-
-# ---------- Download / decodificação ----------
-
-def fetch_bytes(src: str, referer: str) -> bytes:
-    if src.startswith("data:"):
-        header, _, payload = src.partition(",")
-        data = base64.b64decode(payload) if ";base64" in header else unquote_to_bytes(payload)
-    else:
-        headers = {"User-Agent": USER_AGENT, "Accept": "image/*,*/*;q=0.5"}
-        if referer:
-            headers["Referer"] = referer[:2000]  # alguns CDNs bloqueiam hotlink sem isso
-        with urlopen(Request(src, headers=headers), timeout=DOWNLOAD_TIMEOUT_S) as resp:
-            data = resp.read(MAX_DOWNLOAD_BYTES + 1)
-    if len(data) > MAX_DOWNLOAD_BYTES:
-        raise ValueError("arquivo_grande_demais")
-    return data
-
-
-def fetch(cand: Candidate, referer: str):
-    try:
-        return cand, fetch_bytes(cand.src, referer), None
-    except HTTPError as e:
-        return cand, None, f"download_falhou:http_{e.code}"
-    except Exception as e:
-        return cand, None, f"download_falhou:{type(e).__name__}"
-
-
-def decode_image(data: bytes) -> Image.Image:
-    img = Image.open(io.BytesIO(data))
-    img.draft("RGB", (DRAFT_SIZE, DRAFT_SIZE))  # só afeta JPEG; ignora o resto
-    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
-        rgba = img.convert("RGBA")              # fundo branco em vez de preto nas transparências
-        bg = Image.new("RGB", rgba.size, (255, 255, 255))
-        bg.paste(rgba, mask=rgba.split()[-1])
-        return bg
-    return img.convert("RGB")
-
-
-def to_result(labels: List[str], probs: List[float]) -> dict:
-    best = max(range(len(probs)), key=probs.__getitem__)
-    return {
-        "status": "classified",
-        "label": labels[best],
-        "scores": {name: round(p, 4) for name, p in zip(labels, probs)},
-    }
-
-
-def _short(src: str) -> str:
-    return src if len(src) <= 100 else src[:100] + "…"
-
-
-# ---------- Pipeline ----------
-
-def process(content: "ContentIn") -> dict:
-    t0 = time.perf_counter()
-    classifier = CLASSIFIER
-    images = content.images
-    skipped: Dict[int, str] = {}
-    outcome: Dict[str, dict] = {}   # sha1(url) -> resultado
-    cache_hits = downloaded = 0
-
-    cands = select_images(images, skipped)
-
-    # cache por URL
-    misses: List[Candidate] = []
-    for c in cands:
-        hit = URL_CACHE.get(c.key)
-        if hit:
-            outcome[c.key] = {**hit, "cached": True}
-            cache_hits += 1
-        else:
-            err = ERROR_CACHE.get(c.key)
-            if err and time.monotonic() - err["t"] < ERROR_RETRY_S:
-                outcome[c.key] = {"status": "error", "reason": err["reason"], "cached": True}
-            else:
-                misses.append(c)
-
-    # limite de imagens novas: as maiores primeiro
-    misses.sort(key=lambda c: c.width * c.height, reverse=True)
-    for c in misses[MAX_IMAGES_PER_PAGE:]:
-        outcome[c.key] = {"status": "skipped", "reason": "limite_por_pagina"}
-    misses = misses[:MAX_IMAGES_PER_PAGE]
-
-    # download em paralelo + cache por conteúdo + decodificação
-    pending: Dict[str, List[Candidate]] = {}  # sha1(bytes) -> URLs com esse conteúdo
-    order: List[str] = []
-    tensors: list = []
-    fetched = list(EXECUTOR.map(lambda c: fetch(c, content.url), misses)) if misses else []
-    for c, data, err in fetched:
-        if err:
-            outcome[c.key] = {"status": "error", "reason": err}
-            continue
-        downloaded += 1
-        ck = _sha1(data)
-        hit = CONTENT_CACHE.get(ck)
-        if hit:
-            URL_CACHE.set(c.key, hit)
-            outcome[c.key] = {**hit, "cached": True}
-            cache_hits += 1
-        elif ck in pending:
-            pending[ck].append(c)
-        else:
-            try:
-                tensors.append(classifier.preprocess(decode_image(data)))
-            except Exception:
-                outcome[c.key] = {"status": "error", "reason": "imagem_invalida"}
-                continue
-            pending[ck] = [c]
-            order.append(ck)
-
-    # uma chamada do modelo, em lote, com tudo que sobrou
-    if tensors:
-        try:
-            probs = classifier.predict(tensors)
-        except Exception as e:
-            for ck in order:
-                for c in pending[ck]:
-                    outcome[c.key] = {"status": "error", "reason": f"falha_no_modelo:{type(e).__name__}"}
-        else:
-            for ck, p in zip(order, probs):
-                result = to_result(classifier.labels, p)
-                CONTENT_CACHE.set(ck, result)
-                for c in pending[ck]:
-                    URL_CACHE.set(c.key, result)
-                    outcome[c.key] = {**result, "cached": False}
-
-    # lembra as falhas por um tempo (menos erro do modelo, que não é culpa da imagem)
-    for c in misses:
-        o = outcome.get(c.key)
-        if o and o["status"] == "error" and not o["reason"].startswith("falha_no_modelo"):
-            ERROR_CACHE.set(c.key, {"reason": o["reason"], "t": time.monotonic()})
-
-    # monta a resposta, uma entrada por imagem recebida, na ordem original
-    by_index: Dict[int, dict] = {}
-    for c in cands:
-        base = outcome.get(c.key, {"status": "error", "reason": "sem_resultado"})
-        for j, idx in enumerate(c.indices):
-            entry = {"index": idx, "src": _short(c.src), **base}
-            if j:
-                entry["duplicate_of"] = c.indices[0]
-            by_index[idx] = entry
-    for idx, reason in skipped.items():
-        by_index[idx] = {"index": idx, "src": _short(images[idx].src), "status": "skipped", "reason": reason}
-
-    results = [by_index[i] for i in sorted(by_index)]
-    count = lambda s: sum(1 for r in results if r["status"] == s)
-    return {
-        "ok": True,
-        "url": content.url,
-        "summary": {
-            "received": len(images),
-            "classified": count("classified"),
-            "skipped": count("skipped"),
-            "errors": count("error"),
-            "cache_hits": cache_hits,
-            "downloaded": downloaded,
-            "elapsed_ms": round((time.perf_counter() - t0) * 1000),
-        },
-        "images": results,
-    }
-
-
-# ---------- Servidor / rota ----------
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI):
-    global CLASSIFIER
-    if CLASSIFIER is None:
-        CLASSIFIER = Classifier()  # baixa/carrega o modelo uma vez só
-    yield
-
-
-app = FastAPI(lifespan=lifespan)
-
-
-class ImageIn(BaseModel):
+class ImagemEntrada(BaseModel):
     src: str
     alt: Optional[str] = None
     width: int
     height: int
 
 
-class ContentIn(BaseModel):
+class ConteudoEntrada(BaseModel):
     url: str
     title: str = ""
     timestamp: str = ""
-    images: List[ImageIn]
+    images: List[ImagemEntrada]
     # "text" fica de fora de propósito: o pydantic ignora campos extras
 
 
-@app.post("/content")
-def receive(content: ContentIn):
-    response = process(content)
-    s = response["summary"]
-    votes = Counter(i["label"] for i in response["images"] if i["status"] == "classified")
-    gravidade = {"SFW": 0, "NSFW": 1, "NSFL": 2}  # empate -> o pior ganha
-    maioria = max(votes, key=lambda k: (votes[k], gravidade[k])) if votes else "—"
+# ---------- Pipeline ----------
+
+@dataclass
+class Candidata:
+    chave: str                    # sha1 da URL
+    src: str
+    largura: int
+    altura: int
+    indices: List[int] = field(default_factory=list)  # posições dessa URL no POST
+
+
+def _sha1(dados) -> str:
+    if isinstance(dados, str):
+        dados = dados.encode("utf-8")
+    return hashlib.sha1(dados).hexdigest()
+
+
+def _encurtar(src: str) -> str:
+    return src if len(src) <= 100 else src[:100] + "…"
+
+
+def resultado_da_pontuacao(pontuacoes: Pontuacoes) -> dict:
+    """Pontuações -> entrada da resposta (e do cache)."""
+    return {
+        "status": "classified",
+        "label": pontuacoes.categoria,
+        "scores": {c: round(v, CASAS_DECIMAIS) for c, v in pontuacoes.como_dict().items()},
+    }
+
+
+def agrupar_candidatas(imagens: List[ImagemEntrada], puladas: Dict[int, str]) -> List[Candidata]:
+    """Tira o que não vale classificar (motivo em 'puladas') e agrupa URLs repetidas."""
+    por_chave: Dict[str, Candidata] = {}
+    for i, imagem in enumerate(imagens):
+        motivo = motivo_rejeicao(imagem.src, imagem.width, imagem.height)
+        if motivo:
+            puladas[i] = motivo
+            continue
+        chave = _sha1(imagem.src)
+        if chave in por_chave:
+            por_chave[chave].indices.append(i)
+        else:
+            por_chave[chave] = Candidata(chave, imagem.src, imagem.width, imagem.height, [i])
+    return list(por_chave.values())
+
+
+def resumir_pagina(resultados: List[dict]) -> dict:
+    """Resume a página no formato das outras IAs, pronto para app/decisao.py.
+
+    Vale a imagem mais grave: se alguma não é SFW, a página recebe a classe e a
+    probabilidade da pior delas; se todas são SFW, recebe SFW com a probabilidade
+    da imagem MENOS segura de si (mesma ideia do classificar_longo do NLP).
+    Sem nenhuma imagem classificada, score é None e a IA fica de fora da decisão."""
+    classificadas = [r for r in resultados if r["status"] == "classified"]
+    base = {"modality": MODALIDADE, "model_version": MODELO_VERSAO}
+    if not classificadas:
+        return {**base, "category": "indefinido", "score": None}
+    inseguras = [r for r in classificadas if r["label"] != "SFW"]
+    if inseguras:
+        pior = max(inseguras, key=lambda r: (r["scores"][r["label"]], GRAVIDADE[r["label"]]))
+        return {**base, "category": pior["label"], "score": pior["scores"][pior["label"]]}
+    return {**base, "category": "SFW", "score": min(r["scores"]["SFW"] for r in classificadas)}
+
+
+class PipelineImagens:
+    """Filtra, baixa, classifica e guarda em cache. Uma instância por servidor."""
+
+    def __init__(self, classificador, tamanho_cache: int = TAMANHO_CACHE,
+                 max_imagens_por_pagina: int = MAX_IMAGENS_POR_PAGINA,
+                 trabalhadores: int = TRABALHADORES_DOWNLOAD):
+        self.classificador = classificador            # qualquer objeto com preparar() e pontuar()
+        self.max_imagens_por_pagina = max_imagens_por_pagina
+        self.cache_url = CacheLRU(tamanho_cache)       # sha1(url)   -> resultado
+        self.cache_conteudo = CacheLRU(tamanho_cache)  # sha1(bytes) -> resultado
+        self.cache_erros = CacheLRU(tamanho_cache)     # sha1(url)   -> falha recente
+        self._executor = ThreadPoolExecutor(max_workers=trabalhadores)
+
+    def processar(self, conteudo: ConteudoEntrada) -> dict:
+        inicio = time.perf_counter()
+        imagens = conteudo.images
+        puladas: Dict[int, str] = {}
+        resultados: Dict[str, dict] = {}          # sha1(url) -> resultado
+        contagem = {"acertos_cache": 0, "baixadas": 0}
+
+        candidatas = agrupar_candidatas(imagens, puladas)
+        novas = self._separar_cache(candidatas, resultados, contagem)
+        novas = self._limitar_por_pagina(novas, resultados)
+        self._baixar_e_classificar(novas, conteudo.url, resultados, contagem)
+        self._lembrar_erros(novas, resultados)
+        return self._montar_resposta(conteudo.url, imagens, candidatas, puladas,
+                                     resultados, contagem, inicio)
+
+    # --- etapas ---
+
+    def _separar_cache(self, candidatas, resultados, contagem) -> List[Candidata]:
+        """Preenche o que já está em cache e devolve só as candidatas realmente novas."""
+        novas: List[Candidata] = []
+        for cand in candidatas:
+            acerto = self.cache_url.obter(cand.chave)
+            if acerto:
+                resultados[cand.chave] = {**acerto, "cached": True}
+                contagem["acertos_cache"] += 1
+                continue
+            erro = self.cache_erros.obter(cand.chave)
+            if erro and time.monotonic() - erro["t"] < REPETIR_ERRO_APOS_S:
+                resultados[cand.chave] = {"status": "error", "reason": erro["reason"], "cached": True}
+            else:
+                novas.append(cand)
+        return novas
+
+    def _limitar_por_pagina(self, novas, resultados) -> List[Candidata]:
+        """Mantém as MAIORES imagens novas; as demais são puladas."""
+        novas = sorted(novas, key=lambda c: c.largura * c.altura, reverse=True)
+        for cand in novas[self.max_imagens_por_pagina:]:
+            resultados[cand.chave] = {"status": "skipped", "reason": "limite_por_pagina"}
+        return novas[:self.max_imagens_por_pagina]
+
+    def _baixar_e_classificar(self, novas, url_da_pagina, resultados, contagem) -> None:
+        if not novas:
+            return
+        baixadas = list(self._executor.map(lambda c: (c, *baixar(c.src, url_da_pagina)), novas))
+
+        aguardando: Dict[str, List[Candidata]] = {}   # sha1(bytes) -> URLs com esse conteúdo
+        ordem: List[str] = []
+        tensores: list = []
+        for cand, dados, erro in baixadas:
+            if erro:
+                resultados[cand.chave] = {"status": "error", "reason": erro}
+                continue
+            contagem["baixadas"] += 1
+            chave_conteudo = _sha1(dados)
+            acerto = self.cache_conteudo.obter(chave_conteudo)
+            if acerto:
+                self.cache_url.guardar(cand.chave, acerto)
+                resultados[cand.chave] = {**acerto, "cached": True}
+                contagem["acertos_cache"] += 1
+            elif chave_conteudo in aguardando:
+                aguardando[chave_conteudo].append(cand)
+            else:
+                try:
+                    tensores.append(self.classificador.preparar(abrir_imagem(dados)))
+                except Exception:
+                    resultados[cand.chave] = {"status": "error", "reason": "imagem_invalida"}
+                    continue
+                aguardando[chave_conteudo] = [cand]
+                ordem.append(chave_conteudo)
+
+        if not tensores:
+            return
+        try:
+            pontuacoes = self.classificador.pontuar(tensores)        # UMA chamada, em lote
+        except Exception as erro:
+            for chave_conteudo in ordem:
+                for cand in aguardando[chave_conteudo]:
+                    resultados[cand.chave] = {"status": "error",
+                                              "reason": f"falha_no_modelo:{type(erro).__name__}"}
+            return
+        for chave_conteudo, pontuacao in zip(ordem, pontuacoes):
+            resultado = resultado_da_pontuacao(pontuacao)
+            self.cache_conteudo.guardar(chave_conteudo, resultado)
+            for cand in aguardando[chave_conteudo]:
+                self.cache_url.guardar(cand.chave, resultado)
+                resultados[cand.chave] = {**resultado, "cached": False}
+
+    def _lembrar_erros(self, novas, resultados) -> None:
+        """Guarda as falhas por um tempo (menos erro do modelo, que não é culpa da imagem)."""
+        for cand in novas:
+            resultado = resultados.get(cand.chave)
+            if (resultado and resultado["status"] == "error"
+                    and not resultado["reason"].startswith("falha_no_modelo")):
+                self.cache_erros.guardar(cand.chave, {"reason": resultado["reason"], "t": time.monotonic()})
+
+    @staticmethod
+    def _montar_resposta(url, imagens, candidatas, puladas, resultados, contagem, inicio) -> dict:
+        """Uma entrada por imagem recebida, na ordem original."""
+        por_indice: Dict[int, dict] = {}
+        for cand in candidatas:
+            base = resultados.get(cand.chave, {"status": "error", "reason": "sem_resultado"})
+            for posicao, indice in enumerate(cand.indices):
+                entrada = {"index": indice, "src": _encurtar(cand.src), **base}
+                if posicao:
+                    entrada["duplicate_of"] = cand.indices[0]
+                por_indice[indice] = entrada
+        for indice, motivo in puladas.items():
+            por_indice[indice] = {"index": indice, "src": _encurtar(imagens[indice].src),
+                                  "status": "skipped", "reason": motivo}
+
+        lista = [por_indice[i] for i in sorted(por_indice)]
+        quantas = lambda status: sum(1 for r in lista if r["status"] == status)
+        return {
+            "ok": True,
+            "url": url,
+            "summary": {
+                "received": len(imagens),
+                "classified": quantas("classified"),
+                "skipped": quantas("skipped"),
+                "errors": quantas("error"),
+                "cache_hits": contagem["acertos_cache"],
+                "downloaded": contagem["baixadas"],
+                "elapsed_ms": round((time.perf_counter() - inicio) * 1000),
+            },
+            "page": resumir_pagina(lista),
+            "images": lista,
+        }
+
+
+# ---------- Servidor ----------
+
+def registrar(url: str, resposta: dict) -> None:
+    """Uma linha de resumo no terminal por página."""
+    s = resposta["summary"]
+    votos = Counter(i["label"] for i in resposta["images"] if i["status"] == "classified")
+    maioria = max(votos, key=lambda k: (votos[k], GRAVIDADE[k])) if votos else "—"   # empate: o pior ganha
     print(
-        f"[ORCA] {content.url[:80]} | recebidas: {s['received']} | classificadas: {s['classified']} "
+        f"[ORCA] {url[:80]} | recebidas: {s['received']} | classificadas: {s['classified']} "
         f"(cache: {s['cache_hits']}) | puladas: {s['skipped']} | erros: {s['errors']} | {s['elapsed_ms']} ms\n"
-        f"       -> maioria: {maioria} | "
-        + " | ".join(f"{k}: {votes.get(k, 0)}" for k in ("SFW", "NSFW", "NSFL"))
+        f"       -> maioria: {maioria} | " + " | ".join(f"{c}: {votos.get(c, 0)}" for c in CLASSES)
     )
-    return response
+
+
+def criar_app(pipeline: Optional[PipelineImagens] = None) -> FastAPI:
+    """Monta o app. Sem 'pipeline', o modelo é carregado na subida do servidor."""
+
+    @asynccontextmanager
+    async def ciclo_de_vida(app: FastAPI):
+        if app.state.pipeline is None:
+            app.state.pipeline = PipelineImagens(Classificador())   # baixa/carrega o modelo uma vez só
+        yield
+
+    app = FastAPI(title="ORCA — imagens", lifespan=ciclo_de_vida)
+    app.state.pipeline = pipeline
+
+    @app.post("/content")
+    def receber(conteudo: ConteudoEntrada):
+        resposta = app.state.pipeline.processar(conteudo)
+        registrar(conteudo.url, resposta)
+        return resposta
+
+    return app
+
+
+app = criar_app()
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host=HOST, port=PORT)
+    uvicorn.run(app, host=HOST, port=PORTA)
