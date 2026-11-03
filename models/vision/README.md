@@ -105,6 +105,49 @@ Classe sem nenhuma imagem real (NSFL, enquanto não houver exemplos revisados) a
 
 O número que o autor do modelo reporta (97,99% de acurácia) vem de um conjunto próprio e privado, **não** do nosso. A nossa avaliação é a que vale para o ORCA.
 
+## Resultados (vision-v1, conjunto de teste)
+
+Modelo pré-treinado `OwenElliott/image-safety-classifier-s`, **sem treino nosso**, avaliado em 158 imagens do nosso dataset (`python -m vision dados --max-por-classe 500` e `python -m vision avaliar`, seed 42).
+
+| Divisão | SFW | NSFW | NSFL | Total |
+|---|---|---|---|---|
+| Treino | 350 | 350 | 36 | 736 |
+| Validação | 75 | 75 | 8 | 158 |
+| Teste | 75 | 75 | 8 | 158 |
+
+(O modelo não é treinado aqui, então só o teste importa; treino e validação existem por compatibilidade com o pipeline do NLP.)
+
+Matriz de confusão (linhas = real, colunas = previsto):
+
+|  | SFW | NSFW | NSFL |
+|---|---|---|---|
+| **SFW** | 73 | 2 | 0 |
+| **NSFW** | 2 | 73 | 0 |
+| **NSFL** | 1 | 0 | 7 |
+
+| Classe | Precisão | Recall | F1 | Reais |
+|---|---|---|---|---|
+| SFW | 0,9605 | 0,9733 | 0,9669 | 75 |
+| NSFW | 0,9733 | 0,9733 | 0,9733 | 75 |
+| NSFL | 1,0000 | 0,8750 | 0,9333 | 8 |
+
+**macro F1 = 0,9579 | acurácia = 0,9684**
+
+Seguro × inseguro (NSFW ou NSFL contra SFW), a métrica que mais importa para controle parental: **recall 0,9639** (80 de 83 inseguras pegas; as 3 que passaram foram classificadas como SFW), precisão 0,9756 e **falso alarme de 0,0267** (2 de 75 imagens SFW marcadas como inseguras).
+
+Probabilidade média dada à classe real: SFW 0,89, NSFW 0,90, NSFL 0,81. O score não foi calibrado.
+
+### Leitura, com as ressalvas
+
+- **NSFL tem só 8 imagens no teste.** Cada imagem vale 12,5 pontos de recall, então 0,875 (7 de 8) tem margem de erro enorme. Os números dessa classe mostram que o modelo funciona, mas não permitem comparar com precisão.
+- **As imagens de NSFL foram coletadas e revisadas por nós** (52 no total), sem fonte pública de referência. [Descreva aqui como foram coletadas.]
+- **SFW e NSFW vêm do dataset `deepghs/nsfw_detect`**, rotuladas pela pasta de origem, sem revisão humana. Sorteamos 500 de cada classe entre as 16.715 aceitas.
+- **A pasta `sexy` (conteúdo sugestivo, não explícito) ficou de fora de propósito.** É a fronteira entre SFW e NSFW, onde o modelo mais erra, então os números de SFW e NSFW são **mais otimistas do que seriam em conteúdo ambíguo**.
+- **Não dá para descartar sobreposição** entre as imagens do deepghs e o conjunto privado de treino do autor do modelo, o que também favoreceria o resultado.
+- O dataset é majoritariamente arte e anime. Em páginas reais (screenshots, memes, fotos de rede social), o desempenho pode ser pior.
+- O autor reporta 97,99% de acurácia, mas em um conjunto privado dele. O nosso 96,84% é do mesmo patamar, mas os números **não são comparáveis**.
+- Latência e comportamento do servidor em páginas reais não foram medidos nesta avaliação.
+
 ## Integração com o backend
 
 Hoje o `POST /analyze` (`app/routes/analise.py`) usa `vision/simulado.py`, que **sorteia** o resultado a partir da URL, enquanto a extensão chama este servidor (porta 8000) e o backend (porta 8001) separadamente. Os dois não se falam. O `page` foi feito para o caso de ligar os dois: a troca em `analise.py` é fornecer uma função que devolva o `page` do `PipelineImagens`, com a mesma assinatura da simulada. Isso **não foi alterado** nesta etapa.
