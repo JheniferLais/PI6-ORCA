@@ -3,3 +3,7 @@ uvicorn
 pillow
 timm
 torch
+# só para os testes do servidor (TestClient do FastAPI)
+httpx
+# só para ligar a fonte hf_repo em data/fontes.json
+# huggingface_hub
