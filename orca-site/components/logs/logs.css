@@ -6,13 +6,23 @@
   --amarelo: var(--orca-amarelo);
   background: #fff;
   color: #000;
-  min-height: 100vh;
-  padding: 32px 32px 80px;
-  font-size: 16px;
+  /* página inteira sem rolagem: a lista ocupa o espaço que sobra */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 40px 40px;
+  font-size: 15px;
   line-height: 1.4;
 }
 
 .logs-conteudo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -23,8 +33,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
-  margin-bottom: 32px;
+  flex: none;
+  height: 44px;
+  margin-bottom: 20px;
 }
 .logs-marca {
   font-family: var(--font-pixelify), monospace;
@@ -42,19 +53,18 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 48px;
+  width: 44px;
   height: auto;
-  filter: invert(1);
 }
 .logs-config {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   background: #000;
   color: #fff;
 }
-.logs-config svg {
+.logs-config img {
   width: 55%;
   height: 55%;
 }
@@ -62,38 +72,40 @@
 /* ---------- cartões de números ---------- */
 .logs-numeros {
   display: flex;
+  flex: none;
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 .logs-numero {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 104px;
-  padding: 0 28px;
+  height: 80px;
+  padding: 0 24px;
   border: 2px solid #000;
 }
 .logs-numero strong {
   display: block;
   font-family: var(--font-plex-mono), monospace;
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .logs-periodoResumo {
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
   margin-bottom: 8px;
 }
 .logs-numero span {
   display: block;
-  font-size: 18px;
+  font-size: 15px;
   margin-top: 4px;
 }
-.logs-numero svg {
-  width: 28px;
+.logs-numero svg,
+.logs-numero img {
+  width: 30px;
   height: auto;
 }
 .logs-numeroBloqueio {
@@ -117,28 +129,32 @@
 .logs-rotulo {
   display: block;
   font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 8px;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 .logs-busca {
   width: 100%;
-  height: 44px;
-  padding: 0 20px;
+  height: 40px;
+  padding: 0 18px;
   border: 2px solid #000;
   border-radius: 999px;
   background: #fff;
   font: inherit;
-  font-size: 15px;
-  margin-bottom: 24px;
+  font-size: 14px;
 }
 .logs-busca::placeholder {
   color: #777;
 }
+.logs-campoBusca {
+  flex: 1 1 280px;
+  min-width: 0;
+}
 .logs-filtros {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px 32px;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  gap: 16px 28px;
+  margin-bottom: 20px;
 }
 .logs-grupo {
   display: flex;
@@ -146,7 +162,7 @@
 }
 .logs-opcao {
   height: 40px;
-  padding: 0 20px;
+  padding: 0 18px;
   border: 2px solid #000;
   background: #fff;
   font: inherit;
@@ -162,7 +178,7 @@
   display: flex;
   align-items: center;
   height: 40px;
-  min-width: 200px;
+  min-width: 190px;
   border: 2px solid #000;
   background: #fff;
 }
@@ -184,7 +200,7 @@
 .logs-selecao .logs-iconeEsq {
   position: absolute;
   left: 12px;
-  width: 16px;
+  width: 18px;
   height: auto;
   pointer-events: none;
 }
@@ -204,9 +220,19 @@
 }
 .logs-lista {
   position: relative;
+  flex: 1;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
   border: 2px solid #000;
-  padding: 8px 20px 56px;
-  min-height: 240px;
+  padding: 6px 20px 52px;
+}
+/* área das ocorrências: a quantidade por página é calculada para caber aqui;
+   só rola por dentro se um item aberto passar da altura */
+.logs-itens {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 .logs-item {
   border-bottom: 2px solid #000;
@@ -217,9 +243,9 @@
 .logs-linha {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   width: 100%;
-  padding: 16px;
+  padding: 14px 14px;
   text-align: left;
   background: transparent;
   font: inherit;
@@ -231,13 +257,15 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   color: #fff;
 }
-.logs-selo svg {
-  width: 52%;
+.logs-selo img {
+  width: 60%;
   height: auto;
+  /* deixa o ícone branco sobre o fundo colorido */
+  filter: brightness(0) invert(1);
 }
 .logs-selo.logs-vermelho {
   background: var(--vermelho);
@@ -255,7 +283,7 @@
   flex-wrap: wrap;
   gap: 8px;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
 }
 .logs-tag {
   padding: 2px 6px;
@@ -273,20 +301,23 @@
   margin-top: 4px;
   font-size: 14px;
   overflow-wrap: anywhere;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .logs-quando {
   flex: none;
-  width: 140px;
-  margin-right: 48px;
+  width: 120px;
+  margin-right: 32px;
 }
 .logs-quando strong {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
 }
 .logs-quando span {
   display: block;
   margin-top: 4px;
-  font-size: 14px;
+  font-size: 13px;
 }
 .logs-abrir {
   flex: none;
@@ -301,14 +332,14 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px 24px;
-  margin: 0 16px 16px 80px;
-  padding: 14px 18px;
+  margin: 0 14px 14px 72px;
+  padding: 12px 16px;
   background: #f5f5f5;
   font-size: 14px;
 }
 .logs-detalhes dt {
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #555;
@@ -317,7 +348,7 @@
   margin: 4px 0 0;
 }
 .logs-vazio {
-  padding: 48px 0;
+  padding: 32px 0;
   text-align: center;
   color: #555;
 }
@@ -339,8 +370,8 @@
 .logs-paginacao span {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 40px;
+  width: 42px;
+  height: 38px;
   background: #fff;
 }
 .logs-paginacao button:disabled {
@@ -351,7 +382,7 @@
   background: #000;
   color: #fff;
   font-family: var(--font-pixelify), monospace;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
 }
 .logs-paginacao svg {
@@ -361,12 +392,16 @@
 
 /* ---------- telas pequenas ---------- */
 @media (max-width: 900px) {
+  /* no celular os blocos ficam empilhados e a página volta a rolar */
   .logs-pagina {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
     padding: 20px 16px 72px;
     font-size: 14px;
   }
   .logs-topo {
-    margin-bottom: 24px;
+    margin-bottom: 16px;
   }
   .logs-logo {
     display: none;
@@ -376,35 +411,36 @@
     gap: 12px;
   }
   .logs-numero {
-    height: 88px;
+    height: 72px;
     padding: 0 20px;
   }
   .logs-numero strong {
-    font-size: 36px;
+    font-size: 30px;
   }
   .logs-numero span {
-    font-size: 16px;
+    font-size: 14px;
   }
-  .logs-numero svg {
+  .logs-numero svg,
+  .logs-numero img {
     width: 24px;
   }
   .logs-filtros {
-    gap: 18px;
+    gap: 12px;
   }
   .logs-selecao {
     min-width: 160px;
   }
   .logs-linha {
     flex-wrap: wrap;
-    gap: 12px 16px;
-    padding: 16px 8px;
+    gap: 10px 14px;
+    padding: 14px 8px;
   }
   .logs-quando {
     width: auto;
     margin-right: 0;
     order: 3;
     flex-basis: 100%;
-    padding-left: 60px;
+    padding-left: 54px;
     display: flex;
     gap: 12px;
   }

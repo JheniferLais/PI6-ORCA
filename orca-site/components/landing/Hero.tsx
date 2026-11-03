@@ -6,14 +6,14 @@ const GITHUB_URL = "https://github.com/JheniferLais/PI6-ORCA";
 export default function Hero() {
   return (
     <section className="hero-fundo text-white">
-      <div className="mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 md:pb-28 lg:px-8">
+      <div className="w-full px-6 pt-6 pb-20 sm:px-10 md:pb-28 lg:px-16">
         {/* Barra do topo: significado da sigla + ícone da orca */}
         <div className="flex items-center justify-end gap-3">
           <p className="text-xs text-white/80 sm:text-sm">
             Organization of Requests &amp; Communication Analysis
           </p>
           <Image
-            src="/orca-icone.svg"
+            src="/orca_white_svg.svg"
             alt=""
             width={83}
             height={67}

@@ -23,9 +23,7 @@ export const API_URL =
 export const CATEGORIAS = [
   "Automutilação/Suicídio",
   "Discurso de ódio/Discriminação",
-  "Jogos de azar/Apostas",
   "Conteúdo sexual",
-  "Drogas e substâncias ilícitas",
 ];
 
 type EventoDoServidor = {
@@ -80,15 +78,14 @@ function exemplos(): Evento[] {
   const agora = Date.now();
   const h = 3_600_000;
   const base: [number, string, TipoOcorrencia, string, number][] = [
-    [2, "Jogos de azar/Apostas", "bloqueio", "exemplo-apostas.com.br/cassino/bonus-de-boas-vindas", 0.96],
     [5, "Discurso de ódio/Discriminação", "alerta", "forum-exemplo.com/topico/48213/comentarios", 0.71],
     [20, "Conteúdo sexual", "bloqueio", "exemplo-adulto.com/galeria/destaques", 0.93],
     [30, "Automutilação/Suicídio", "alerta", "blog-exemplo.com.br/posts/como-lidar-com-a-tristeza", 0.64],
-    [52, "Drogas e substâncias ilícitas", "bloqueio", "loja-exemplo.net/produtos/categoria-12", 0.9],
     [75, "Discurso de ódio/Discriminação", "bloqueio", "rede-exemplo.com/post/9981273", 0.88],
-    [100, "Jogos de azar/Apostas", "alerta", "exemplo-bets.com/apostas-esportivas", 0.58],
     [190, "Conteúdo sexual", "alerta", "exemplo-video.com/assistir/canal-71", 0.62],
-    [400, "Drogas e substâncias ilícitas", "alerta", "forum-exemplo.com/topico/70012", 0.55],
+    [75, "Discurso de ódio/Discriminação", "bloqueio", "rede-exemplo.com/post/9981273", 0.88],
+    [75, "Discurso de ódio/Discriminação", "bloqueio", "rede-exemplo.com/post/9981273", 0.88],
+
   ];
   return base.map(([horasAtras, categoria, tipo, url, score], i) => ({
     id: `exemplo-${i}`,

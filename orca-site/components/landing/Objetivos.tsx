@@ -19,7 +19,7 @@ const alvos: Alvo[] = [
 export default function Objetivos() {
   return (
     <section id="objetivos" className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 pt-8 pb-20 sm:px-6 md:pt-12 md:pb-24 lg:px-8">
+      <div className="w-full px-6 pt-8 pb-20 sm:px-10 md:pt-12 md:pb-24 lg:px-16">
         <TituloSecao>Objetivos</TituloSecao>
 
         <p className="mt-10 flex items-center gap-2 text-lg font-bold">
@@ -49,7 +49,7 @@ export default function Objetivos() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-10 md:grid-cols-2 md:gap-x-12">
+        <div className="mt-12 grid gap-10 md:grid-cols-2 md:gap-x-12 lg:gap-x-16 lg:px-8">
           {alvos.map((alvo) => (
             <div key={alvo.titulo} className="relative">
               {/* contorno deslocado, atrás da caixa preta */}

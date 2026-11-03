@@ -72,10 +72,10 @@ function Seta() {
 export default function ComoFunciona() {
   return (
     <section id="como-funciona" className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 pt-16 pb-32 sm:px-6 md:pt-24 md:pb-40 lg:px-8">
+      <div className="w-full px-6 pt-16 pb-32 sm:px-10 md:pt-24 md:pb-40 lg:px-16">
         <TituloSecao>Como funciona...</TituloSecao>
 
-        <div className="mt-12 flex w-full flex-col gap-28 lg:flex-row lg:gap-6">
+        <div className="mt-12 flex w-full flex-col gap-28 lg:flex-row lg:gap-8 lg:px-8">
           {etapas.map((etapa, i) => (
             <div key={etapa.titulo} className="contents">
               {i > 0 && <Seta />}

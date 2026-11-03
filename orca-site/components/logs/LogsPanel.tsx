@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CATEGORIAS,
   carregarEventos,
@@ -18,7 +18,12 @@ const s = new Proxy({} as Record<string, string>, {
   get: (_, nome) => `logs-${String(nome)}`,
 });
 
-const POR_PAGINA = 5;
+// Em telas pequenas a página rola normalmente e mostra 5 por vez; no desktop
+// a tela não rola e cabe na lista quantas ocorrências couberem na altura.
+const POR_PAGINA_MOBILE = 5;
+const ALTURA_ITEM_PADRAO = 70;
+const MINIMO_POR_PAGINA = 4;
+const MAXIMO_POR_PAGINA = 5;
 const ATUALIZA_A_CADA_MS = 5000;
 
 type FiltroTipo = "todos" | TipoOcorrencia;
@@ -51,6 +56,35 @@ export default function LogsPanel() {
   const [periodo, setPeriodo] = useState<(typeof PERIODOS)[number]["valor"]>("7d");
   const [pagina, setPagina] = useState(1);
   const [aberto, setAberto] = useState<string | null>(null);
+  const [porPagina, setPorPagina] = useState(POR_PAGINA_MOBILE);
+  const itensRef = useRef<HTMLDivElement>(null);
+  const carregado = dados !== null;
+
+  // Calcula quantas ocorrências cabem na lista sem rolar a página.
+  useEffect(() => {
+    const el = itensRef.current;
+    if (!el) return;
+    const mobile = window.matchMedia("(max-width: 900px)");
+    function medir() {
+      if (!el) return;
+      if (mobile.matches) {
+        setPorPagina(POR_PAGINA_MOBILE);
+        return;
+      }
+      const linha = el.querySelector<HTMLElement>(".logs-linha");
+      const alturaItem = linha ? linha.offsetHeight + 2 : ALTURA_ITEM_PADRAO;
+      const cabem = Math.floor(el.clientHeight / alturaItem);
+      setPorPagina(Math.min(MAXIMO_POR_PAGINA, Math.max(MINIMO_POR_PAGINA, cabem)));
+    }
+    medir();
+    const observador = new ResizeObserver(medir);
+    observador.observe(el);
+    mobile.addEventListener("change", medir);
+    return () => {
+      observador.disconnect();
+      mobile.removeEventListener("change", medir);
+    };
+  }, [carregado]);
 
   // Busca os eventos ao abrir a tela e de novo a cada 5 segundos.
   useEffect(() => {
@@ -90,11 +124,11 @@ export default function LogsPanel() {
   const alertas = base.length - bloqueios;
   const filtrados = tipo === "todos" ? base : base.filter((e) => e.tipo === tipo);
 
-  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina));
   const paginaAtual = Math.min(pagina, totalPaginas);
   const visiveis = filtrados.slice(
-    (paginaAtual - 1) * POR_PAGINA,
-    paginaAtual * POR_PAGINA,
+    (paginaAtual - 1) * porPagina,
+    paginaAtual * porPagina,
   );
 
   const categorias = useMemo(() => {
@@ -121,15 +155,15 @@ export default function LogsPanel() {
             ORCA <Triangulo direcao="direita" /> histórico de alertas
           </Link>
           <Image
-            src="/orca-icone.svg"
+            src="/orca_black_svg.svg"
             alt=""
-            width={83}
-            height={67}
+            width={43}
+            height={37}
             unoptimized
             className={s.logo}
           />
           <button type="button" className={s.config} aria-label="Configurações">
-            <PixelIcon desenho={ICONES.engrenagem} />
+            <Image src="/icones/ic/settings_svg.svg" alt="" width={24} height={24} unoptimized />
           </button>
         </header>
 
@@ -149,30 +183,32 @@ export default function LogsPanel() {
               <strong>{formatarNumero(bloqueios)}</strong>
               <span>Bloqueios</span>
             </div>
-            <PixelIcon desenho={ICONES.bloqueio} />
+            <Image src="/icones/ic/block_svg.svg" alt="" width={44} height={44} unoptimized />
           </div>
           <div className={`${s.numero} ${s.numeroAlerta}`}>
             <div>
               <strong>{formatarNumero(alertas)}</strong>
               <span>Alertas</span>
             </div>
-            <PixelIcon desenho={ICONES.alerta} />
+            <Image src="/icones/ic/alert_svg.svg" alt="" width={44} height={44} unoptimized />
           </div>
         </section>
 
-        <label className={s.rotulo} htmlFor="busca">
-          Busca por ocorrência
-        </label>
-        <input
-          id="busca"
-          type="search"
-          className={s.busca}
-          placeholder="Buscar por URL ou categoria..."
-          value={busca}
-          onChange={(e) => mudar(setBusca)(e.target.value)}
-        />
-
         <div className={s.filtros}>
+          <div className={s.campoBusca}>
+            <label className={s.rotulo} htmlFor="busca">
+              Busca por ocorrência
+            </label>
+            <input
+              id="busca"
+              type="search"
+              className={s.busca}
+              placeholder="Buscar por URL ou categoria..."
+              value={busca}
+              onChange={(e) => mudar(setBusca)(e.target.value)}
+            />
+          </div>
+
           <div>
             <span className={s.rotulo}>Tipo de ocorrência</span>
             <div className={s.grupo} role="group" aria-label="Tipo de ocorrência">
@@ -222,7 +258,14 @@ export default function LogsPanel() {
               Período
             </label>
             <div className={`${s.selecao} ${s.selecaoComIcone}`}>
-              <PixelIcon desenho={ICONES.calendario} className={s.iconeEsq} />
+              <Image
+                src="/icones/ic/calendar_svg.svg"
+                alt=""
+                width={24}
+                height={24}
+                unoptimized
+                className={s.iconeEsq}
+              />
               <select
                 id="periodo"
                 value={periodo}
@@ -250,18 +293,20 @@ export default function LogsPanel() {
         </p>
 
         <section className={s.lista} aria-label="Ocorrências">
-          {dados !== null && visiveis.length === 0 && (
-            <p className={s.vazio}>Nenhuma ocorrência encontrada.</p>
-          )}
+          <div className={s.itens} ref={itensRef}>
+            {dados !== null && visiveis.length === 0 && (
+              <p className={s.vazio}>Nenhuma ocorrência encontrada.</p>
+            )}
 
-          {visiveis.map((e) => (
-            <ItemOcorrencia
-              key={e.id}
-              evento={e}
-              aberto={aberto === e.id}
-              alternar={() => setAberto(aberto === e.id ? null : e.id)}
-            />
-          ))}
+            {visiveis.map((e) => (
+              <ItemOcorrencia
+                key={e.id}
+                evento={e}
+                aberto={aberto === e.id}
+                alternar={() => setAberto(aberto === e.id ? null : e.id)}
+              />
+            ))}
+          </div>
 
           <p className={s.rodape}>
             Exibindo {visiveis.length} de {filtrados.length} ocorrências
@@ -314,7 +359,13 @@ function ItemOcorrencia({
         onClick={alternar}
       >
         <span className={`${s.selo} ${cor}`}>
-          <PixelIcon desenho={bloqueio ? ICONES.bloqueio : ICONES.alerta} />
+          <Image
+            src={bloqueio ? "/icones/ic/block_svg.svg" : "/icones/ic/alert_svg.svg"}
+            alt=""
+            width={44}
+            height={44}
+            unoptimized
+          />
         </span>
         <span className={s.texto}>
           <span className={s.titulo}>
