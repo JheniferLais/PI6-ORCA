@@ -75,6 +75,30 @@ Com a mesma semente e as mesmas fontes, os CSVs saem idênticos (os hashes SHA-2
 6. **Limite por classe** (opcional, `--max-por-classe`), por sorteio reprodutível.
 7. **Divisão 70/15/15**, estratificada por classe **e por fonte**, para cada fonte aparecer nas três divisões. Grupos com menos de 3 imagens vão inteiros para o treino (e o pipeline avisa). Como as repetidas saíram antes, nenhuma imagem aparece em mais de uma divisão.
 
+## Dataset gerado
+
+Comando: `python -m vision dados --max-por-classe 500` (seed 42).
+
+| Divisão | SFW | NSFW | NSFL | Total |
+|---|---|---|---|---|
+| Treino | 350 | 350 | 36 | 736 |
+| Validação | 75 | 75 | 8 | 158 |
+| Teste | 75 | 75 | 8 | 158 |
+| **Total** | **500** | **500** | **52** | **1052** |
+
+Por fonte:
+- `deepghs-nsfw-detect`: 16.800 imagens lidas, 16.715 aceitas (84 repetidas e 1 de proporção extrema descartadas). Sorteamos 500 de SFW e 500 de NSFW. A pasta `sexy` (11.200 imagens) ficou de fora de propósito.
+- `manual`: 52 imagens de NSFL coletadas e revisadas pelo grupo. [Descreva aqui a origem: de onde vieram e como foram revisadas.]
+
+O modelo é pré-treinado e não é treinado por nós, então o conjunto de teste é o que importa; treino e validação existem por compatibilidade com o pipeline do NLP.
+
+## Relação com `categorias.md`
+
+O modelo de imagem só distingue SFW, NSFW e NSFL:
+- **Conteúdo sexual** → `NSFW`.
+- **Violência/conteúdo chocante** → `NSFL` (categoria que não está em `categorias.md`).
+- **Automutilação, jogos de azar e drogas em imagem não são cobertas** por este modelo.
+
 ## Fontes
 
 Todas ficam em `fontes.json`; para trocar o mapeamento ou ligar/desligar uma fonte, edite só esse arquivo.
