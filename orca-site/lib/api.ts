@@ -7,6 +7,8 @@
  * localStorage do navegador e é enviado por apiFetch() automaticamente.
  */
 
+import { informarConexao } from "./conexao";
+
 /** Endereço do servidor local. Troque com NEXT_PUBLIC_API_URL. */
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8001";
@@ -163,10 +165,12 @@ export async function apiFetch<T>(caminho: string, opcoes: Opcoes = {}): Promise
       cache: "no-store",
     });
   } catch {
+    informarConexao(false);
     throw new ErroApi(0, "Não foi possível conectar ao servidor.");
   } finally {
     clearTimeout(relogio);
   }
+  informarConexao(true);
 
   const corpo: unknown = await resposta.json().catch(() => null);
   if (!resposta.ok) {

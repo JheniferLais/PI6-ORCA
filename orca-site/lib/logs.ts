@@ -11,7 +11,7 @@ export type Evento = {
   url: string;
   /** causa da ocorrência (coluna "reason", ex.: "Conteúdo sexual") */
   categoria: string;
-  /** "bloqueio" ou "alerta" (coluna "level") */
+  /** "bloqueio" ou "alerta" (coluna "level": BLOCK/ALERT) */
   tipo: TipoOcorrencia;
   /** valor original de "level", exibido nos detalhes */
   nivel: string;
@@ -41,9 +41,9 @@ type PaginaDeLogs = {
 };
 
 /**
- * level -> tipo da interface. O backend grava "bloqueio" ou "alerta"
- * (models/app/decisao.py); qualquer outro valor é tratado como alerta e o
- * texto original continua visível nos detalhes.
+ * level -> tipo da interface. O backend grava "BLOCK" ou "ALERT"
+ * (models/app/decisao.py); logs antigos podem ter "bloqueio"/"alerta". Qualquer
+ * outro valor é tratado como alerta e o texto original fica visível nos detalhes.
  */
 function converter(l: LogDoServidor): Evento {
   const nivel = (l.level ?? "").trim();
@@ -52,7 +52,7 @@ function converter(l: LogDoServidor): Evento {
     timestamp: l.timestamp,
     url: l.url,
     categoria: l.reason?.trim() || "Sem motivo informado",
-    tipo: nivel.toLowerCase() === "bloqueio" ? "bloqueio" : "alerta",
+    tipo: ["block", "bloqueio"].includes(nivel.toLowerCase()) ? "bloqueio" : "alerta",
     nivel,
   };
 }

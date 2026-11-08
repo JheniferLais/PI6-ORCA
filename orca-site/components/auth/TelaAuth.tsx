@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import StatusServidor from "@/components/StatusServidor";
 
 /**
  * Moldura das telas de login e cadastro: mesmo fundo do topo da página
@@ -40,6 +41,8 @@ export default function TelaAuth({
           </p>
         </section>
       </div>
+
+      <StatusServidor />
     </main>
   );
 }

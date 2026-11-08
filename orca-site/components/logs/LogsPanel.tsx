@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import StatusServidor from "@/components/StatusServidor";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   CATEGORIAS,
@@ -365,8 +366,8 @@ export default function LogsPanel() {
         </div>
       </div>
 
-      <StatusConexao
-        estado={erro ? "erro" : dados === null ? "carregando" : "conectado"}
+      <StatusServidor
+        estado={erro ? "erro" : dados === null ? "verificando" : "conectado"}
         detalhe={
           erro ??
           (dados?.limitado
@@ -375,28 +376,6 @@ export default function LogsPanel() {
         }
       />
     </div>
-  );
-}
-
-/** Bolinha no canto inferior direito: verde = conectado, vermelha = falhou. */
-function StatusConexao({
-  estado,
-  detalhe,
-}: {
-  estado: "carregando" | "conectado" | "erro";
-  detalhe?: string;
-}) {
-  const texto = {
-    carregando: "Conectando ao servidor...",
-    conectado: "Conectado ao servidor",
-    erro: "Sem conexão com o servidor",
-  }[estado];
-  const completo = detalhe ? `${texto}. ${detalhe}` : texto;
-  const cor = { carregando: s.statusCarregando, conectado: s.statusOk, erro: s.statusErro }[
-    estado
-  ];
-  return (
-    <span className={`${s.status} ${cor}`} role="status" title={completo} aria-label={completo} />
   );
 }
 

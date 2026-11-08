@@ -488,24 +488,6 @@
   background: #000;
   color: #fff;
 }
-/* bolinha de conexão no canto inferior direito */
-.logs-status {
-  position: fixed;
-  right: 14px;
-  bottom: 14px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-.logs-statusOk {
-  background: #3fae5a;
-}
-.logs-statusErro {
-  background: var(--vermelho);
-}
-.logs-statusCarregando {
-  background: #bbb;
-}
 @media (max-width: 900px) {
   .logs-usuario {
     display: none;
