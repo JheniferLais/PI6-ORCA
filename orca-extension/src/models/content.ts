@@ -21,3 +21,12 @@ export interface ContentExtractedMessage {
   type: 'CONTENT_EXTRACTED';
   payload: ExtractedContent;
 }
+
+/**
+ * Mensagem do Content Script do site do ORCA: o token de login atual do site
+ * (null = ninguém logado).
+ */
+export interface SessionSyncMessage {
+  type: 'SESSION_SYNC';
+  token: string | null;
+}

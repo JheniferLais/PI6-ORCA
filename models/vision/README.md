@@ -23,7 +23,7 @@ vision/
 ├── cache.py               cache LRU
 ├── pipeline.py            servidor FastAPI: POST /content (porta 8000)
 ├── avaliacao.py           métricas do modelo no dataset
-├── simulado.py            IA SIMULADA usada hoje por /analyze (veja "Integração")
+├── simulado.py            IA simulada antiga (não usada mais; veja "Integração")
 ├── __main__.py            linha de comando: python -m vision ...
 ├── requirements.txt
 └── tests/                 testes sem torch e sem rede
@@ -150,7 +150,9 @@ Probabilidade média dada à classe real: SFW 0,89, NSFW 0,90, NSFL 0,81. O scor
 
 ## Integração com o backend
 
-Hoje o `POST /analyze` (`app/routes/analise.py`) usa `vision/simulado.py`, que **sorteia** o resultado a partir da URL, enquanto a extensão chama este servidor (porta 8000) e o backend (porta 8001) separadamente. Os dois não se falam. O `page` foi feito para o caso de ligar os dois: a troca em `analise.py` é fornecer uma função que devolva o `page` do `PipelineImagens`, com a mesma assinatura da simulada. Isso **não foi alterado** nesta etapa.
+O `POST /analyze` (`app/routes/analise.py`, porta 8001) usa a IA real: recebe o mesmo JSON da extensão (`url`, `title`, `timestamp`, `text`, `images[]`), passa as imagens pelo `PipelineImagens` e usa o `page` da resposta na decisão (`app/decisao.py`). O modelo é carregado uma vez, na subida do `server.py`. Sem imagens (ou nenhuma classificada), o `page` vem com `score: null` e só o texto decide.
+
+O `vision/simulado.py` continua no repositório, mas não é mais usado.
 
 ## Limitações
 

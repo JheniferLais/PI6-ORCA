@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>ORCA</title>
+    <style>
+      :root {
+        --vermelho: #cb5959;
+        --amarelo: #dfca5a;
+        --verde: #3fae5a;
+        --cinza: #585651;
+      }
+      * { box-sizing: border-box; }
+      body {
+        width: 300px;
+        margin: 0;
+        padding: 16px;
+        font: 14px/1.4 system-ui, sans-serif;
+        color: #000;
+        background: #fff;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font: 700 18px/1 ui-monospace, monospace;
+        letter-spacing: 0.04em;
+      }
+      .caixa {
+        border: 2px solid #000;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      .linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .titulo { font-weight: 700; }
+      .descricao { font-size: 12px; color: var(--cinza); margin-top: 2px; }
+      .chave {
+        position: relative;
+        flex: none;
+        width: 52px;
+        height: 28px;
+        border: 2px solid #000;
+        background: #fff;
+        cursor: pointer;
+        padding: 0;
+      }
+      .chave::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        background: #000;
+        transition: left 0.15s;
+      }
+      .chave[aria-checked="true"] { background: var(--verde); }
+      .chave[aria-checked="true"]::after { left: 27px; background: #fff; box-shadow: 0 0 0 2px #000; }
+      .chave:disabled { opacity: 0.5; cursor: default; }
+      .chave:focus-visible, button:focus-visible { outline: 3px solid #273441; outline-offset: 2px; }
+      dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
+      dt { font-weight: 700; }
+      dd { margin: 0; overflow-wrap: anywhere; }
+      .ponto { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: #bbb; }
+      .verde { background: var(--verde); }
+      .vermelho { background: var(--vermelho); }
+      .amarelo { background: var(--amarelo); }
+      .aviso { font-size: 12px; font-weight: 600; margin: 0 0 12px; }
+      .aviso:empty { display: none; }
+      .botoes { display: flex; gap: 8px; }
+      .botoes button {
+        flex: 1;
+        height: 36px;
+        border: 2px solid #000;
+        background: #fff;
+        font: 700 13px system-ui, sans-serif;
+        cursor: pointer;
+      }
+      .botoes button:hover { background: #000; color: #fff; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <h1>ORCA</h1>
+
+    <section id="conectado" hidden>
+      <div class="caixa">
+        <div class="linha">
+          <div>
+            <div class="titulo" id="monitor-titulo">Monitoramento</div>
+            <div class="descricao" id="monitor-descricao"></div>
+          </div>
+          <button type="button" class="chave" id="chave" role="switch" aria-checked="false" aria-label="Monitoramento de páginas"></button>
+        </div>
+      </div>
+      <div class="caixa">
+        <dl>
+          <dt>Conta</dt><dd id="conta"></dd>
+          <dt>Servidor</dt><dd><span class="ponto" id="servidor-ponto"></span><span id="servidor"></span></dd>
+          <dt>Última</dt><dd id="ultima">—</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section id="desconectado" hidden>
+      <div class="caixa">
+        <div class="titulo" id="desconectado-titulo">Extensão não conectada</div>
+        <div class="descricao">Entre no site do ORCA neste navegador. A extensão se conecta sozinha à sua conta.</div>
+      </div>
+    </section>
+
+    <p class="aviso" id="aviso" role="status"></p>
+
+    <div class="botoes">
+      <button type="button" id="abrir">Abrir painel</button>
+      <button type="button" id="sair" hidden>Sair</button>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

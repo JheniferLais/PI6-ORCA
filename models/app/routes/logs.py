@@ -36,6 +36,40 @@ def salvar_log(log: LogCreate, id_user: str) -> dict:
     return response.data[0]
 
 
+def buscar_log_da_url(url: str, id_user: str) -> dict | None:
+    """Log já gravado para essa URL e esse usuário, ou None (usado por /analyze)."""
+    try:
+        response = (
+            supabase.table("logs")
+            .select("*")
+            .eq("id_user", id_user)
+            .eq("url", url)
+            .limit(1)
+            .execute()
+        )
+    except APIError as e:
+        explicar_erro(e, "busca de log por URL")
+        raise HTTPException(status_code=500, detail="Erro ao buscar log")
+    return response.data[0] if response.data else None
+
+
+def atualizar_log(id_log: str, log: LogCreate) -> dict:
+    """Troca nível e causa de um log existente (usado por /analyze). Mantém o timestamp."""
+    try:
+        response = (
+            supabase.table("logs")
+            .update({"level": log.level, "reason": log.reason})
+            .eq("id_log", id_log)
+            .execute()
+        )
+    except APIError as e:
+        explicar_erro(e, "atualização de log")
+        raise HTTPException(status_code=500, detail="Erro ao atualizar log")
+    if not response.data:
+        raise HTTPException(status_code=500, detail="Erro ao atualizar log")
+    return response.data[0]
+
+
 def listar_logs(id_user: str, level: str | None, limit: int, offset: int) -> dict:
     query = (
         supabase.table("logs")

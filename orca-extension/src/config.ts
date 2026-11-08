@@ -9,13 +9,18 @@ export const CONFIG = {
     debounceMs: 1000,
 
     /**
-     * Para onde o service worker envia cada conteúdo extraído (o mesmo JSON vai para todos).
-     * Se mudar uma porta, mude também host_permissions em public/manifest.json.
+     * Para onde o service worker envia cada conteúdo extraído: o backend analisa
+     * texto + imagens e grava o log do usuário logado (models/app/routes/analise.py).
+     * Se mudar a porta, mude também host_permissions em public/manifest.json.
      */
-    serverUrls: {
-        imagem: 'http://localhost:8000/content',      // models/vision/pipeline.py
-        texto: 'http://localhost:8001/classify/text', // models/server.py (nlp)
-    },
+    analyzeUrl: 'http://localhost:8001/analyze',
+
+    /**
+     * Páginas do site do ORCA. Nelas a extensão não analisa nada: só lê o token
+     * de login que o site guarda no localStorage (orca-site/lib/api.ts).
+     */
+    siteOrigins: ['https://pi-orca.vercel.app', 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    siteSessionKey: 'orca.sessao',
 
     /** Site aberto quando o usuário clica no ícone da extensão. */
     dashboardUrl: 'https://pi-orca.vercel.app/',
