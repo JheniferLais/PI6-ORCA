@@ -1,5 +1,6 @@
 import Image from "next/image";
 import BotaoPixel from "./BotaoPixel";
+import BotoesConta from "./BotoesConta";
 
 const GITHUB_URL = "https://github.com/JheniferLais/PI6-ORCA";
 
@@ -50,9 +51,7 @@ export default function Hero() {
           <BotaoPixel href={GITHUB_URL} icone="/icones/github.svg" externo>
             Ver no Github
           </BotaoPixel>
-          <BotaoPixel href="/logs" icone="/icones/log.svg">
-            Log
-          </BotaoPixel>
+          <BotoesConta />
         </div>
       </div>
     </section>

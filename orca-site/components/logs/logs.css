@@ -213,15 +213,18 @@
 }
 
 /* ---------- lista ---------- */
-.logs-estado {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 8px;
+/* espaço que sobra na tela; a lista cresce com o conteúdo até esse limite
+   (vazia, fica pequena em vez de ocupar a tela toda) */
+.logs-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .logs-lista {
   position: relative;
-  flex: 1;
-  min-height: 160px;
+  flex: 0 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   border: 2px solid #000;
@@ -230,7 +233,7 @@
 /* área das ocorrências: a quantidade por página é calculada para caber aqui;
    só rola por dentro se um item aberto passar da altura */
 .logs-itens {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
 }
@@ -453,5 +456,58 @@
   }
   .logs-paginacao {
     right: 12px;
+  }
+}
+
+/* ---------- sessão (usuário logado e botão de sair) ---------- */
+.logs-acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logs-usuario {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 600;
+}
+.logs-sair {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  border: 2px solid #000;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+.logs-sair:hover {
+  background: #000;
+  color: #fff;
+}
+/* bolinha de conexão no canto inferior direito */
+.logs-status {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.logs-statusOk {
+  background: #3fae5a;
+}
+.logs-statusErro {
+  background: var(--vermelho);
+}
+.logs-statusCarregando {
+  background: #bbb;
+}
+@media (max-width: 900px) {
+  .logs-usuario {
+    display: none;
   }
 }

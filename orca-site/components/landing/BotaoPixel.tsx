@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 type Props = {
-  href: string;
+  /** Destino do link. Sem href, vira um <button> que chama onClick. */
+  href?: string;
+  onClick?: () => void;
   /** Imagem do quadradinho com o ícone (ex.: /icones/info.svg). */
   icone: string;
   /** Abre em outra aba (use para links externos, como o GitHub). */
@@ -14,7 +16,7 @@ const classes =
   "inline-flex h-10 items-stretch border-2 border-white text-sm text-white transition-colors hover:bg-white/10";
 
 /** Botão do design: contorno branco, quadrado branco com ícone e o texto. */
-export default function BotaoPixel({ href, icone, externo, children }: Props) {
+export default function BotaoPixel({ href, onClick, icone, externo, children }: Props) {
   const conteudo = (
     <>
       <Image
@@ -30,6 +32,14 @@ export default function BotaoPixel({ href, icone, externo, children }: Props) {
       </span>
     </>
   );
+
+  if (!href) {
+    return (
+      <button type="button" onClick={onClick} className={`${classes} cursor-pointer`}>
+        {conteudo}
+      </button>
+    );
+  }
 
   // Páginas do próprio site usam <Link> (troca de página sem recarregar tudo).
   if (href.startsWith("/")) {

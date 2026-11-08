@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
   CATEGORIAS,
   carregarEventos,
   type Evento,
-  type Resultado,
   type TipoOcorrencia,
 } from "@/lib/logs";
 import PixelIcon, { ICONES, Triangulo } from "./PixelIcon";
@@ -24,6 +24,8 @@ const POR_PAGINA_MOBILE = 5;
 const ALTURA_ITEM_PADRAO = 70;
 const MINIMO_POR_PAGINA = 4;
 const MAXIMO_POR_PAGINA = 5;
+// borda (2+2) + espaço acima (6) e abaixo (52, rodapé e paginação) da lista
+const MOLDURA_DA_LISTA = 62;
 const ATUALIZA_A_CADA_MS = 5000;
 
 type FiltroTipo = "todos" | TipoOcorrencia;
@@ -49,7 +51,13 @@ function formatarData(iso: string) {
 }
 
 export default function LogsPanel() {
-  const [dados, setDados] = useState<(Resultado & { em: number }) | null>(null);
+  const { sessao, sairDaConta } = useAuth();
+  // últimos logs recebidos do servidor (null = ainda não chegou nenhum)
+  const [dados, setDados] = useState<{ eventos: Evento[]; limitado: boolean; em: number } | null>(
+    null,
+  );
+  // mensagem da última falha (some quando uma busca der certo)
+  const [erro, setErro] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   const [tipo, setTipo] = useState<FiltroTipo>("todos");
   const [categoria, setCategoria] = useState("");
@@ -58,27 +66,30 @@ export default function LogsPanel() {
   const [aberto, setAberto] = useState<string | null>(null);
   const [porPagina, setPorPagina] = useState(POR_PAGINA_MOBILE);
   const itensRef = useRef<HTMLDivElement>(null);
+  const areaRef = useRef<HTMLDivElement>(null);
   const carregado = dados !== null;
 
   // Calcula quantas ocorrências cabem na lista sem rolar a página.
   useEffect(() => {
+    // a lista tem a altura do conteúdo; "area" é o espaço máximo que ela pode ocupar
+    const area = areaRef.current;
     const el = itensRef.current;
-    if (!el) return;
+    if (!area || !el) return;
     const mobile = window.matchMedia("(max-width: 900px)");
     function medir() {
-      if (!el) return;
+      if (!area || !el) return;
       if (mobile.matches) {
         setPorPagina(POR_PAGINA_MOBILE);
         return;
       }
       const linha = el.querySelector<HTMLElement>(".logs-linha");
       const alturaItem = linha ? linha.offsetHeight + 2 : ALTURA_ITEM_PADRAO;
-      const cabem = Math.floor(el.clientHeight / alturaItem);
+      const cabem = Math.floor((area.clientHeight - MOLDURA_DA_LISTA) / alturaItem);
       setPorPagina(Math.min(MAXIMO_POR_PAGINA, Math.max(MINIMO_POR_PAGINA, cabem)));
     }
     medir();
     const observador = new ResizeObserver(medir);
-    observador.observe(el);
+    observador.observe(area);
     mobile.addEventListener("change", medir);
     return () => {
       observador.disconnect();
@@ -91,7 +102,15 @@ export default function LogsPanel() {
     let ativo = true;
     async function atualizar() {
       const resultado = await carregarEventos();
-      if (ativo) setDados({ ...resultado, em: Date.now() });
+      if (!ativo) return;
+      if (resultado.ok) {
+        setDados({ eventos: resultado.eventos, limitado: resultado.limitado, em: Date.now() });
+        setErro(null);
+      } else {
+        // 401 já encerrou a sessão (a página volta para o login); nos demais
+        // casos avisa e mantém só o que já veio do servidor, sem dados de exemplo
+        setErro(resultado.mensagem);
+      }
     }
     void atualizar();
     const relogio = setInterval(() => void atualizar(), ATUALIZA_A_CADA_MS);
@@ -162,9 +181,22 @@ export default function LogsPanel() {
             unoptimized
             className={s.logo}
           />
-          <button type="button" className={s.config} aria-label="Configurações">
-            <Image src="/icones/ic/settings_svg.svg" alt="" width={24} height={24} unoptimized />
-          </button>
+          <div className={s.acoes}>
+            {sessao && (
+              <span className={s.usuario} title={sessao.usuario.email}>
+                {sessao.usuario.name || sessao.usuario.email}
+              </span>
+            )}
+            <Link href="/" className={s.sair}>
+              Início
+            </Link>
+            <button type="button" className={s.sair} onClick={sairDaConta}>
+              Sair
+            </button>
+            <button type="button" className={s.config} aria-label="Configurações">
+              <Image src="/icones/ic/settings_svg.svg" alt="" width={24} height={24} unoptimized />
+            </button>
+          </div>
         </header>
 
         <p className={s.periodoResumo}>
@@ -284,56 +316,87 @@ export default function LogsPanel() {
           </div>
         </div>
 
-        <p className={s.estado} role="status">
-          {dados === null
-            ? "Carregando..."
-            : dados.origem === "servidor"
-              ? "● Conectado ao servidor local. A lista atualiza sozinha."
-              : "○ Servidor local fora do ar: mostrando dados de exemplo."}
-        </p>
+        <div className={s.area} ref={areaRef}>
+          <section className={s.lista} aria-label="Ocorrências">
+            <div className={s.itens} ref={itensRef}>
+              {dados === null && erro && (
+                <p className={s.vazio} role="alert">
+                  Não foi possível carregar os logs.
+                </p>
+              )}
+              {dados !== null && visiveis.length === 0 && (
+                <p className={s.vazio}>Nenhuma ocorrência encontrada.</p>
+              )}
 
-        <section className={s.lista} aria-label="Ocorrências">
-          <div className={s.itens} ref={itensRef}>
-            {dados !== null && visiveis.length === 0 && (
-              <p className={s.vazio}>Nenhuma ocorrência encontrada.</p>
-            )}
+              {visiveis.map((e) => (
+                <ItemOcorrencia
+                  key={e.id}
+                  evento={e}
+                  aberto={aberto === e.id}
+                  alternar={() => setAberto(aberto === e.id ? null : e.id)}
+                />
+              ))}
+            </div>
 
-            {visiveis.map((e) => (
-              <ItemOcorrencia
-                key={e.id}
-                evento={e}
-                aberto={aberto === e.id}
-                alternar={() => setAberto(aberto === e.id ? null : e.id)}
-              />
-            ))}
-          </div>
+            <p className={s.rodape}>
+              Exibindo {visiveis.length} de {filtrados.length} ocorrências
+            </p>
 
-          <p className={s.rodape}>
-            Exibindo {visiveis.length} de {filtrados.length} ocorrências
-          </p>
-
-          <nav className={s.paginacao} aria-label="Páginas">
-            <button
-              type="button"
-              aria-label="Página anterior"
-              disabled={paginaAtual <= 1}
-              onClick={() => setPagina(paginaAtual - 1)}
-            >
-              <Triangulo direcao="esquerda" />
-            </button>
-            <span aria-current="page">{paginaAtual}</span>
-            <button
-              type="button"
-              aria-label="Próxima página"
-              disabled={paginaAtual >= totalPaginas}
-              onClick={() => setPagina(paginaAtual + 1)}
-            >
-              <Triangulo direcao="direita" />
-            </button>
-          </nav>
-        </section>
+            <nav className={s.paginacao} aria-label="Páginas">
+              <button
+                type="button"
+                aria-label="Página anterior"
+                disabled={paginaAtual <= 1}
+                onClick={() => setPagina(paginaAtual - 1)}
+              >
+                <Triangulo direcao="esquerda" />
+              </button>
+              <span aria-current="page">{paginaAtual}</span>
+              <button
+                type="button"
+                aria-label="Próxima página"
+                disabled={paginaAtual >= totalPaginas}
+                onClick={() => setPagina(paginaAtual + 1)}
+              >
+                <Triangulo direcao="direita" />
+              </button>
+            </nav>
+          </section>
+        </div>
       </div>
+
+      <StatusConexao
+        estado={erro ? "erro" : dados === null ? "carregando" : "conectado"}
+        detalhe={
+          erro ??
+          (dados?.limitado
+            ? `Exibindo os ${formatarNumero(dados.eventos.length)} registros mais recentes.`
+            : undefined)
+        }
+      />
     </div>
+  );
+}
+
+/** Bolinha no canto inferior direito: verde = conectado, vermelha = falhou. */
+function StatusConexao({
+  estado,
+  detalhe,
+}: {
+  estado: "carregando" | "conectado" | "erro";
+  detalhe?: string;
+}) {
+  const texto = {
+    carregando: "Conectando ao servidor...",
+    conectado: "Conectado ao servidor",
+    erro: "Sem conexão com o servidor",
+  }[estado];
+  const completo = detalhe ? `${texto}. ${detalhe}` : texto;
+  const cor = { carregando: s.statusCarregando, conectado: s.statusOk, erro: s.statusErro }[
+    estado
+  ];
+  return (
+    <span className={`${s.status} ${cor}`} role="status" title={completo} aria-label={completo} />
   );
 }
 
@@ -386,18 +449,12 @@ function ItemOcorrencia({
       {aberto && (
         <dl className={s.detalhes}>
           <div>
-            <dt>Certeza da IA</dt>
-            <dd>{e.score === null ? "—" : `${Math.round(e.score * 100)}%`}</dd>
+            <dt>Motivo</dt>
+            <dd>{e.categoria}</dd>
           </div>
           <div>
-            <dt>Tipo de análise</dt>
-            <dd>{e.modalidade === "image" ? "Imagem" : "Texto"}</dd>
-          </div>
-          <div>
-            <dt>Analisado por</dt>
-            <dd title={`Modelo: ${e.modelo}`}>
-              {e.modalidade === "image" ? "IA de imagens" : "IA de texto"}
-            </dd>
+            <dt>Nível</dt>
+            <dd>{e.nivel || "—"}</dd>
           </div>
           <div>
             <dt>Ação</dt>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ExigirLogin from "@/components/auth/ExigirLogin";
 import LogsPanel from "@/components/logs/LogsPanel";
 
 export const metadata: Metadata = {
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function LogsPage() {
-  return <LogsPanel />;
+  return (
+    <ExigirLogin>
+      <LogsPanel />
+    </ExigirLogin>
+  );
 }

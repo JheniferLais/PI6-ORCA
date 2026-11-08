@@ -1,4 +1,6 @@
-/** Tipos e acesso aos dados da tela de logs. */
+/** Tipos e acesso aos dados da tela de logs (GET /logs, autenticado). */
+
+import { apiFetch, ErroApi } from "./api";
 
 export type TipoOcorrencia = "bloqueio" | "alerta";
 
@@ -7,17 +9,13 @@ export type Evento = {
   /** ISO 8601 */
   timestamp: string;
   url: string;
+  /** causa da ocorrência (coluna "reason", ex.: "Conteúdo sexual") */
   categoria: string;
+  /** "bloqueio" ou "alerta" (coluna "level") */
   tipo: TipoOcorrencia;
-  /** confiança do modelo, de 0 a 1 (pode não existir) */
-  score: number | null;
-  modalidade: string;
-  modelo: string;
+  /** valor original de "level", exibido nos detalhes */
+  nivel: string;
 };
-
-/** Endereço do servidor local (models/server.py). Troque com NEXT_PUBLIC_API_URL. */
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8001";
 
 /** Categorias de docs/categorias.md (aparecem no filtro mesmo sem ocorrências). */
 export const CATEGORIAS = [
@@ -26,75 +24,83 @@ export const CATEGORIAS = [
   "Conteúdo sexual",
 ];
 
-type EventoDoServidor = {
-  id: string;
+/** Linha da tabela "logs" do Supabase, como o backend devolve. */
+type LogDoServidor = {
+  id_log: string;
   timestamp: string;
   url: string;
-  category: string;
-  action: TipoOcorrencia;
-  score: number | null;
-  modality?: string;
-  model_version?: string;
+  level: string;
+  reason: string | null;
+  id_user: string;
 };
 
-function converter(e: EventoDoServidor): Evento {
+type PaginaDeLogs = {
+  logs: LogDoServidor[];
+  limit: number;
+  offset: number;
+};
+
+/**
+ * level -> tipo da interface. O backend grava "bloqueio" ou "alerta"
+ * (models/app/decisao.py); qualquer outro valor é tratado como alerta e o
+ * texto original continua visível nos detalhes.
+ */
+function converter(l: LogDoServidor): Evento {
+  const nivel = (l.level ?? "").trim();
   return {
-    id: e.id,
-    timestamp: e.timestamp,
-    url: e.url,
-    categoria: e.category,
-    tipo: e.action,
-    score: e.score,
-    modalidade: e.modality ?? "text",
-    modelo: e.model_version ?? "—",
+    id: l.id_log,
+    timestamp: l.timestamp,
+    url: l.url,
+    categoria: l.reason?.trim() || "Sem motivo informado",
+    tipo: nivel.toLowerCase() === "bloqueio" ? "bloqueio" : "alerta",
+    nivel,
   };
 }
 
-export type Resultado = {
-  eventos: Evento[];
-  /** "servidor" = dados reais; "exemplo" = servidor fora do ar, dados de mentira */
-  origem: "servidor" | "exemplo";
-};
+// o backend aceita no máximo 100 por página
+const POR_REQUISICAO = 100;
+const MAXIMO_DE_LOGS = 1000;
 
+export type Resultado =
+  | { ok: true; eventos: Evento[]; limitado: boolean }
+  | {
+      ok: false;
+      /** 401 = sessão inválida, 403 = sem permissão, 0 = servidor fora do ar */
+      status: number;
+      mensagem: string;
+    };
+
+/** Busca os logs do usuário logado (o backend filtra pelo id do token). */
 export async function carregarEventos(): Promise<Resultado> {
   try {
-    const controle = new AbortController();
-    const limite = setTimeout(() => controle.abort(), 3000);
-    const resposta = await fetch(`${API_URL}/logs`, {
-      signal: controle.signal,
-      cache: "no-store",
-    });
-    clearTimeout(limite);
-    if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
-    const dados = (await resposta.json()) as EventoDoServidor[];
-    return { eventos: dados.map(converter), origem: "servidor" };
-  } catch {
-    return { eventos: exemplos(), origem: "exemplo" };
+    const eventos: Evento[] = [];
+    for (let offset = 0; offset < MAXIMO_DE_LOGS; offset += POR_REQUISICAO) {
+      const pagina = await apiFetch<PaginaDeLogs>(
+        `/logs?limit=${POR_REQUISICAO}&offset=${offset}`,
+        { autenticado: true },
+      );
+      if (!Array.isArray(pagina?.logs)) {
+        throw new ErroApi(500, "Resposta inesperada do servidor.");
+      }
+      eventos.push(...pagina.logs.map(converter));
+      if (pagina.logs.length < POR_REQUISICAO) {
+        return { ok: true, eventos, limitado: false };
+      }
+    }
+    return { ok: true, eventos, limitado: true };
+  } catch (e) {
+    const status = e instanceof ErroApi ? e.status : -1;
+    const mensagens: Record<number, string> = {
+      0: "Não foi possível carregar os logs: o servidor não respondeu.",
+      401: "Sua sessão expirou. Entre novamente para ver os logs.",
+      403: "Você não tem permissão para ver estes logs.",
+    };
+    return {
+      ok: false,
+      status,
+      mensagem:
+        mensagens[status] ??
+        `Não foi possível carregar os logs${e instanceof Error ? ` (${e.message})` : ""}.`,
+    };
   }
-}
-
-/** Dados de mentira, só para a tela não ficar vazia sem o servidor. */
-function exemplos(): Evento[] {
-  const agora = Date.now();
-  const h = 3_600_000;
-  const base: [number, string, TipoOcorrencia, string, number][] = [
-    [5, "Discurso de ódio/Discriminação", "alerta", "forum-exemplo.com/topico/48213/comentarios", 0.71],
-    [20, "Conteúdo sexual", "bloqueio", "exemplo-adulto.com/galeria/destaques", 0.93],
-    [30, "Automutilação/Suicídio", "alerta", "blog-exemplo.com.br/posts/como-lidar-com-a-tristeza", 0.64],
-    [75, "Discurso de ódio/Discriminação", "bloqueio", "rede-exemplo.com/post/9981273", 0.88],
-    [190, "Conteúdo sexual", "alerta", "exemplo-video.com/assistir/canal-71", 0.62],
-    [75, "Discurso de ódio/Discriminação", "bloqueio", "rede-exemplo.com/post/9981273", 0.88],
-    [75, "Discurso de ódio/Discriminação", "bloqueio", "rede-exemplo.com/post/9981273", 0.88],
-
-  ];
-  return base.map(([horasAtras, categoria, tipo, url, score], i) => ({
-    id: `exemplo-${i}`,
-    timestamp: new Date(agora - horasAtras * h).toISOString(),
-    url,
-    categoria,
-    tipo,
-    score,
-    modalidade: i % 3 === 2 ? "image" : "text",
-    modelo: i % 3 === 2 ? "vision-v1" : "nlp-v1",
-  }));
 }
