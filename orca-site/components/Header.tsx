@@ -7,6 +7,7 @@ const links = [
   { href: "/login", label: "Entrar" },
 ];
 
+
 export default function Header() {
   return (
     <header className="border-b border-black/10 dark:border-white/15">
