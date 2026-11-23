@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cadastrar, emailValido, ErroApi, normalizarEmail } from "@/lib/api";
 import { useAuth } from "./AuthProvider";
-import { Campo, classeBotao, MensagemErro } from "./TelaAuth";
+import { Campo, classeBotao, MensagemErro } from "./CamposAuth";
+import { IconeCadeado, IconeEmail, IconeEntrar, IconeUsuario } from "./Icones";
 
 type Erros = Partial<Record<"name" | "email" | "password" | "confirmacao", string>>;
 
@@ -55,11 +56,11 @@ export default function FormCadastro() {
       await cadastrar(name.trim(), email, password);
     } catch (err) {
       setErro(
-        err instanceof ErroApi && err.status === 409
-          ? "Este e-mail já está cadastrado."
-          : err instanceof Error
-            ? err.message
-            : "Não foi possível cadastrar.",
+          err instanceof ErroApi && err.status === 409
+              ? "Este e-mail já está cadastrado."
+              : err instanceof Error
+                  ? err.message
+                  : "Não foi possível cadastrar.",
       );
       setEnviando(false);
       return;
@@ -70,77 +71,81 @@ export default function FormCadastro() {
   }
 
   const ajuda = (campo: keyof Erros) =>
-    erros[campo] && (
-      <span id={`${campo}-erro`} className="mt-1 block text-xs text-orca-vermelho">
+      erros[campo] && (
+          <span id={`${campo}-erro`} className="mt-1 block text-[11px] text-orca-vermelho">
         {erros[campo]}
       </span>
-    );
+      );
 
   return (
-    <form onSubmit={enviar} noValidate className="flex flex-col gap-4">
-      <div>
-        <Campo
-          id="name"
-          rotulo="Nome"
-          autoComplete="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          aria-invalid={!!erros.name}
-          aria-describedby={erros.name ? "name-erro" : undefined}
-        />
-        {ajuda("name")}
-      </div>
-      <div>
-        <Campo
-          id="email"
-          rotulo="E-mail"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder="voce@exemplo.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          aria-invalid={!!erros.email}
-          aria-describedby={erros.email ? "email-erro" : undefined}
-        />
-        {ajuda("email")}
-      </div>
-      <div>
-        <Campo
-          id="password"
-          rotulo="Senha"
-          type="password"
-          autoComplete="new-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          aria-invalid={!!erros.password}
-          aria-describedby={erros.password ? "password-erro" : undefined}
-        />
-        {ajuda("password")}
-      </div>
-      <div>
-        <Campo
-          id="confirmacao"
-          rotulo="Confirmar senha"
-          type="password"
-          autoComplete="new-password"
-          value={confirmacao}
-          onChange={(e) => setConfirmacao(e.target.value)}
-          aria-invalid={!!erros.confirmacao}
-          aria-describedby={erros.confirmacao ? "confirmacao-erro" : undefined}
-        />
-        {ajuda("confirmacao")}
-      </div>
-      {erro && <MensagemErro>{erro}</MensagemErro>}
-      <button type="submit" className={`${classeBotao} mt-2`} disabled={enviando}>
-        {enviando ? "Cadastrando..." : "Cadastrar"}
-      </button>
-      <p className="text-center text-sm">
-        Já tem conta?{" "}
-        <Link href="/login" className="font-bold underline">
-          Entrar
-        </Link>
-      </p>
-    </form>
+      <form onSubmit={enviar} noValidate className="flex flex-col gap-[14px]">
+        <div>
+          <Campo
+              id="name"
+              rotulo="Nome"
+              icone={<IconeUsuario className="size-full" />}
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              aria-invalid={!!erros.name}
+              aria-describedby={erros.name ? "name-erro" : undefined}
+          />
+          {ajuda("name")}
+        </div>
+        <div>
+          <Campo
+              id="email"
+              rotulo="Email"
+              type="email"
+              icone={<IconeEmail className="size-full" />}
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={!!erros.email}
+              aria-describedby={erros.email ? "email-erro" : undefined}
+          />
+          {ajuda("email")}
+        </div>
+        <div>
+          <Campo
+              id="password"
+              rotulo="Senha"
+              type="password"
+              icone={<IconeCadeado className="size-full" />}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-invalid={!!erros.password}
+              aria-describedby={erros.password ? "password-erro" : undefined}
+          />
+          {ajuda("password")}
+        </div>
+        <div>
+          <Campo
+              id="confirmacao"
+              rotulo="Confirmar senha"
+              type="password"
+              icone={<IconeCadeado className="size-full" />}
+              autoComplete="new-password"
+              value={confirmacao}
+              onChange={(e) => setConfirmacao(e.target.value)}
+              aria-invalid={!!erros.confirmacao}
+              aria-describedby={erros.confirmacao ? "confirmacao-erro" : undefined}
+          />
+          {ajuda("confirmacao")}
+        </div>
+        {erro && <MensagemErro>{erro}</MensagemErro>}
+        <button type="submit" className={`${classeBotao} mt-[6px]`} disabled={enviando}>
+          {enviando ? "Cadastrando..." : "Completar cadastro"}
+          <IconeEntrar className="absolute top-1/2 right-4 size-4 -translate-y-1/2" />
+        </button>
+        <p className="text-center text-[10px]">
+          Já possui uma conta?{" "}
+          <Link href="/login" className="font-bold underline">
+            Entrar
+          </Link>
+        </p>
+      </form>
   );
 }

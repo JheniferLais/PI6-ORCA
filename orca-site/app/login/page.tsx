@@ -4,15 +4,15 @@ import FormLogin from "@/components/auth/FormLogin";
 import TelaAuth from "@/components/auth/TelaAuth";
 
 export const metadata: Metadata = {
-  title: "Entrar | ORCA",
+    title: "Entrar | ORCA",
 };
 
 export default function LoginPage() {
-  return (
-    <TelaAuth titulo="Entrar">
-      <Suspense>
-        <FormLogin />
-      </Suspense>
-    </TelaAuth>
-  );
+    return (
+        <TelaAuth titulo="Bem-vindo de volta!" tema="escuro">
+            <Suspense>
+                <FormLogin />
+            </Suspense>
+        </TelaAuth>
+    );
 }

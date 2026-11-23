@@ -4,15 +4,15 @@ import FormCadastro from "@/components/auth/FormCadastro";
 import TelaAuth from "@/components/auth/TelaAuth";
 
 export const metadata: Metadata = {
-  title: "Cadastro | ORCA",
+    title: "Cadastro | ORCA",
 };
 
 export default function CadastroPage() {
-  return (
-    <TelaAuth titulo="Cadastro">
-      <Suspense>
-        <FormCadastro />
-      </Suspense>
-    </TelaAuth>
-  );
+    return (
+        <TelaAuth titulo="Novo por aqui?" tema="claro">
+            <Suspense>
+                <FormCadastro />
+            </Suspense>
+        </TelaAuth>
+    );
 }

@@ -48,9 +48,9 @@ body {
   isolation: isolate;
   background-color: #0a0a0a;
   background-image: radial-gradient(
-    ellipse 60% 75% at 55% 0%,
-    rgba(255, 255, 255, 0.28),
-    transparent 70%
+          ellipse 60% 75% at 55% 0%,
+          rgba(255, 255, 255, 0.28),
+          transparent 70%
   );
 }
 
@@ -60,9 +60,9 @@ body {
   inset: 0;
   z-index: -1;
   background-image: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.22) 1.2px,
-    transparent 1.7px
+          circle,
+          rgba(255, 255, 255, 0.22) 1.2px,
+          transparent 1.7px
   );
   background-size: 22px 22px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
@@ -71,4 +71,46 @@ body {
 /* Sombra "dura" dos cards: preta, deslocada, sem desfoque. */
 .sombra-dura {
   box-shadow: 6px 6px 0 0 #000;
+}
+
+/* ------------------------------------------------------------------
+   TELAS DE LOGIN (.auth-escuro) E CADASTRO (.auth-claro)
+   ------------------------------------------------------------------ */
+.auth-escuro {
+  --auth-fg: #ffffff;
+  --auth-bg: #000000;
+  --auth-placeholder: #c9c9c9;
+  --auth-sombra-bg: #000000;
+  --auth-sombra-borda: rgba(255, 255, 255, 0.75);
+}
+
+.auth-claro {
+  --auth-fg: #000000;
+  --auth-bg: #ffffff;
+  --auth-placeholder: #4a4a4a;
+  --auth-sombra-bg: #bdbdbd;
+  --auth-sombra-borda: #000000;
+}
+
+.auth-escuro .auth-fundo {
+  background: #141414 url("../public/auth/login-fundo.png") center / cover no-repeat;
+}
+
+.auth-claro .auth-fundo {
+  background: #f3f3f3 url("../public/auth/cadastro-fundo.png") center / cover no-repeat;
+}
+
+.auth-grade {
+  background-size: 22px 22px;
+  background-position: 12px 12px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 90%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 1%, transparent 90%);
+}
+
+.auth-escuro .auth-grade {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 10v4M10 12h4' stroke='%23fff' stroke-opacity='.32' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+
+.auth-claro .auth-grade {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 10v4M10 12h4' stroke='%23000' stroke-opacity='.28' stroke-width='1' fill='none'/%3E%3C/svg%3E");
 }
