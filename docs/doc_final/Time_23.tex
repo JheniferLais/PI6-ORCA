@@ -121,31 +121,30 @@
 \begin{resumo}
     \SingleSpacing
 
-    O acesso frequente de crianças e adolescentes à internet por meio de
-    navegadores torna relevante o desenvolvimento de mecanismos capazes de
-    reduzir a exposição a conteúdos potencialmente inadequados. Este trabalho
-    apresenta o ORCA, um protótipo que analisa o conteúdo textual e as imagens
-    das páginas acessadas e os submete a dois modelos de inteligência
-    artificial: um classificador de texto baseado no BERTimbau, ajustado
-    (\textit{fine-tuned}) pela equipe para identificar discurso de ódio e
-    ideação suicida, e um classificador de imagens pré-treinado, baseado na
-    arquitetura SwiftFormer, que distingue conteúdo seguro, sexual e violento.
-    Uma extensão para o Google Chrome captura o conteúdo das páginas e o envia
-    a um servidor local, no qual um mecanismo de decisão consolida as duas
-    classificações e registra alertas e bloqueios, consultados pelo responsável
-    em uma interface web. O desenvolvimento seguiu a metodologia Scrum,
-    organizado em seis \textit{sprints}. No conjunto de validação, o modelo
-    textual alcançou acurácia de 89,56\% e Macro F1 de 0,7995, com desempenho
-    inferior na classe de discurso de ódio; no conjunto de teste montado pela
-    equipe, o modelo de imagens alcançou acurácia de 96,84\% e Macro F1 de
-    0,9579. O protótipo registra as ocorrências, mas ainda não bloqueia
-    efetivamente as páginas no navegador nem permite configurar regras por
-    categoria; esses pontos, a avaliação final do modelo textual no conjunto de
-    teste e a medição do tempo de resposta permanecem como trabalhos futuros.
-    Como evolução para os semestres seguintes, prevê-se a integração do núcleo
-    desenvolvido a uma infraestrutura baseada em Raspberry Pi, para a aplicação
-    centralizada de políticas em uma rede doméstica.
-
+    Crianças e adolescentes passam cada vez mais tempo na internet, e nem
+    todo conteúdo que encontram é adequado para a sua idade. Este trabalho
+    apresenta o ORCA, um protótipo que lê o texto e as imagens das páginas
+    acessadas no navegador e usa inteligência artificial para identificar
+    conteúdos potencialmente inadequados. O texto é analisado por um modelo
+    baseado no BERTimbau, treinado pela equipe para reconhecer discurso de ódio
+    e ideação suicida, e as imagens são analisadas por um modelo pronto,
+    baseado na arquitetura SwiftFormer, que separa conteúdo seguro, sexual e
+    violento. Uma extensão para o Google Chrome captura o conteúdo das páginas
+    e o envia a um servidor na própria máquina, que combina as duas análises,
+    decide entre permitir, alertar ou bloquear e registra as ocorrências, que o
+    responsável consulta em um site. O trabalho foi organizado com a
+    metodologia Scrum, em seis \textit{sprints}. O modelo de texto acertou
+    cerca de 9 em cada 10 textos (acurácia de 89,56\% e Macro F1 de 0,7995) e
+    teve bom desempenho na detecção de ideação suicida; a detecção de discurso
+    de ódio foi implementada, mas seu desempenho não foi considerado
+    satisfatório pela equipe, por causa da subjetividade do problema e da falta
+    de bases adequadas em português. O modelo de imagens acertou cerca de 97 em
+    cada 100 imagens (acurácia de 96,84\% e Macro F1 de 0,9579). O protótipo
+    ainda não bloqueia as páginas no navegador nem permite configurar regras
+    por categoria; esses pontos, a avaliação final do modelo de texto e a
+    medição do tempo de resposta ficam como trabalhos futuros. Nos próximos
+    semestres, a ideia é levar esse núcleo para um Raspberry Pi, que passará a
+    controlar o acesso de todos os dispositivos de uma rede doméstica.
     \vspace{\onelineskip}
     \noindent
 
@@ -166,112 +165,98 @@
 % ------------------------------------------------------------
 \chapter{Introdução}
 
-O acesso à internet por crianças e adolescentes ocorre, cada vez mais, por meio
-de navegadores instalados em computadores e outros dispositivos de uso pessoal.
-Embora a internet ofereça importantes recursos para educação, comunicação e
-entretenimento, a variedade e a velocidade de publicação de conteúdos também
-dificultam a identificação manual de materiais potencialmente inadequados.
+Crianças e adolescentes acessam a internet cada vez mais cedo, principalmente
+pelo navegador do computador ou do celular. A internet oferece muito para a
+educação, a comunicação e o entretenimento, mas a quantidade de conteúdo
+publicado todos os dias é tão grande que se torna impossível para um adulto
+verificar, sozinho, tudo o que a criança vê.
 
-As soluções tradicionais de controle de acesso frequentemente dependem de
-listas de bloqueio, categorias previamente cadastradas ou configurações
-realizadas individualmente em cada dispositivo. Essas abordagens podem
-apresentar limitações diante de páginas novas, conteúdos dinâmicos e situações
-em que um mesmo domínio disponibiliza materiais de naturezas distintas. Nesse
-contexto, técnicas de inteligência artificial podem ser utilizadas para analisar
-o conteúdo textual e o conteúdo visual (imagens) de uma página e estimar a
-quais categorias de conteúdo ela pertence, oferecendo uma camada adicional de
-decisão.
+As ferramentas tradicionais de controle parental funcionam, em geral, com
+listas de sites proibidos ou com categorias cadastradas previamente, e
+precisam ser configuradas em cada dispositivo. Esse modelo tem limitações:
+uma lista não conhece as páginas que acabaram de ser criadas, não acompanha
+conteúdos que mudam o tempo todo e não consegue lidar com sites que reúnem,
+no mesmo endereço, materiais inofensivos e inadequados. A inteligência
+artificial oferece outro caminho: em vez de olhar apenas o endereço, ela pode
+ler o texto e observar as imagens da página para estimar que tipo de conteúdo
+está ali.
 
-Este projeto tem como foco o desenvolvimento, neste semestre, de um sistema em
-nível de máquina voltado à análise do conteúdo textual e do conteúdo visual
-(imagens) de páginas acessadas por meio de um navegador. A proposta consiste
-em obter o conteúdo textual e as imagens disponíveis durante a navegação,
-submetê-los a modelos de inteligência artificial treinados ou ajustados pela
-equipe — um voltado ao texto e outro às imagens — e produzir classificações
-associadas a categorias previamente definidas. A partir dessas classificações,
-um mecanismo de políticas poderá determinar se o conteúdo deve ser permitido
-ou bloqueado de acordo com as regras estabelecidas para o cenário de uso.
+É essa a proposta do ORCA neste semestre. O sistema captura o texto e as
+imagens das páginas acessadas no navegador e os envia para dois modelos de
+inteligência artificial treinados ou ajustados pela equipe: um especializado
+em texto e outro em imagens. Cada modelo indica a que categoria o conteúdo
+pertence, e, a partir dessas respostas, um mecanismo de políticas decide se a
+página deve ser permitida ou bloqueada.
 
-A arquitetura proposta separa a responsabilidade de classificação da
-responsabilidade de decisão. Os modelos de inteligência artificial deverão
-responder à pergunta ``que tipo de conteúdo está presente?'' — cada um a
-partir de sua modalidade (texto ou imagem) —, enquanto o mecanismo de
-políticas deverá responder ``esse conteúdo é permitido para este contexto?'',
-consolidando as classificações recebidas. Essa separação permite que as
-mesmas classificações sejam utilizadas por diferentes conjuntos de regras e
-possibilita a evolução posterior da solução para outros ambientes.
+Uma ideia central do projeto é separar quem classifica de quem decide. Os
+modelos respondem à pergunta ``que tipo de conteúdo está nesta página?'',
+cada um olhando para o texto ou para as imagens. O mecanismo de políticas
+responde a outra pergunta: ``esse conteúdo é permitido neste contexto?''.
+Com essa separação, as mesmas classificações podem ser usadas com regras
+diferentes, e o sistema pode ser levado para outros ambientes no futuro.
 
-Para este semestre, o projeto seguirá dois caminhos técnicos complementares
-de inteligência artificial: a análise textual, com a utilização de técnicas
-de processamento de linguagem natural (PLN), e a análise visual, com a
-utilização de técnicas de visão computacional aplicadas às imagens presentes
-nas páginas. Os dois modelos serão treinados ou ajustados
-(\textit{fine-tuned}) a partir de dados apropriados para as categorias
-definidas pela equipe. Suas avaliações serão realizadas por meio de métricas
-como precisão, \textit{recall}, F1-\textit{score}, taxas de falsos positivos
-e falsos negativos e tempo de classificação, permitindo medir não apenas a
-capacidade de classificação de cada modelo, mas também a viabilidade de sua
-utilização conjunta em um cenário de navegação.
+Para analisar o texto, o projeto usa técnicas de processamento de linguagem
+natural (PLN), a área da inteligência artificial que trabalha com a linguagem
+humana. Para analisar as imagens, usa técnicas de visão computacional, a área
+que ensina o computador a interpretar imagens. Os dois modelos foram
+preparados com dados adequados às categorias definidas pela equipe e
+avaliados com métricas que medem quanto eles acertam, quantos conteúdos
+inadequados deixam passar, quantas vezes acusam um conteúdo inofensivo e
+quanto tempo levam para responder. Assim, é possível saber não só se cada
+modelo funciona isoladamente, mas também se os dois podem ser usados juntos
+durante a navegação.
 
-O projeto também disponibiliza uma interface de acompanhamento, na
-qual informações como classificações realizadas (textuais e de imagem),
-conteúdos bloqueados e estatísticas de uso podem ser consultadas. Essa
-interface tem caráter de apoio ao acompanhamento e à avaliação do protótipo,
-não constituindo, neste semestre, um painel de administração de uma rede
-doméstica.
+O projeto também oferece um site de acompanhamento, no qual o responsável
+consulta as páginas que geraram alertas ou bloqueios e as estatísticas de uso.
+Neste semestre, esse site serve para acompanhar e avaliar o protótipo, e
+ainda não é um painel de administração de uma rede doméstica.
 
-É importante delimitar o escopo desta etapa. O sistema desenvolvido terá como
-escopo: (i) um mecanismo em nível de máquina associado à navegação por
-navegador; (ii) a obtenção e o processamento do conteúdo textual e das
-imagens das páginas acessadas; (iii) um modelo de processamento de linguagem
-natural e um modelo de visão computacional, treinados ou ajustados pela
-equipe, para classificação do conteúdo textual e visual, respectivamente, em
-categorias definidas; (iv) um mecanismo de aplicação de políticas capaz de
-consolidar as classificações textual e de imagem e de permitir ou bloquear
-conteúdos de acordo com elas; e (v) o registro e a apresentação de
-informações necessárias para testes, validação e acompanhamento do sistema.
+Para deixar claro o que foi feito nesta etapa, o escopo do semestre inclui:
+(i) um mecanismo que funciona na máquina do usuário, junto ao navegador;
+(ii) a captura e o preparo do texto e das imagens das páginas acessadas;
+(iii) um modelo de processamento de linguagem natural e um modelo de visão
+computacional para classificar o texto e as imagens nas categorias definidas;
+(iv) um mecanismo de políticas que combina as duas classificações e decide
+entre permitir e bloquear; e (v) o registro e a apresentação das informações
+necessárias para testar, validar e acompanhar o sistema.
 
-Não fazem parte do escopo deste semestre: a implementação do Raspberry Pi como
-\textit{gateway} de rede; a identificação de usuários ou dispositivos por
-endereço IP em nível de rede; a aplicação centralizada de políticas para
-múltiplos dispositivos; e a análise do tráfego criptografado ponto a ponto.
-Também não se pretende garantir o bloqueio absoluto de todo conteúdo
-inadequado presente na internet. A solução será apresentada como um mecanismo
-de redução da exposição a conteúdos potencialmente inadequados, considerando
-as limitações inerentes à obtenção de conteúdo textual e de imagens, ao
-funcionamento dos navegadores, ao uso de HTTPS e à natureza dinâmica da web.
+Ficam de fora deste semestre: o uso do Raspberry Pi como ponto central da
+rede; a identificação de usuários ou dispositivos pelo endereço IP; a
+aplicação das mesmas regras para vários dispositivos ao mesmo tempo; e a
+análise do tráfego criptografado. O projeto também não promete bloquear todo
+conteúdo inadequado da internet. A proposta é reduzir a exposição a esses
+conteúdos, reconhecendo os limites que existem na captura do texto e das
+imagens, no funcionamento dos navegadores, no uso de conexões seguras (HTTPS)
+e na velocidade com que a web muda.
 
 \section*{Evolução planejada do projeto}
 
-A solução desenvolvida neste semestre constitui o núcleo inicial de uma
-proposta de maior abrangência para os semestres seguintes. Como evolução
-planejada, os motores de classificação textual e de imagem deverão ser
-integrados a uma infraestrutura baseada em Raspberry Pi, que atuará como
-ponto central de controle em uma rede doméstica. Nessa etapa futura, será
-possível associar dispositivos e,
-posteriormente, usuários ou perfis a políticas específicas e aplicar as
-decisões de acesso de maneira centralizada.
+O que foi construído neste semestre é o ponto de partida de uma proposta
+maior. Nos próximos semestres, os modelos de texto e de imagem serão levados
+para um Raspberry Pi, um pequeno computador que ficará no centro da rede
+doméstica e controlará o acesso de todos os dispositivos conectados a ela.
+Nessa etapa, será possível associar regras a cada dispositivo e, depois, a
+cada usuário ou perfil, aplicando as decisões de forma centralizada.
 
-Em uma etapa posterior, a solução poderá incorporar um painel administrativo
-voltado a responsáveis, permitindo configurar perfis, políticas e horários,
-além de acompanhar estatísticas e tentativas de acesso bloqueadas. A
-arquitetura também poderá ser expandida para cenários além do controle
-parental, como ambientes educacionais e empresariais, nos quais a classificação
-inteligente de conteúdo possa auxiliar na redução de riscos de segurança
-digital.
+Mais adiante, a solução poderá ganhar um painel administrativo para os
+responsáveis, no qual será possível configurar perfis, regras e horários e
+acompanhar estatísticas e tentativas de acesso bloqueadas. A mesma ideia
+também pode ser aproveitada fora do controle parental, em escolas e empresas,
+onde a classificação automática de conteúdo ajuda a reduzir riscos de
+segurança digital.
 
 \section*{Círculo Dourado}
 
-Para explicitar o propósito do projeto, aplica-se o modelo do Círculo Dourado
-(\textit{Golden Circle}), de Simon Sinek, estruturado em três camadas:
-\textit{Why} (por quê), \textit{How} (como) e \textit{What} (o quê).
+Para mostrar com clareza o propósito do projeto, foi usado o Círculo Dourado
+(\textit{Golden Circle}), modelo criado por Simon Sinek \cite{sinek2009} que organiza uma ideia
+em três camadas: \textit{Why} (por quê), \textit{How} (como) e \textit{What}
+(o quê).
 
 \begin{alineas}
-    \item \textbf{Why (Por quê):} Acreditamos que responsáveis devem possuir meios acessíveis de reduzir a exposição de crianças e adolescentes a conteúdos potencialmente inadequados na internet, sem depender exclusivamente de listas estáticas de bloqueio ou de configurações técnicas complexas.
-    \item \textbf{How (Como):} Neste semestre, isso será investigado por meio de um sistema em nível de máquina capaz de analisar o conteúdo textual e o conteúdo visual (imagens) de páginas acessadas no navegador, utilizando um modelo de processamento de linguagem natural e um modelo de visão computacional, treinados ou ajustados pela equipe, para classificá-los segundo categorias previamente definidas. As classificações serão então consolidadas e utilizadas por um mecanismo de políticas para determinar a ação de acesso.
-    \item \textbf{What (O quê):} O resultado deste semestre será um protótipo funcional de classificação e controle de conteúdo textual e visual em nível de máquina, acompanhado de métricas de avaliação de cada modalidade e, quando aplicável, uma interface para acompanhamento das classificações e bloqueios. Nos semestres seguintes, esse núcleo será integrado a uma infraestrutura de rede baseada em Raspberry Pi, com o objetivo de evoluir para uma solução centralizada de controle de acesso.
+    \item \textbf{Why (Por quê):} Acreditamos que os responsáveis devem ter meios simples de reduzir a exposição de crianças e adolescentes a conteúdos inadequados na internet, sem depender apenas de listas fixas de sites ou de configurações técnicas complicadas.
+    \item \textbf{How (Como):} Neste semestre, construímos um sistema que funciona na própria máquina e analisa o texto e as imagens das páginas acessadas no navegador. Um modelo de processamento de linguagem natural cuida do texto, e um modelo de visão computacional cuida das imagens. As duas classificações são combinadas por um mecanismo de políticas, que decide o que fazer com a página.
+    \item \textbf{What (O quê):} O resultado do semestre é um protótipo funcional que classifica o texto e as imagens das páginas, acompanhado das métricas de avaliação de cada modelo e de um site para acompanhar os alertas e bloqueios. Nos próximos semestres, esse núcleo será levado para uma rede com Raspberry Pi, para controlar o acesso de forma centralizada.
 \end{alineas}
-
 \vspace{0.5cm}
 
 \begin{figure}[htbp]
@@ -289,27 +274,26 @@ Para explicitar o propósito do projeto, aplica-se o modelo do Círculo Dourado
 
 \section{Objetivo Geral}
 
-Desenvolver e validar um protótipo em nível de máquina capaz de analisar o
-conteúdo textual e o conteúdo visual (imagens) de páginas acessadas por meio
-de um navegador, utilizando um modelo de processamento de linguagem natural e
-um modelo de visão computacional, treinados ou ajustados (\textit{fine-tuned})
-pela equipe, para classificar conteúdos em categorias previamente definidas e
-aplicar políticas de permissão ou bloqueio a partir da consolidação dessas
-classificações.
+Construir e validar um protótipo que funcione na máquina do usuário e analise
+o texto e as imagens das páginas acessadas no navegador. Para isso, um modelo
+de processamento de linguagem natural e um modelo de visão computacional,
+treinados ou ajustados pela equipe, classificam o conteúdo em categorias
+definidas previamente, e um mecanismo de políticas combina essas
+classificações para decidir se a página deve ser permitida ou bloqueada.
 
 \section{Objetivos Específicos}
 
 \begin{alineas}
-    \item Pesquisar e selecionar técnicas de processamento de linguagem natural e de visão computacional, bem como modelos de inteligência artificial adequados à classificação de conteúdo textual e visual de páginas web, considerando as restrições de execução e resposta esperadas para um sistema em nível de máquina;
-    \item Construir, preparar e documentar bases de dados (textual e de imagens) para treinamento, validação e teste dos modelos, definindo categorias de conteúdo e procedimentos de pré-processamento compatíveis com cada modalidade;
-    \item Treinar ou ajustar (\textit{fine-tune}) um modelo de processamento de linguagem natural e um modelo de visão computacional para classificar, respectivamente, o conteúdo textual e as imagens das páginas nas categorias definidas, buscando reduzir a dependência de listas estáticas de sites;
-    \item Desenvolver o mecanismo em nível de máquina responsável por obter o conteúdo textual e as imagens das páginas acessadas pelo navegador e encaminhá-los aos respectivos classificadores, respeitando as limitações técnicas impostas pelo funcionamento da web e pelo uso de conexões criptografadas;
-    \item Desenvolver um mecanismo de políticas que utilize e consolide as classificações textual e de imagem produzidas pela inteligência artificial para determinar se determinado conteúdo deve ser permitido ou bloqueado, mantendo separadas as responsabilidades de classificação e decisão;
-    \item Implementar, quando aplicável ao protótipo, uma interface de acompanhamento das classificações e ações realizadas, permitindo visualizar informações como conteúdos analisados (por modalidade), bloqueios e estatísticas de uso;
-    \item Avaliar o desempenho dos classificadores textual e de imagem por meio de métricas como precisão, \textit{recall}, F1-\textit{score}, taxa de falsos positivos, taxa de falsos negativos e tempo de classificação, analisando os resultados obtidos, isoladamente e em conjunto, e suas limitações;
-    \item Realizar testes do sistema em diferentes situações de navegação, verificando a integração entre obtenção do conteúdo textual e visual, classificação, consolidação das classificações, aplicação das políticas e registro dos resultados;
-    \item Identificar e documentar as limitações técnicas, éticas e de privacidade da solução, especialmente aquelas relacionadas ao monitoramento de navegação, à obtenção de conteúdo textual e de imagens, à classificação automatizada e ao uso de dados de navegação;
-    \item Estabelecer uma base arquitetural que permita, nos semestres seguintes, a integração dos motores de classificação textual e de imagem a uma infraestrutura de rede baseada em Raspberry Pi e a evolução da solução para aplicação centralizada de políticas em múltiplos dispositivos.
+    \item Pesquisar e escolher técnicas e modelos de inteligência artificial adequados para classificar o texto e as imagens de páginas web, levando em conta que o sistema precisa rodar em um computador comum e responder rapidamente;
+    \item Montar, preparar e documentar as bases de dados de texto e de imagens usadas para treinar, validar e testar os modelos, definindo as categorias de conteúdo e a forma de preparar cada tipo de dado;
+    \item Treinar ou ajustar um modelo de processamento de linguagem natural para o texto e um modelo de visão computacional para as imagens, de modo que classifiquem o conteúdo nas categorias definidas, sem depender de listas fixas de sites;
+    \item Desenvolver o mecanismo que captura o texto e as imagens das páginas acessadas no navegador e os envia para os classificadores, respeitando os limites técnicos da web e das conexões criptografadas;
+    \item Desenvolver um mecanismo de políticas que combine as classificações de texto e de imagem e decida se o conteúdo deve ser permitido ou bloqueado, mantendo separadas as tarefas de classificar e de decidir;
+    \item Criar, quando possível no protótipo, uma interface para acompanhar as classificações e as ações tomadas, mostrando os conteúdos analisados, os bloqueios e estatísticas de uso;
+    \item Avaliar os classificadores de texto e de imagem com métricas que mostrem quanto eles acertam, quantos conteúdos inadequados deixam passar, quantas vezes acusam conteúdos inofensivos e quanto tempo levam para responder, analisando os resultados e suas limitações;
+    \item Testar o sistema em diferentes situações de navegação, verificando se a captura, a classificação, a combinação das classificações, a decisão e o registro funcionam bem em conjunto;
+    \item Identificar e documentar as limitações técnicas, éticas e de privacidade da solução, principalmente as ligadas ao monitoramento da navegação, à captura de conteúdo, à classificação automática e ao uso dos dados de navegação;
+    \item Organizar a arquitetura do sistema de forma que, nos próximos semestres, os modelos possam ser levados para uma rede com Raspberry Pi e as regras possam ser aplicadas de forma centralizada a vários dispositivos.
 \end{alineas}
 
 % ------------------------------------------------------------
@@ -317,18 +301,18 @@ classificações.
 % ------------------------------------------------------------
 \chapter{Representantes da Comunidade Externa}
 
-As 62 horas de extensão do projeto correspondem às atividades realizadas junto
-à comunidade externa. Os representantes participam da definição do problema,
-das entrevistas, do levantamento dos requisitos, da validação dos protótipos e
-da validação final do sistema. Para que suas contribuições reflitam o público
-do ORCA, buscam-se perfis próximos aos das personas definidas no
-Capítulo~\ref{cap:personas}: responsáveis por crianças e adolescentes,
-profissionais da educação e profissionais de tecnologia ou de segurança
-digital.
+As 62 horas de extensão do projeto correspondem às atividades realizadas com a
+comunidade externa, ou seja, com pessoas de fora da universidade que fazem
+parte do público do ORCA. Esses representantes ajudam a definir o problema,
+participam das entrevistas, contribuem com os requisitos e avaliam os
+protótipos e o sistema final. Para que as contribuições reflitam quem de fato
+usaria o ORCA, foram buscadas pessoas com perfis parecidos com os das personas
+apresentadas no Capítulo~\ref{cap:personas}: responsáveis por crianças e
+adolescentes, profissionais da educação e profissionais de tecnologia ou de
+segurança digital.
 
-O Quadro~\ref{tab:representantes} apresenta os representantes da comunidade
-externa que participaram do projeto.
-
+O Quadro~\ref{tab:representantes} apresenta os representantes que
+participaram do projeto.
 \begin{table}[htbp]
 \centering
 \small
@@ -348,126 +332,130 @@ Camila do Rosario Duarte & Administradora & caca22duarte@\allowbreak gmail.com &
 % ------------------------------------------------------------
 \chapter{Fundamentação Teórica}
 
-Este capítulo apresenta os conceitos que embasam o ORCA, partindo do problema
-de controle de acesso a conteúdo e passando pelas técnicas de inteligência
-artificial, pelas tecnologias web e pelas práticas de Engenharia de Software
-adotadas.
+Este capítulo explica os conceitos necessários para entender o ORCA. Ele
+começa pelo problema do controle de acesso a conteúdo e passa pelas técnicas
+de inteligência artificial, pelas tecnologias web e pelas práticas de
+Engenharia de Software usadas no projeto.
 
 \section{Controle Parental e Classificação de Conteúdo}
 
-Ferramentas de controle parental têm como objetivo reduzir a exposição de
-crianças e adolescentes a conteúdos inadequados para sua faixa etária. A
-abordagem mais comum é a filtragem por listas, em que endereços ou domínios são
-previamente classificados e bloqueados. Embora simples, essa estratégia depende
-de manutenção constante e não acompanha páginas novas, conteúdo gerado por
-usuários nem domínios que reúnem materiais de naturezas diferentes.
+As ferramentas de controle parental existem para reduzir a exposição de
+crianças e adolescentes a conteúdos inadequados para a sua idade. A forma mais
+comum de fazer isso é por meio de listas: alguém classifica previamente
+endereços ou domínios, e a ferramenta bloqueia os que estão na lista. É uma
+estratégia simples, mas que precisa de atualização constante e não dá conta de
+páginas novas, de conteúdo publicado pelos próprios usuários nem de sites que
+reúnem materiais muito diferentes entre si.
 
-A classificação de conteúdo propõe uma alternativa: em vez de avaliar o
-endereço, avalia-se o que a página efetivamente exibe. Para isso, o texto e as
-imagens são submetidos a modelos capazes de estimar a categoria do conteúdo,
-como discurso de ódio, conteúdo sexual ou violência. No ORCA, essa
-classificação é separada da decisão: os modelos indicam a categoria e o grau de
-confiança, e um mecanismo de políticas determina a ação a ser tomada.
+A classificação de conteúdo propõe outra abordagem: em vez de avaliar o
+endereço, avalia-se o que a página realmente mostra. O texto e as imagens são
+enviados a modelos capazes de estimar a categoria do conteúdo, como discurso de
+ódio, conteúdo sexual ou violência. No ORCA, classificar e decidir são etapas
+separadas: os modelos dizem qual é a categoria e quanta certeza têm, e um
+mecanismo de políticas decide o que fazer.
 
 \section{Aprendizado de Máquina e Aprendizado Profundo}
 
-O aprendizado de máquina reúne técnicas em que um modelo aprende padrões a
-partir de exemplos, em vez de seguir regras programadas manualmente. Na
-classificação supervisionada, o modelo recebe exemplos rotulados e ajusta seus
-parâmetros para prever o rótulo de novas entradas. O aprendizado profundo
-utiliza redes neurais com muitas camadas, capazes de aprender representações
-cada vez mais abstratas dos dados \cite{goodfellow2016}.
+No aprendizado de máquina, em vez de programar regras uma a uma, o computador
+aprende padrões a partir de exemplos. Na classificação supervisionada, o
+modelo recebe muitos exemplos já rotulados, como textos marcados como
+``seguro'' ou ``ódio'', e vai se ajustando até conseguir prever o rótulo de
+exemplos novos. O aprendizado profundo é uma parte dessa área que usa redes
+neurais com muitas camadas, capazes de reconhecer padrões cada vez mais
+complexos nos dados \cite{goodfellow2016}.
 
-Treinar uma rede profunda do zero exige grande volume de dados e de
-processamento. Por isso, é comum partir de um modelo pré-treinado em uma tarefa
-ampla e ajustá-lo a uma tarefa específica, processo chamado de transferência de
-aprendizado. Quando os pesos do modelo são atualizados com os dados da nova
-tarefa, fala-se em ajuste fino (\textit{fine-tuning}). Esse foi o caminho
-adotado no classificador de texto do ORCA.
+Treinar uma rede profunda do zero exige muitos dados e muito poder de
+processamento. Por isso, é comum partir de um modelo que já foi treinado em
+uma tarefa mais ampla e adaptá-lo à tarefa desejada, o que se chama de
+transferência de aprendizado. Quando esse modelo continua sendo treinado com
+os dados da nova tarefa, o processo é chamado de ajuste fino
+(\textit{fine-tuning}). Foi assim que o classificador de texto do ORCA foi
+construído.
 
-Para avaliar um classificador, os dados são divididos em conjuntos de
-treinamento, usado para ajustar os parâmetros; de validação, usado para
-escolher configurações e pontos de parada; e de teste, reservado para estimar o
-desempenho em dados nunca vistos. Quando informações de um conjunto aparecem em
-outro, ocorre o vazamento de dados (\textit{data leakage}), que produz
-resultados artificialmente otimistas.
+Para saber se um classificador funciona bem, os dados são divididos em três
+partes. O conjunto de treinamento é usado para o modelo aprender; o de
+validação, para escolher as melhores configurações e o momento de parar o
+treino; e o de teste, guardado até o fim, para medir o desempenho em dados que
+o modelo nunca viu. Se informações de um conjunto aparecem em outro, acontece
+o vazamento de dados (\textit{data leakage}), e os resultados parecem melhores
+do que realmente são.
 
 \section{Processamento de Linguagem Natural e Modelos Transformer}
 
-O processamento de linguagem natural (PLN) estuda métodos computacionais para
-analisar e gerar linguagem humana. A classificação de textos, em que se atribui
-uma categoria a um documento, é uma de suas tarefas mais tradicionais
-\cite{jurafsky2025}.
+O processamento de linguagem natural (PLN) é a área que estuda como o
+computador pode analisar e produzir linguagem humana. Uma de suas tarefas mais
+tradicionais é a classificação de textos, que consiste em atribuir uma
+categoria a cada texto \cite{jurafsky2025}.
 
-A arquitetura Transformer substituiu as redes recorrentes em grande parte das
-tarefas de PLN ao utilizar mecanismos de atenção, que permitem ao modelo
-relacionar cada palavra a todas as demais da sequência \cite{vaswani2017}. O
-BERT (\textit{Bidirectional Encoder Representations from Transformers}) é um
-codificador Transformer pré-treinado em grandes volumes de texto, capaz de
-considerar o contexto à esquerda e à direita de cada palavra, e que pode ser
-ajustado para classificação com a adição de uma camada de saída
-\cite{devlin2019}. O BERTimbau é uma versão do BERT pré-treinada em
-português brasileiro, que apresenta resultados superiores aos de modelos
-multilíngues em tarefas no idioma \cite{souza2020}.
+A arquitetura Transformer mudou essa área ao introduzir o mecanismo de
+atenção, que permite ao modelo relacionar cada palavra com todas as outras da
+frase \cite{vaswani2017}. O BERT (\textit{Bidirectional Encoder
+Representations from Transformers}) é um modelo desse tipo, treinado
+previamente com grandes volumes de texto. Ele considera as palavras que vêm
+antes e depois de cada palavra para entender o contexto e pode ser adaptado
+para classificar textos com o acréscimo de uma camada final
+\cite{devlin2019}. O BERTimbau é uma versão do BERT treinada em português
+brasileiro, com resultados melhores que os de modelos multilíngues em tarefas
+no nosso idioma \cite{souza2020}.
 
-Antes de chegar ao modelo, o texto é dividido em unidades menores, os
-\textit{tokens}, por meio de um tokenizador associado ao próprio modelo. Como o
-BERT processa um número máximo de \textit{tokens} por vez, textos longos
-precisam ser truncados ou divididos em trechos.
+Antes de chegar ao modelo, o texto é dividido em pedaços menores, chamados
+\textit{tokens}, por um tokenizador que acompanha o próprio modelo. Como o
+BERT só consegue processar uma quantidade limitada de \textit{tokens} de cada
+vez, textos longos precisam ser cortados ou divididos em trechos.
 
 \section{Visão Computacional}
 
-A visão computacional trata da extração de informações a partir de imagens. As
-redes neurais convolucionais tornaram-se o padrão para classificação de
-imagens, e a introdução de conexões residuais permitiu treinar redes bem mais
-profundas, como as ResNets \cite{he2016}. Mais recentemente, mecanismos de
-atenção também passaram a ser aplicados a imagens. O SwiftFormer combina
-convoluções com uma forma eficiente de atenção, com o objetivo de oferecer boa
-precisão com baixo custo computacional, o que favorece a execução em
-dispositivos com recursos limitados \cite{shaker2023}. O classificador de
-imagens do ORCA utiliza um modelo pré-treinado baseado nessa arquitetura.
+A visão computacional é a área que ensina o computador a extrair informações
+de imagens. Durante muito tempo, as redes neurais convolucionais foram o
+padrão para classificar imagens, e as conexões residuais permitiram treinar
+redes muito mais profundas, como as ResNets \cite{he2016}. Mais recentemente,
+o mecanismo de atenção também passou a ser usado com imagens. O SwiftFormer
+combina essas duas ideias de forma eficiente, buscando bons resultados com
+pouco custo de processamento, o que permite rodar o modelo em computadores
+mais simples \cite{shaker2023}. O classificador de imagens do ORCA usa um
+modelo pronto baseado nessa arquitetura.
 
 \section{Extensões de Navegador}
 
-Extensões são programas que ampliam as funcionalidades do navegador. No Google
-Chrome, o padrão atual é o Manifest V3, no qual a extensão é composta por
-\textit{content scripts}, que executam no contexto das páginas e têm acesso ao
-seu conteúdo, e por um \textit{service worker}, que executa em segundo plano e
-concentra a comunicação com serviços externos \cite{chromeext}. No ORCA, o
-\textit{content script} obtém o texto e as imagens da página, e o
-\textit{service worker} os envia ao servidor de classificação.
+Extensões são pequenos programas que adicionam funções ao navegador. No Google
+Chrome, o padrão atual é o Manifest V3. Nele, a extensão tem duas partes
+principais: os \textit{content scripts}, que rodam dentro das páginas e
+conseguem ler o seu conteúdo, e o \textit{service worker}, que roda em segundo
+plano e cuida da comunicação com serviços externos \cite{chromeext}. No ORCA,
+o \textit{content script} lê o texto e as imagens da página, e o
+\textit{service worker} os envia para o servidor de análise.
 
 \section{Arquitetura Cliente-Servidor, APIs e Autenticação}
 
-Na arquitetura cliente-servidor, os clientes solicitam operações a um servidor
-que concentra o processamento e os dados. O estilo REST organiza essa
-comunicação em torno de recursos acessados por métodos padronizados do
-protocolo HTTP, com requisições independentes entre si \cite{fielding2000}.
+Na arquitetura cliente-servidor, os clientes pedem operações a um servidor,
+que concentra o processamento e os dados. O estilo REST organiza essa conversa
+em torno de recursos acessados por métodos padronizados do protocolo HTTP,
+e cada pedido é tratado de forma independente dos demais \cite{fielding2000}.
 
-Para identificar o usuário em cada requisição, o ORCA utiliza JSON Web Tokens
-(JWT), estruturas assinadas que carregam informações sobre o usuário e sua
-validade \cite{rfc7519}. As senhas não são armazenadas diretamente, mas sim
-transformadas pela função Argon2, projetada para tornar ataques de força bruta
-custosos \cite{rfc9106}.
+Para saber quem está fazendo cada pedido, o ORCA usa JSON Web Tokens (JWT),
+uma espécie de crachá digital assinado que informa quem é o usuário e até
+quando o acesso vale \cite{rfc7519}. As senhas nunca são guardadas como foram
+digitadas: elas passam pela função Argon2, criada justamente para dificultar
+que alguém descubra a senha por tentativa e erro \cite{rfc9106}.
 
 \section{Engenharia de Software Aplicada ao Projeto}
 
-A Engenharia de Software fornece os métodos para especificar, desenvolver e
-validar o sistema \cite{sommerville2019}. Os requisitos funcionais do ORCA
-foram descritos como histórias de usuário, formato das metodologias ágeis que
-explicita quem precisa da funcionalidade, o que deseja e por quê. Os
-requisitos não funcionais foram organizados segundo características de
+A Engenharia de Software oferece os métodos para planejar, construir e
+validar um sistema \cite{sommerville2019}. Os requisitos funcionais do ORCA
+foram escritos como histórias de usuário, um formato das metodologias ágeis
+que deixa claro quem precisa da funcionalidade, o que precisa e por quê. Os
+requisitos não funcionais foram organizados de acordo com características de
 qualidade inspiradas na norma ISO/IEC~25010 \cite{iso25010}.
 
-O desenvolvimento seguiu o Scrum, \textit{framework} ágil em que o trabalho é
-organizado em ciclos curtos, as \textit{sprints}, cada um com planejamento,
-revisão e retrospectiva, a partir de uma lista priorizada de itens, o
-\textit{Product Backlog} \cite{scrumguide2020}.
+O desenvolvimento seguiu o Scrum, um \textit{framework} ágil em que o
+trabalho é dividido em ciclos curtos, as \textit{sprints}. Cada ciclo começa
+com um planejamento e termina com uma revisão do que foi entregue e uma
+retrospectiva sobre como a equipe trabalhou, sempre a partir de uma lista
+priorizada de tarefas, o \textit{Product Backlog} \cite{scrumguide2020}.
 
 % ------------------------------------------------------------
 % 5 Levantamento e Análise de Requisitos
 % ------------------------------------------------------------
-
 % --- Macros do template de requisitos funcionais (sem pacotes extras) ---
 \newenvironment{dadoslista}{%
   \begin{itemize}%
@@ -498,9 +486,10 @@ revisão e retrospectiva, a partir de uma lista priorizada de itens, o
 
 \section{Requisitos Funcionais}
 
-Os requisitos funcionais são descritos no formato de histórias de usuário da
-metodologia ágil (\textit{``Eu, enquanto <quem>, quero <o quê>, para <por quê>''}).
-
+Os requisitos funcionais descrevem o que o sistema precisa fazer. Eles foram
+escritos como histórias de usuário, um formato das metodologias ágeis que
+coloca a necessidade do ponto de vista de quem vai usar o sistema:
+\textit{``Eu, enquanto <quem>, quero <o quê>, para <por quê>''}.
 \reqfunc{RF001}
 {Captura de conteúdo das páginas}
 {Eu, enquanto responsável pelo monitoramento, quero que o sistema obtenha o conteúdo textual e as imagens das páginas acessadas durante a navegação, para que esse conteúdo possa ser analisado e classificado.}
@@ -682,11 +671,11 @@ metodologia ágil (\textit{``Eu, enquanto <quem>, quero <o quê>, para <por quê
 
 \section{Requisitos Não Funcionais}
 
-Os requisitos não funcionais descrevem atributos de qualidade do sistema,
-organizados a partir de categorias inspiradas na norma ISO/IEC~25010
-\cite{iso25010}. Assim como os requisitos funcionais, são descritos no formato
-de histórias de usuário.
-
+Os requisitos não funcionais não dizem o que o sistema faz, mas como ele deve
+se comportar: com que velocidade, com que segurança, com que facilidade de
+uso. Eles foram organizados com base nas categorias de qualidade da norma
+ISO/IEC~25010 \cite{iso25010} e também foram escritos como histórias de
+usuário.
 \reqfunc{RNF001}
 {Tempo de resposta da classificação}
 {Eu, enquanto responsável pelo monitoramento, quero que a classificação textual e a de imagem de uma página sejam concluídas em tempo compatível com a experiência de navegação, para que o controle não prejudique o uso do navegador.}
@@ -794,9 +783,9 @@ de histórias de usuário.
 
 \section{Requisitos Específicos para Inteligência Artificial}
 
-Os requisitos específicos de inteligência artificial definem as metas de
-qualidade de cada modelo e seguem o mesmo formato dos demais requisitos.
-
+Os requisitos de inteligência artificial definem as metas que cada modelo
+precisa alcançar, como a porcentagem mínima de acertos e o tempo máximo de
+resposta. Eles seguem o mesmo formato dos demais requisitos.
 \subsection{Modelo de Processamento de Linguagem Natural (Texto)}
 
 \reqfunc{RIA001}
@@ -1052,14 +1041,14 @@ qualidade de cada modelo e seguem o mesmo formato dos demais requisitos.
 % ------------------------------------------------------------
 \chapter{Benchmarking}
 
-O benchmarking compara o ORCA com três soluções de controle parental
-disponíveis no mercado: Qustodio, Microsoft Family Safety e Net Nanny.
-A comparação considera funcionalidades de filtragem, análise de conteúdo,
-aplicação de regras, monitoramento e características técnicas relacionadas
-aos objetivos do projeto. O objetivo não é afirmar que o ORCA apresenta
-mais recursos que as soluções existentes, mas identificar diferenças entre
-as abordagens adotadas e a proposta técnica desenvolvida neste projeto.
-
+O benchmarking compara o ORCA com três ferramentas de controle parental
+conhecidas no mercado: Qustodio \cite{qustodio}, Microsoft Family Safety
+\cite{familysafety} e Net Nanny \cite{netnanny}. A
+comparação considera recursos de filtragem, análise de conteúdo, regras,
+monitoramento e características técnicas ligadas aos objetivos do projeto. A
+intenção não é mostrar que o ORCA tem mais recursos que essas ferramentas, e
+sim entender em que a abordagem do projeto se diferencia das soluções que já
+existem.
 \begin{table}[htbp]
 \centering
 \small
@@ -1097,36 +1086,32 @@ Controle centralizado por gateway Raspberry Pi & \xmark & -- & \xmark & \xmark \
 \label{tab:benchmarking}
 \end{table}
 
-O principal diferencial técnico do ORCA é a proposta de combinar dois
-classificadores de inteligência artificial: um baseado em processamento
-de linguagem natural (PLN), voltado à análise do conteúdo textual, e outro
-baseado em visão computacional, voltado à classificação das imagens presentes
-nas páginas acessadas pelo navegador. O modelo textual foi ajustado pela
-equipe a partir de bases de dados em português, enquanto o modelo de imagens,
-pré-treinado, foi avaliado em uma base montada pela equipe para as categorias
-do projeto. Como as soluções comerciais podem utilizar tecnologias proprietárias,
-a ausência de documentação pública sobre uma técnica específica não significa
-que ela não seja utilizada internamente; por isso, os campos sem confirmação
-foram indicados com um traço.
+O principal diferencial do ORCA é combinar dois classificadores de
+inteligência artificial: um que lê o texto das páginas, usando processamento
+de linguagem natural, e outro que analisa as imagens, usando visão
+computacional. O modelo de texto foi treinado pela equipe com bases de dados
+em português, e o modelo de imagens, que já vinha pronto, foi avaliado com uma
+base montada pela equipe para as categorias do projeto. Como as ferramentas
+comerciais costumam usar tecnologias próprias e nem sempre divulgam como
+funcionam, a falta de informação pública sobre um recurso não significa que
+ele não exista. Por isso, os casos sem confirmação foram marcados com um
+traço.
 
-Outra característica da proposta é a separação entre classificação e decisão.
-Os classificadores deverão identificar as categorias presentes no texto e nas
-imagens, enquanto um mecanismo de políticas consolidará os resultados e
-determinará se o conteúdo deve ser permitido ou bloqueado. Essa arquitetura
-foi avaliada por meio de métricas como precisão, \textit{recall}, F1-\textit{score}
-e taxas de falsos positivos e falsos negativos.
+Outro ponto que diferencia a proposta é a separação entre classificar e
+decidir. Os classificadores identificam o tipo de conteúdo presente no texto e
+nas imagens, e um mecanismo de políticas combina esses resultados e decide se
+a página deve ser permitida ou bloqueada. Além disso, os classificadores do
+ORCA foram avaliados com métricas que mostram quanto acertam e quanto erram,
+o que as ferramentas comerciais não costumam divulgar.
 
-As soluções analisadas também oferecem funcionalidades que não fazem parte
-do escopo atual do ORCA, como controle de tempo de tela e uso de aplicativos.
-O bloqueio de sites específicos, por exemplo por meio de listas definidas pelo
-responsável, também não foi implementado no protótipo, que se concentra na
-análise do conteúdo.
-Além disso, a aplicação centralizada de políticas por meio de um gateway
-Raspberry Pi é uma evolução planejada para os próximos semestres, e não uma
-funcionalidade prevista para o protótipo deste semestre. Dessa forma, o
-benchmarking evidencia tanto as capacidades que o ORCA pretende investigar
-quanto os limites de seu escopo em relação às ferramentas existentes.
-
+Por outro lado, as ferramentas analisadas oferecem recursos que estão fora do
+escopo atual do ORCA, como o controle do tempo de tela e do uso de
+aplicativos. O bloqueio de sites específicos, a partir de uma lista definida
+pelo responsável, também não foi implementado, já que o protótipo se
+concentra na análise do conteúdo. O controle centralizado por meio de um
+Raspberry Pi é uma evolução prevista para os próximos semestres. Assim, o
+benchmarking mostra tanto o que o ORCA traz de novo quanto os limites do seu
+escopo atual em relação às ferramentas existentes.
 % ------------------------------------------------------------
 % 7 Definição das Personas 
 % ------------------------------------------------------------
@@ -1228,38 +1213,36 @@ quanto os limites de seu escopo em relação às ferramentas existentes.
 % ------------------------------------------------------------
 \chapter{Protótipos das Interfaces}
 
-As interfaces do ORCA foram prototipadas no Figma e, em seguida, implementadas
-no site de acompanhamento, mantendo a identidade visual definida no protótipo,
-com títulos na fonte pixelada Pixelify Sans e textos em IBM Plex Mono. O protótipo está disponível em: \textit{[inserir o link do
-Figma]}. O site implementado está publicado em
-\url{https://pi-orca.vercel.app}.
+As telas do ORCA foram desenhadas primeiro no Figma, uma ferramenta de
+prototipação, e depois construídas no site de acompanhamento, mantendo a mesma
+identidade visual: títulos na fonte pixelada Pixelify Sans e textos em IBM
+Plex Mono. O protótipo está disponível em: \textit{[inserir o link do
+Figma]}. O site está publicado em \url{https://pi-orca.vercel.app}.
 
-O site é composto por quatro telas:
+O site tem quatro telas:
 
 \begin{alineas}
     \item \textbf{Página inicial:} apresenta o ORCA ao responsável, explica em
-    etapas como o sistema funciona (captura, análise e decisão), descreve os
-    tipos de conteúdo que o sistema busca identificar e oferece acesso ao
+    três etapas como o sistema funciona (captura, análise e decisão), mostra
+    os tipos de conteúdo que o sistema procura identificar e dá acesso ao
     cadastro e ao login;
-    \item \textbf{Cadastro:} permite criar uma conta informando nome, e-mail e
-    senha de no mínimo oito caracteres;
-    \item \textbf{Login:} autentica o responsável por e-mail e senha. Após o
-    login, a extensão instalada no navegador passa a utilizar a mesma sessão
-    para enviar as páginas à análise;
-    \item \textbf{Histórico de alertas:} tela protegida por login que reúne as
-    ocorrências registradas. Apresenta o total de bloqueios e de alertas,
-    filtros por texto, categoria, tipo de ocorrência e período, uma lista
-    paginada com endereço, categoria e data de cada ocorrência e um indicador
-    do estado de conexão com o servidor de análise.
+    \item \textbf{Cadastro:} permite criar uma conta com nome, e-mail e uma
+    senha de pelo menos oito caracteres;
+    \item \textbf{Login:} permite entrar com e-mail e senha. Depois do login,
+    a extensão instalada no navegador passa a usar a mesma conta para enviar
+    as páginas para análise;
+    \item \textbf{Histórico de alertas:} tela acessível apenas após o login,
+    que reúne as ocorrências registradas. Ela mostra o total de bloqueios e de
+    alertas, permite filtrar por texto, categoria, tipo de ocorrência e
+    período, lista o endereço, a categoria e a data de cada ocorrência e
+    indica se o servidor de análise está conectado.
 \end{alineas}
-
-A extensão do navegador não possui telas próprias: ao clicar em seu ícone, o
-responsável é direcionado ao site.
+A extensão do navegador não tem telas próprias: ao clicar no seu ícone, o
+responsável é levado para o site.
 
 As Figuras~\ref{fig:prot-home}, \ref{fig:prot-cadastro}, \ref{fig:prot-login}
-e \ref{fig:prot-logs} apresentam, respectivamente, as telas da página inicial,
-do cadastro, do login e do histórico de alertas.
-
+e \ref{fig:prot-logs} mostram, nessa ordem, a página inicial, o cadastro, o
+login e o histórico de alertas.
 \begin{figure}[htbp]
     \centering
     \includegraphics[height=0.8\textheight]{ORCA_HOME.jpg}
@@ -1296,13 +1279,12 @@ comunidade externa: data, participantes, observações e ajustes realizados.]}
 % ------------------------------------------------------------
 \chapter{Modelo de Dados}
 
-Os dados do ORCA são armazenados em um banco de dados relacional PostgreSQL,
-hospedado no Supabase. O modelo é composto por duas entidades: \texttt{users},
-que representa os responsáveis cadastrados, e \texttt{logs}, que registra as
-ocorrências identificadas durante a navegação. Cada usuário pode possuir
-diversos registros, e cada registro pertence a um único usuário, como mostra a
+Os dados do ORCA ficam em um banco de dados PostgreSQL hospedado no Supabase,
+um serviço de banco de dados na nuvem. O banco tem duas tabelas:
+\texttt{users}, com os responsáveis cadastrados, e \texttt{logs}, com as
+ocorrências encontradas durante a navegação. Cada usuário pode ter vários
+registros, e cada registro pertence a um único usuário, como mostra a
 Figura~\ref{fig:mer}.
-
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{mer.png}
@@ -1310,8 +1292,7 @@ Figura~\ref{fig:mer}.
     \label{fig:mer}
 \end{figure}
 
-O Quadro~\ref{tab:dicionario} descreve os atributos de cada entidade.
-
+O Quadro~\ref{tab:dicionario} explica o que significa cada campo das tabelas.
 \begin{table}[htbp]
 \centering
 \small
@@ -1334,26 +1315,24 @@ logs & id\_user & Chave estrangeira para o usuário ao qual o registro pertence 
 \label{tab:dicionario}
 \end{table}
 
-Por decisão de privacidade, o banco não armazena o texto nem as imagens das
-páginas: o conteúdo é processado em memória pelo servidor de análise, e somente
-as páginas que geram alerta ou bloqueio são registradas. Além disso, há no
-máximo um registro por endereço para cada usuário; quando uma nova análise da
-mesma página resulta em uma decisão mais grave, o registro existente é
-atualizado. Um índice composto por \texttt{id\_user} e \texttt{timestamp}
-agiliza a consulta do histórico, ordenado do registro mais recente para o mais
-antigo.
+Para proteger a privacidade, o banco não guarda o texto nem as imagens das
+páginas. O conteúdo é analisado na memória do servidor e descartado em
+seguida, e só ficam registradas as páginas que geraram alerta ou bloqueio.
+Além disso, cada usuário tem no máximo um registro por endereço: se a mesma
+página for analisada de novo e o resultado for mais grave, o registro
+existente é atualizado. Um índice com o usuário e a data deixa a consulta do
+histórico mais rápida, mostrando primeiro as ocorrências mais recentes.
 
-O acesso ao banco é feito exclusivamente pelo servidor, com uma chave de
-serviço mantida em variável de ambiente. Nas tabelas, a segurança em nível de
-linha (\textit{Row Level Security}) está habilitada sem políticas de acesso
-público, de modo que as chaves públicas do Supabase não conseguem ler nem
-gravar usuários e registros.
+Somente o servidor tem acesso ao banco, usando uma chave secreta guardada em
+uma variável de ambiente. As tabelas também têm a segurança em nível de linha
+(\textit{Row Level Security}) ativada, sem nenhuma permissão pública, de modo
+que ninguém consegue ler nem gravar dados usando as chaves públicas do
+Supabase.
 
-O repositório também contém um \textit{script} que cria uma tabela de sessões
-e um atributo para ligar e desligar o monitoramento por usuário. Essas
-estruturas foram preparadas para a renovação de sessões e para o requisito
-RF015, mas ainda não são utilizadas pelo servidor.
-
+O repositório também tem um \textit{script} que cria uma tabela de sessões e
+um campo para ligar e desligar o monitoramento de cada usuário. Essas
+estruturas foram preparadas para a renovação do login e para o requisito
+RF015, mas o servidor ainda não as utiliza.
 % ------------------------------------------------------------
 % 10 Arquitetura e Tecnologias
 % ------------------------------------------------------------
@@ -1361,13 +1340,12 @@ RF015, mas ainda não são utilizadas pelo servidor.
 
 \section{Arquitetura Geral}
 
-A Figura~\ref{fig:arquitetura} apresenta a arquitetura concebida para o ORCA. A
-extensão do navegador captura o conteúdo das páginas e encaminha o texto e as
-imagens aos respectivos motores de classificação. Os resultados são
-consolidados pelo motor de políticas, que decide entre permitir, alertar ou
-bloquear, e as ocorrências são registradas para consulta no painel de
+A Figura~\ref{fig:arquitetura} mostra a arquitetura pensada para o ORCA no
+início do projeto. A extensão do navegador captura o conteúdo das páginas e
+envia o texto e as imagens para os respectivos modelos. As respostas dos
+modelos chegam ao motor de políticas, que decide entre permitir, alertar ou
+bloquear, e as ocorrências ficam registradas para consulta no painel de
 acompanhamento.
-
 \begin{figure}[htbp]
     \centering
     \includegraphics[height=0.75\textheight]{arquitetura-concebida.png}
@@ -1375,31 +1353,29 @@ acompanhamento.
     \label{fig:arquitetura}
 \end{figure}
 
-No protótipo deste semestre, essa arquitetura foi implementada em quatro
-componentes:
+No protótipo deste semestre, essa arquitetura virou quatro partes:
 
 \begin{alineas}
     \item \textbf{Extensão do navegador:} extensão para o Google Chrome que lê
-    o conteúdo da página já carregada, sem interceptar o tráfego HTTP. Ela
-    extrai o texto visível e as imagens com pelo menos 100 pixels de largura e
-    de altura, observa mudanças na página e repete a extração quando o
-    conteúdo muda, aguardando um segundo sem novas alterações para evitar
-    envios repetidos. O conteúdo é enviado ao servidor junto com o
-    \textit{token} de acesso obtido no login realizado no site;
-    \item \textbf{Servidor de análise:} API desenvolvida em Python com FastAPI,
-    executada localmente na máquina do usuário. Ela recebe o conteúdo pela rota
-    \texttt{POST /analyze}, executa os dois classificadores, aplica o mecanismo
-    de decisão e grava as ocorrências. A mesma API oferece as rotas de cadastro,
-    login e consulta do histórico;
-    \item \textbf{Banco de dados:} PostgreSQL hospedado no Supabase, descrito no
-    capítulo anterior;
-    \item \textbf{Site de acompanhamento:} aplicação Next.js publicada na Vercel,
-    na qual o responsável se cadastra, faz login e consulta o histórico.
+    o conteúdo da página depois que ela já foi carregada, sem interceptar o
+    tráfego da rede. Ela pega o texto visível e as imagens com pelo menos 100
+    pixels de largura e de altura. Se a página mudar, a extensão lê o conteúdo
+    de novo, mas espera um segundo sem novas mudanças para não enviar a mesma
+    coisa várias vezes. O conteúdo é enviado ao servidor junto com o
+    \textit{token} de acesso obtido no login do site;
+    \item \textbf{Servidor de análise:} programa em Python, feito com o
+    FastAPI, que roda na própria máquina do usuário. Ele recebe o conteúdo
+    pela rota \texttt{POST /analyze}, passa o texto e as imagens pelos dois
+    modelos, aplica o mecanismo de decisão e grava as ocorrências. O mesmo
+    servidor também cuida do cadastro, do login e da consulta do histórico;
+    \item \textbf{Banco de dados:} PostgreSQL hospedado no Supabase, descrito
+    no capítulo anterior;
+    \item \textbf{Site de acompanhamento:} aplicação feita em Next.js e
+    publicada na Vercel, na qual o responsável se cadastra, faz login e
+    consulta o histórico.
 \end{alineas}
-
-A Figura~\ref{fig:arquitetura-prototipo} mostra como esses componentes se
-comunicam no protótipo implementado.
-
+A Figura~\ref{fig:arquitetura-prototipo} mostra como essas partes conversam
+entre si no protótipo.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{arquitetura-prototipo.png}
@@ -1407,38 +1383,38 @@ comunicam no protótipo implementado.
     \label{fig:arquitetura-prototipo}
 \end{figure}
 
-Em relação à arquitetura concebida, três diferenças devem ser destacadas. Os
-registros são mantidos em um banco em nuvem, e não em um banco local, para que
-o histórico possa ser consultado pelo site publicado. A página de bloqueio
-ainda não é exibida: a decisão de bloqueio é registrada, mas a extensão não
-impede o carregamento da página. Por fim, a configuração de políticas pelo
-painel não foi implementada, e os limiares de decisão são fixos no servidor.
-
+Comparando com a arquitetura pensada no início, há três diferenças. A
+primeira é que os registros ficam em um banco na nuvem, e não em um banco
+local, para que o histórico possa ser consultado pelo site publicado. A
+segunda é que a página de bloqueio ainda não aparece: o sistema registra a
+decisão de bloquear, mas a extensão não impede que a página carregue. A
+terceira é que o responsável ainda não consegue configurar as regras pelo
+painel, e os limites de decisão estão fixos no servidor.
 \section{Mecanismo de Decisão}
 
-Cada classificador devolve uma categoria e um \textit{score} de confiança entre
-0 e 1. O mecanismo de decisão converte esses resultados em um risco: para
-categorias sensíveis, o risco é o próprio \textit{score}; para as categorias
-seguras, é o complemento do \textit{score}. Um classificador que não produziu
-resultado, como ocorre com textos de menos de dez palavras ou páginas sem
-imagens válidas, é desconsiderado, e a decisão é tomada apenas com a outra
-modalidade.
+Cada modelo devolve uma categoria e um \textit{score} entre 0 e 1, que indica
+quanta certeza ele tem da resposta. O mecanismo de decisão transforma esse
+resultado em um nível de risco. Quando a categoria é sensível, como ódio ou
+conteúdo sexual, o risco é o próprio \textit{score}; quando a categoria é
+segura, o risco é o que falta para chegar a 1. Por exemplo, um texto
+classificado como seguro com \textit{score} de 0,90 tem risco de 0,10. Se um
+dos modelos não der resposta, o que acontece com textos de menos de dez
+palavras ou com páginas sem imagens válidas, a decisão é tomada apenas com o
+outro.
 
-Uma página gera ocorrência quando algum classificador aponta uma categoria
-sensível com risco maior ou igual a 0,50. O risco final é o maior entre as
-modalidades, e não a média, para que um resultado seguro em uma modalidade não
-anule um resultado sensível na outra. Com risco final maior ou igual a 0,75, a
-ocorrência é classificada como bloqueio; abaixo disso, como alerta. Quando as
-duas modalidades apontam categorias sensíveis diferentes, prevalece a
-categoria indicada pelo modelo de imagens, pois o modelo textual não possui
-categorias de conteúdo sexual ou violento e tende a atribuir páginas desse tipo
-à classe de ódio. Páginas sem ocorrência são permitidas e não geram registro.
-
+Uma página gera ocorrência quando algum dos modelos aponta uma categoria
+sensível com risco de 0,50 ou mais. O risco final da página é o maior entre
+os dois modelos, e não a média, para que um resultado seguro em um deles não
+esconda um resultado perigoso no outro. Se o risco final for de 0,75 ou mais,
+a ocorrência é um bloqueio; abaixo disso, é um alerta. Quando os dois modelos
+apontam categorias sensíveis diferentes, vale a categoria indicada pelo modelo
+de imagens, porque o modelo de texto não conhece as categorias de conteúdo
+sexual e violento e tende a classificar essas páginas como ódio. As páginas
+sem ocorrência são liberadas e não ficam registradas.
 \section{Tecnologias Utilizadas}
 
-O Quadro~\ref{tab:tecnologias} resume as tecnologias empregadas em cada parte
-do sistema.
-
+O Quadro~\ref{tab:tecnologias} resume as tecnologias usadas em cada parte do
+sistema.
 \begin{table}[htbp]
 \centering
 \small
@@ -1465,49 +1441,50 @@ Versionamento & Git e GitHub \\ \hline
 \chapter{Descrição da Solução Tecnológica Atual do Projeto}
 \label{cap:solucao}
 
-A solução de inteligência artificial do ORCA é formada por dois
-classificadores independentes, um para texto e outro para imagens. Este
-capítulo descreve, para cada um, a base de dados, o pré-processamento, o
-modelo, o processo de treinamento e validação e as métricas obtidas.
-
+A parte de inteligência artificial do ORCA é formada por dois modelos que
+trabalham de forma independente: um analisa o texto e o outro analisa as
+imagens. Este capítulo mostra, para cada um deles, quais dados foram usados,
+como esses dados foram preparados, qual modelo foi escolhido, como ele foi
+treinado e avaliado e quais resultados alcançou.
 \section{Base de Dados}
 
 \subsection{Processamento de Linguagem Natural}
 
-A base textual reúne dois conjuntos públicos em português: o Boamente, com
-textos sobre ideação suicida \cite{boamente}, e o TuPyE, com textos
-anotados quanto a discurso de ódio \cite{tupye}. Os rótulos originais foram
-convertidos para as três classes do classificador: seguro, suicídio e ódio. A
-classe ``seguro'' indica apenas a ausência de ideação suicida e de ódio, sem
-abranger as demais categorias do projeto, como apostas ou drogas.
+A base de textos junta dois conjuntos públicos em português: o Boamente, com
+textos sobre ideação suicida \cite{boamente}, e o TuPyE, com textos marcados
+como discurso de ódio ou não \cite{tupye}. Os rótulos originais foram
+convertidos para as três classes usadas pelo modelo: seguro, suicídio e ódio.
+É importante notar que, aqui, ``seguro'' significa apenas que o texto não tem
+ideação suicida nem ódio; o modelo não sabe reconhecer outras categorias do
+projeto, como apostas ou drogas.
 
-Os dados foram divididos em treinamento, validação e teste na proporção de
-70\%, 15\% e 15\%, com estratificação por classe e por fonte. A divisão
-contém 40.178 textos: 28.124 de treinamento, 6.027 de validação e 6.027 de
-teste. Após a remoção de textos repetidos entre conjuntos, descrita na próxima
-seção, o treinamento utilizou 28.090 textos e a validação, 6.025; o teste
-permaneceu inalterado.
+Os textos foram divididos em três partes: 70\% para treinamento, 15\% para
+validação e 15\% para teste, mantendo em cada parte a mesma proporção de
+classes e de fontes. No total, são 40.178 textos: 28.124 de treinamento,
+6.027 de validação e 6.027 de teste. Depois de retirar os textos repetidos
+entre as partes, processo explicado na próxima seção, o treinamento ficou com
+28.090 textos e a validação com 6.025; o teste não foi alterado.
 
-A base é desbalanceada: no treinamento efetivo, há 23.930 textos da classe
-seguro, 3.637 de ódio e apenas 523 de suicídio. Além disso, cada classe
-sensível vem de uma única fonte, o que pode levar o modelo a aprender
-características da fonte, e não do conteúdo.
-
+A base é desbalanceada, ou seja, as classes têm quantidades muito diferentes
+de exemplos: no treinamento, há 23.930 textos seguros, 3.637 de ódio e apenas
+523 de suicídio. Além disso, cada classe sensível vem de uma única fonte, o
+que pode fazer o modelo aprender o ``jeito de escrever'' daquela fonte em vez
+do conteúdo em si.
 \subsection{Visão Computacional}
 
-A base de imagens foi montada pela equipe para avaliar o classificador nas
-classes seguro, sexual (conteúdo sexual explícito) e violento (conteúdo
-violento ou chocante). As imagens seguras e sexuais vêm do conjunto público
-\texttt{nsfw\_detect} \cite{deepghs}, rotuladas conforme a pasta de origem.
-Das 16.715 imagens aceitas desse conjunto, foram sorteadas 500 de cada classe.
-A pasta de conteúdo sugestivo, que fica na fronteira entre o seguro e o sexual, foi
-deixada de fora para não introduzir rótulos ambíguos. Como não foi encontrada
-fonte pública confiável de imagens violentas, as 52 imagens violentas foram
-coletadas e revisadas manualmente pela equipe.
+A base de imagens foi montada pela equipe para avaliar o modelo nas classes
+seguro, sexual (conteúdo sexual explícito) e violento (conteúdo violento ou
+chocante). As imagens seguras e sexuais vêm do conjunto público
+\texttt{nsfw\_detect} \cite{deepghs}, em que cada imagem já vem separada em
+uma pasta de acordo com a sua classe. Das 16.715 imagens aproveitáveis desse
+conjunto, foram sorteadas 500 de cada classe. A pasta de conteúdo sugestivo,
+que fica entre o seguro e o sexual, foi deixada de fora para não criar
+dúvidas sobre o rótulo correto. Como não foi encontrada uma fonte pública
+confiável de imagens violentas, as 52 imagens dessa classe foram coletadas e
+revisadas manualmente pela equipe.
 
-A base final possui 1.052 imagens, divididas como mostra o
+A base final tem 1.052 imagens, divididas como mostra o
 Quadro~\ref{tab:base-imagens}.
-
 \begin{table}[htbp]
 \centering
 \small
@@ -1524,21 +1501,20 @@ Teste & 75 & 75 & 8 & 158 \\ \hline
 \label{tab:base-imagens}
 \end{table}
 
-Como o modelo de imagens não foi treinado pela equipe, apenas o conjunto de
-teste foi utilizado na avaliação; os demais foram mantidos para compatibilidade
-com o fluxo do classificador textual. Vale observar que a base é composta
-majoritariamente por ilustrações, o que difere das imagens encontradas na
-navegação comum, e que o modelo de imagens não cobre as categorias de
-automutilação, jogos de azar e drogas.
-
+Como o modelo de imagens não foi treinado pela equipe, só o conjunto de teste
+foi usado na avaliação; os outros dois foram mantidos para seguir o mesmo
+padrão do modelo de texto. Vale lembrar que a base é formada principalmente
+por ilustrações, que são diferentes das fotos encontradas na navegação comum,
+e que o modelo de imagens não reconhece automutilação, jogos de azar e
+drogas.
 \section{Pré-processamento dos Dados}
 
 \subsection{Processamento de Linguagem Natural}
 
-O pré-processamento padroniza os textos, reduz inconsistências e evita que
-textos repetidos entre os conjuntos comprometam a avaliação. A normalização,
-identificada como \texttt{norm-v1}, aplica as seguintes operações:
-
+O pré-processamento é a etapa que ``limpa'' os textos antes de eles chegarem
+ao modelo. Ele deixa os textos em um formato padrão e evita que textos
+repetidos entre as partes atrapalhem a avaliação. A limpeza, chamada de
+\texttt{norm-v1}, faz o seguinte:
 \begin{itemize}
     \item normalização Unicode no formato NFC;
     \item remoção de \textit{links} iniciados por \texttt{http://},
@@ -1551,65 +1527,67 @@ identificada como \texttt{norm-v1}, aplica as seguintes operações:
     diferencia.
 \end{itemize}
 
-Após a normalização, textos originalmente diferentes podem se tornar iguais.
-Para evitar vazamento de dados, o conjunto de teste nunca é alterado; a
-validação perde os textos que coincidem com o teste, e o treinamento perde os
-que coincidem com a validação ou com o teste. Com isso, foram removidos 34
-textos do treinamento e 2 da validação. As remoções são feitas em memória e
-registradas em um arquivo de auditoria, sem modificar os arquivos originais.
+Depois da limpeza, alguns textos que eram diferentes podem ficar iguais. Se um
+mesmo texto aparecesse no treinamento e no teste, o modelo seria testado com
+algo que já viu, e o resultado pareceria melhor do que é. Para evitar isso, o
+conjunto de teste nunca é alterado; a validação perde os textos que também
+estão no teste, e o treinamento perde os que também estão na validação ou no
+teste. Assim, foram retirados 34 textos do treinamento e 2 da validação. Essas
+retiradas são feitas na memória e anotadas em um arquivo de controle, sem
+mexer nos arquivos originais.
 
-Os textos são então convertidos em \textit{tokens} pelo tokenizador do
-BERTimbau, com limite de 128 \textit{tokens} por sequência. No treinamento,
-textos maiores são truncados, o que afetou apenas 0,16\% dos exemplos. Na
-utilização pelo servidor, o texto da página é dividido em janelas de 128
-\textit{tokens}, e prevalece o resultado da janela mais grave, para que
-conteúdos no fim de páginas longas também sejam analisados. Textos com menos
-de dez palavras não são classificados.
-
+Em seguida, os textos são divididos em \textit{tokens} pelo tokenizador do
+BERTimbau, com um limite de 128 \textit{tokens} por texto. No treinamento,
+textos maiores que isso são cortados, o que aconteceu com apenas 0,16\% dos
+exemplos. Já durante a navegação, o texto da página é dividido em várias
+partes de 128 \textit{tokens}, e vale o resultado da parte mais grave, para
+que um conteúdo no final de uma página longa também seja analisado. Textos com
+menos de dez palavras não são classificados.
 \subsection{Visão Computacional}
 
 Na montagem da base, cada imagem precisou abrir corretamente e passar pelo
-mesmo filtro aplicado pelo servidor: lado mínimo de 100 pixels, área mínima de
-10.000 pixels quadrados e proporção de até 8:1. Imagens repetidas foram
-identificadas pelo \textit{hash} do conteúdo e mantidas uma única vez, e imagens
-iguais com rótulos diferentes foram descartadas. A divisão em 70\%, 15\% e
-15\% foi estratificada por classe e por fonte.
+mesmo filtro usado pelo servidor: ter pelo menos 100 pixels no menor lado,
+área de pelo menos 10.000 pixels quadrados e não ser mais de oito vezes mais
+larga do que alta, ou vice-versa. Imagens repetidas foram identificadas por
+uma ``impressão digital'' do arquivo (\textit{hash}) e mantidas uma única vez,
+e imagens iguais com rótulos diferentes foram descartadas. A divisão em 70\%,
+15\% e 15\% manteve a proporção de classes e de fontes em cada parte.
 
-Durante a navegação, o servidor aplica as etapas a seguir, da mais barata para
-a mais custosa:
-
+Durante a navegação, o servidor segue as etapas abaixo, começando pelas mais
+rápidas e deixando as mais demoradas para o fim:
 \begin{enumerate}
-    \item descarte de imagens que não valem a classificação, como arquivos SVG,
-    imagens pequenas e faixas decorativas de proporção extrema;
-    \item agrupamento de endereços repetidos na página;
-    \item consulta a um \textit{cache} por endereço, já que a extensão reenvia a
-    página sempre que ela muda;
-    \item limitação às 15 maiores imagens ainda não analisadas;
-    \item \textit{download} em paralelo, com limite de cinco segundos e de
+    \item descarta imagens que não vale a pena analisar, como arquivos SVG,
+    imagens pequenas e faixas decorativas muito compridas;
+    \item junta os endereços de imagem repetidos na página;
+    \item verifica se a imagem já foi analisada antes pelo mesmo endereço,
+    usando uma memória temporária (\textit{cache}), já que a extensão reenvia
+    a página sempre que ela muda;
+    \item fica apenas com as 15 maiores imagens ainda não analisadas;
+    \item baixa as imagens ao mesmo tempo, com limite de cinco segundos e de
     10 MB por imagem;
-    \item consulta a um \textit{cache} pelo conteúdo, que evita classificar duas
-    vezes a mesma imagem servida em endereços diferentes;
-    \item redimensionamento e normalização conforme a configuração do próprio
-    modelo e classificação em lotes de até oito imagens.
+    \item verifica de novo a memória temporária, agora pelo conteúdo, para não
+    analisar duas vezes a mesma imagem publicada em endereços diferentes;
+    \item ajusta o tamanho e as cores da imagem para o formato que o modelo
+    espera e analisa as imagens em grupos de até oito.
 \end{enumerate}
 
 \section{Modelos de IA Utilizados}
 
 \subsection{Processamento de Linguagem Natural}
 
-O classificador textual utiliza o BERTimbau Base
-(\texttt{neuralmind/bert-base-portuguese-cased}), modelo BERT pré-treinado em
-português brasileiro \cite{souza2020}, ajustado pela equipe para classificar
-textos nas classes \texttt{seguro}, \texttt{suicidio} e \texttt{odio}. O modelo
-foi escolhido por ser adequado ao português, compatível com as bibliotecas
-adotadas e, com cerca de 110 milhões de parâmetros, viável em CPU, ao contrário
-da versão Large.
+O modelo de texto usa o BERTimbau Base
+(\texttt{neuralmind/bert-base-portuguese-cased}), uma versão do BERT treinada
+em português brasileiro \cite{souza2020}, que foi ajustada pela equipe para
+separar os textos nas classes \texttt{seguro}, \texttt{suicidio} e
+\texttt{odio}. Ele foi escolhido por funcionar bem com o português, ser
+compatível com as bibliotecas usadas e, com cerca de 110 milhões de
+parâmetros, conseguir rodar em um processador comum (CPU), o que não seria
+viável com a versão maior, a Large.
 
-O treinamento foi implementado com PyTorch e Transformers. A configuração
-oficial, identificada como \texttt{nlp-v1}, utiliza os parâmetros do
-Quadro~\ref{tab:hiperparametros}, valores usuais para o ajuste fino de modelos
-BERT.
-
+O treinamento foi feito com as bibliotecas PyTorch e Transformers. A versão
+oficial do modelo, chamada \texttt{nlp-v1}, usa as configurações do
+Quadro~\ref{tab:hiperparametros}, que são valores comuns para o ajuste fino
+de modelos BERT.
 \begin{table}[htbp]
 \centering
 \small
@@ -1651,104 +1629,102 @@ Ponderação das classes & Inversa da frequência \\
 \label{tab:hiperparametros}
 \end{table}
 
-Para compensar o desbalanceamento, a função de perda é ponderada pelo peso de
-cada classe, calculado por:
-
+Como há muito mais textos seguros do que de ódio ou de suicídio, o modelo
+poderia simplesmente aprender a dizer ``seguro'' quase sempre. Para evitar
+isso, cada erro tem um peso diferente durante o treinamento, conforme a
+classe. O peso de cada classe é calculado por:
 \[
 w_c = \frac{N}{K \times n_c}
 \]
 
 em que $N$ é o número de exemplos de treinamento, $K$ é a quantidade de
-classes e $n_c$ é a quantidade de exemplos da classe $c$. Com os dados
-utilizados, os pesos foram de 0,3913 para seguro, 2,5745 para ódio e 17,9031
-para suicídio, o que aumenta a contribuição das classes menos frequentes para
-a perda.
-
+classes e $n_c$ é a quantidade de exemplos da classe $c$. Com os dados usados,
+os pesos foram de 0,3913 para seguro, 2,5745 para ódio e 17,9031 para
+suicídio. Na prática, errar um texto de suicídio ``custa'' muito mais para o
+modelo do que errar um texto seguro, o que o obriga a prestar atenção nas
+classes com poucos exemplos.
 \subsection{Visão Computacional}
 
-O classificador de imagens utiliza o modelo pré-treinado
-\texttt{image-safety-classifier-s} \cite{imagesafety}, baseado na arquitetura
-SwiftFormer \cite{shaker2023}, com cerca de 5,7 milhões de parâmetros e
-licença MIT. Para cada imagem, ele devolve a probabilidade de cada uma das
-classes seguro, sexual e violento (no modelo, identificadas pelas siglas em
-inglês SFW, NSFW e NSFL). A versão utilizada no ORCA é identificada como
+O modelo de imagens é o \texttt{image-safety-classifier-s}
+\cite{imagesafety}, um modelo pronto baseado na arquitetura SwiftFormer
+\cite{shaker2023}, com cerca de 5,7 milhões de parâmetros e licença MIT, que
+permite o uso livre. Para cada imagem, ele informa a probabilidade de ela ser
+segura, sexual ou violenta (no modelo, essas classes aparecem com as siglas em
+inglês SFW, NSFW e NSFL). A versão usada no ORCA é chamada de
 \texttt{vision-v1}.
 
-A escolha resultou de uma comparação entre dois modelos. O NudeNet mostrou-se
-rápido, mas detecta apenas nudez e apresentou viés elevado nos testes da
-equipe. O \texttt{image-safety-classifier-s} apresentou menor viés e cobre
-também o conteúdo violento, por isso foi adotado. O modelo foi utilizado sem
-ajuste fino.
+A escolha veio de uma comparação entre dois modelos. O NudeNet \cite{nudenet} era rápido,
+mas só detecta nudez e mostrou muitos erros nos testes da equipe. O
+\texttt{image-safety-classifier-s} errou menos e também reconhece conteúdo
+violento, por isso foi o escolhido. Ele foi usado do jeito que veio, sem novo
+treinamento.
 
-Para resumir uma página, o servidor considera a imagem mais grave: se alguma
-imagem não for segura, prevalece a de maior probabilidade, com a classe
-violento tendo precedência sobre a classe sexual em caso de empate; se todas
-forem seguras, o
-\textit{score} é o da imagem classificada com menor certeza. Imagens que não
-puderam ser baixadas ou abertas nunca são consideradas seguras: elas apenas
-deixam de participar da decisão.
-
+Para chegar a um resultado único para a página, o servidor olha para a imagem
+mais grave. Se alguma imagem não for segura, vale a de maior probabilidade, e,
+em caso de empate, a classe violento tem prioridade sobre a sexual. Se todas
+as imagens forem seguras, vale o \textit{score} da imagem sobre a qual o
+modelo teve menos certeza. Imagens que não puderam ser baixadas ou abertas
+nunca são consideradas seguras: elas simplesmente ficam de fora da decisão.
 \section{Treinamento e Validação}
 
 \subsection{Processamento de Linguagem Natural}
 
-O treinamento ajustou os parâmetros do BERTimbau às três classes definidas,
-utilizando a função de perda ponderada. A execução oficial ocorreu em CPU,
-durante três épocas, totalizando 5.268 passos em aproximadamente 8 horas e 16
-minutos. Os hiperparâmetros efetivamente aplicados foram conferidos e
-coincidiram com os configurados.
+No treinamento, o BERTimbau foi ajustado para reconhecer as três classes,
+usando os pesos descritos na seção anterior. O treinamento oficial rodou em
+CPU por três épocas (ou seja, o modelo passou três vezes por todos os textos
+de treinamento), em 5.268 passos e cerca de 8 horas e 16 minutos. As
+configurações realmente usadas foram conferidas e eram iguais às planejadas.
 
-Ao final de cada época, o modelo foi avaliado no conjunto de validação, e o
-melhor \textit{checkpoint} foi escolhido pela métrica Macro F1, que atribui o
-mesmo peso a cada classe e evita que a seleção dependa apenas da classe
-majoritária. O melhor resultado ocorreu na terceira época, com Macro F1 de
-0,7995, valor confirmado ao recarregar o modelo salvo.
+Ao final de cada época, o modelo foi testado no conjunto de validação, e a
+melhor versão foi escolhida pelo Macro F1, uma métrica que dá o mesmo peso a
+cada classe e impede que a escolha seja guiada só pela classe com mais
+exemplos. A melhor versão foi a da terceira época, com Macro F1 de 0,7995,
+valor confirmado ao carregar novamente o modelo salvo.
 
-Antes da execução oficial, um teste rápido com 192 textos de treinamento, 96
-de validação e uma única época verificou o funcionamento do fluxo. Seu
-resultado não é utilizado como medida de desempenho.
+Antes do treinamento oficial, foi feito um teste rápido com 192 textos de
+treinamento, 96 de validação e uma única época, só para conferir se tudo
+funcionava. Esse resultado não é usado como medida de desempenho.
 
-A avaliação no conjunto de teste, com 6.027 textos, ainda não foi executada.
-Como a validação também foi usada para escolher o \textit{checkpoint}, os
-resultados apresentados a seguir tendem a ser ligeiramente otimistas, e a
-avaliação no teste permanece necessária para medir a capacidade de
-generalização do modelo.
-
+A avaliação no conjunto de teste, com 6.027 textos, ainda não foi feita. Como
+a validação também foi usada para escolher a melhor versão do modelo, os
+resultados apresentados a seguir tendem a ser um pouco otimistas, e a
+avaliação no teste continua necessária para saber como o modelo se sai com
+textos totalmente novos.
 \subsection{Visão Computacional}
 
-Como o modelo de imagens foi utilizado sem ajuste fino, não houve etapa de
-treinamento. A avaliação foi feita uma única vez no conjunto de teste, com
-158 imagens que não participaram de nenhuma escolha anterior. O autor do
-modelo relata acurácia de 97,99\%, mas em um conjunto próprio e não público;
-por isso, esse valor não é comparável ao obtido pela equipe.
-
+Como o modelo de imagens foi usado sem ajuste fino, não houve treinamento. A
+avaliação foi feita uma única vez, no conjunto de teste, com 158 imagens que
+não tinham sido usadas em nenhuma escolha anterior. O autor do modelo
+informa uma acurácia de 97,99\%, mas medida em um conjunto próprio e não
+público; por isso, esse número não pode ser comparado diretamente com o da
+equipe.
 \section{Métricas de Avaliação}
 
-Os dois classificadores foram avaliados com as mesmas métricas, que permitem
-analisar tanto o desempenho geral quanto o de cada categoria:
+Os dois modelos foram avaliados com as mesmas métricas, que mostram tanto o
+desempenho geral quanto o desempenho em cada categoria:
 
 \begin{itemize}
-    \item \textbf{Acurácia:} proporção de previsões corretas em relação ao
+    \item \textbf{Acurácia:} porcentagem de respostas certas em relação ao
     total de exemplos avaliados;
-    \item \textbf{Precisão:} proporção das previsões de uma classe que
-    realmente pertencem a ela;
-    \item \textbf{\textit{Recall}:} proporção dos exemplos de uma classe que
-    foram identificados corretamente. Nas classes sensíveis, é a métrica mais
-    relevante, pois um falso negativo significa um conteúdo inadequado não
-    identificado;
-    \item \textbf{F1-\textit{score}:} média harmônica entre precisão e
+    \item \textbf{Precisão:} de tudo o que o modelo disse que era de uma
+    classe, quanto realmente era. Precisão baixa significa muitos alarmes
+    falsos;
+    \item \textbf{\textit{Recall}:} de todos os exemplos de uma classe, quantos
+    o modelo conseguiu encontrar. Nas classes sensíveis, é a métrica mais
+    importante, porque cada exemplo não encontrado é um conteúdo inadequado
+    que passou despercebido;
+    \item \textbf{F1-\textit{score}:} um único número que equilibra precisão e
     \textit{recall};
-    \item \textbf{Macro F1:} média dos F1-\textit{scores} das classes, com o
-    mesmo peso para cada uma, adequada a bases desbalanceadas;
-    \item \textbf{Matriz de confusão:} tabela que compara as classes reais com
-    as previstas e mostra quais classes são confundidas entre si.
+    \item \textbf{Macro F1:} a média do F1 de todas as classes, com o mesmo
+    peso para cada uma, útil quando as classes têm quantidades muito
+    diferentes de exemplos;
+    \item \textbf{Matriz de confusão:} tabela que cruza a classe real com a
+    classe prevista e mostra quais classes o modelo confunde entre si.
 \end{itemize}
-
 \subsection{Processamento de Linguagem Natural}
 
-O Quadro~\ref{tab:resultados-validacao} apresenta o desempenho do modelo
+O Quadro~\ref{tab:resultados-validacao} mostra o desempenho do modelo
 \texttt{nlp-v1} no conjunto de validação, com 6.025 textos.
-
 \begin{table}[htbp]
 \centering
 \small
@@ -1765,18 +1741,72 @@ Suicídio & 0,7537 & 0,9018 & 0,8211 & 112 \\ \hline
 \label{tab:resultados-validacao}
 \end{table}
 
-O modelo apresenta bom desempenho na classe seguro e identificou 101 dos 112
-textos de suicídio, com \textit{recall} de 0,9018. A classe ódio é a mais
-fraca: 261 dos 780 textos dessa classe foram classificados como seguros, o que
-evidencia a importância de analisar as classes individualmente, e não apenas a
-acurácia geral. Os \textit{scores} produzidos pelo modelo não foram calibrados,
-de modo que não devem ser interpretados diretamente como probabilidades.
+O Quadro~\ref{tab:confusao-texto} mostra a matriz de confusão no mesmo
+conjunto. Cada linha é a classe verdadeira do texto, e cada coluna é a classe
+que o modelo escolheu; os números em destaque são os acertos.
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Real / Prevista} & \textbf{Seguro} & \textbf{Suicídio} & \textbf{Ódio} & \textbf{Total} \\ \hline
+Seguro & \textbf{4.776} & 33 & 324 & 5.133 \\ \hline
+Suicídio & 10 & \textbf{101} & 1 & 112 \\ \hline
+Ódio & 261 & 0 & \textbf{519} & 780 \\ \hline
+\end{tabular}
+\caption{Matriz de confusão do modelo textual no conjunto de validação}
+\label{tab:confusao-texto}
+\end{table}
 
+Para entender esses números, é preciso lembrar o objetivo do ORCA, que é
+proteger a criança. Olhando por esse lado, três pontos se destacam:
+
+\begin{itemize}
+    \item \textbf{Suicídio, a categoria mais crítica, teve o melhor resultado
+    entre as sensíveis:} o modelo encontrou 101 dos 112 textos, cerca de 9 em
+    cada 10, e só 10 foram tratados como seguros. Isso foi possível com apenas
+    523 exemplos de treinamento, com a ajuda dos pesos por classe;
+    \item \textbf{O conteúdo seguro é reconhecido com consistência:} o modelo
+    raramente atrapalha páginas comuns, o que é essencial para que o
+    responsável não desligue a proteção por causa de alarmes falsos;
+    \item \textbf{As categorias sensíveis não se misturam:} nenhum texto de
+    ódio foi confundido com suicídio, e só um texto de suicídio foi
+    confundido com ódio. Os erros acontecem na fronteira entre o conteúdo
+    sensível e o seguro, e não entre um tipo de conteúdo sensível e outro.
+\end{itemize}
+
+O ponto fraco é o discurso de ódio, com F1 de 0,6392: 261 dos 780 textos de
+ódio foram considerados seguros, e 324 textos seguros foram marcados como
+ódio. A dificuldade tem duas origens. A primeira é a natureza do problema: o
+ódio muitas vezes aparece de forma indireta, com ironia, sarcasmo, gírias e
+referências que dependem do contexto, e até as pessoas discordam sobre onde
+termina uma opinião agressiva e começa o discurso de ódio. Os próprios
+rótulos do TuPyE foram definidos por votação entre anotadores, o que mostra
+que parte dos textos é ambígua. A segunda é a limitação do idioma: existem
+poucas bases públicas e adequadas de discurso de ódio em português, o que
+limitou o treinamento a uma única fonte. Por esses motivos, embora a
+categoria tenha sido implementada e esteja funcionando, a equipe não
+considerou seu desempenho satisfatório.
+
+A evolução durante o treinamento mostra que esse resultado é um equilíbrio, e
+não um limite fixo. Na primeira época, o modelo encontrava cerca de 8 em cada
+10 textos de ódio (\textit{recall} de 0,8051), mas errava muito ao apontar
+ódio (precisão de 0,4957). Com as épocas seguintes, ele passou a errar menos
+ao apontar ódio (precisão de 0,6149), mas também a encontrar menos textos
+dessa classe (\textit{recall} de 0,6654), e o F1 subiu de 0,6136 para 0,6392.
+A versão final foi escolhida pelo maior Macro F1, que trata as três classes
+igualmente. Isso significa que dá para ajustar o comportamento do modelo
+conforme a prioridade: baixar o limite de decisão para ódio faria o modelo
+encontrar mais textos dessa classe, em troca de mais alertas indevidos.
+
+Por fim, os \textit{scores} do modelo não foram calibrados, então um
+\textit{score} de 0,80, por exemplo, não deve ser lido como ``80\% de chance''
+de o texto pertencer àquela classe.
 \subsection{Visão Computacional}
 
-O Quadro~\ref{tab:resultados-imagem} apresenta o desempenho do modelo
+O Quadro~\ref{tab:resultados-imagem} mostra o desempenho do modelo
 \texttt{vision-v1} no conjunto de teste.
-
 \begin{table}[htbp]
 \centering
 \small
@@ -1793,18 +1823,17 @@ Violento & 1,0000 & 0,8750 & 0,9333 & 8 \\ \hline
 \label{tab:resultados-imagem}
 \end{table}
 
-Para o controle parental, a métrica mais importante é a capacidade de
-distinguir imagens seguras de inseguras (sexuais ou violentas). Nesse recorte, o modelo
-identificou 80 das 83 imagens inseguras (\textit{recall} de 0,9639) e marcou
-indevidamente 2 das 75 imagens seguras, uma taxa de falso alarme de 2,67\%.
+Para o controle parental, o mais importante é saber separar imagens seguras
+de imagens inadequadas (sexuais ou violentas). Nesse ponto, o modelo
+encontrou 80 das 83 imagens inadequadas, cerca de 96 em cada 100, e acusou
+por engano apenas 2 das 75 imagens seguras, menos de 3 em cada 100.
 
-Esses números devem ser lidos com cautela. A classe violento possui apenas oito
-imagens no teste, de modo que cada erro altera o \textit{recall} em 12,5
-pontos percentuais. A exclusão do conteúdo sugestivo e o predomínio de
-ilustrações tornam a base mais favorável que a navegação real, e não é possível
-descartar sobreposição entre as imagens públicas utilizadas e os dados de
-treinamento do autor do modelo.
-
+Esses números precisam ser lidos com cuidado. A classe violento tem apenas
+oito imagens no teste, então cada erro muda o resultado em 12,5 pontos
+percentuais. Além disso, a retirada do conteúdo sugestivo e o grande número
+de ilustrações deixam a base mais fácil do que a navegação real, e não é
+possível garantir que as imagens públicas usadas não estavam entre as que o
+autor usou para treinar o modelo.
 % ------------------------------------------------------------
 % 12 Testes e Validação do Sistema
 % ------------------------------------------------------------
@@ -1812,21 +1841,20 @@ treinamento do autor do modelo.
 
 \section{Estratégia de Testes}
 
-A estratégia de testes combinou três níveis. Os testes unitários automatizados
-verificam os componentes dos classificadores de forma isolada. A avaliação
-\textit{offline} dos modelos, descrita no capítulo anterior, mede a qualidade da
-classificação em conjuntos rotulados. Por fim, os testes de sistema verificam o
-fluxo completo, da extensão ao histórico exibido no site.
-
+Os testes foram feitos em três níveis. Os testes unitários automatizados
+verificam, uma a uma, as peças que compõem os modelos. A avaliação dos
+modelos, apresentada no capítulo anterior, mede quanto eles acertam em
+conjuntos de dados com respostas conhecidas. Por fim, os testes de sistema
+verificam se tudo funciona junto, desde a extensão até o histórico mostrado no
+site.
 \section{Testes Automatizados}
 
-Os testes unitários foram escritos com o módulo \texttt{unittest} do Python e
-não dependem de acesso à internet nem dos pesos completos dos modelos: o
-classificador textual é testado com um modelo BERT reduzido, e o de imagens com
-imagens sintéticas e um classificador substituto. O
-Quadro~\ref{tab:testes-automatizados} resume as suítes e o resultado da
-execução realizada em 23 de novembro de 2026.
-
+Os testes unitários foram escritos com o \texttt{unittest}, ferramenta de
+testes do Python, e não precisam de internet nem dos modelos completos para
+rodar: o modelo de texto é testado com uma versão reduzida do BERT, e o de
+imagens com imagens geradas artificialmente e um classificador simulado. O
+Quadro~\ref{tab:testes-automatizados} resume os grupos de testes e o
+resultado da execução feita em 23 de novembro de 2026.
 \begin{table}[htbp]
 \centering
 \small
@@ -1842,26 +1870,25 @@ Imagem (visão) & Montagem e divisão da base, filtro e \textit{download} de ima
 \label{tab:testes-automatizados}
 \end{table}
 
-O servidor de análise (autenticação, histórico e mecanismo de decisão), a
-extensão e o site ainda não possuem testes automatizados. No site, o código é
-verificado pelo compilador TypeScript e pelo ESLint.
-
+O servidor de análise (login, histórico e mecanismo de decisão), a extensão e
+o site ainda não têm testes automatizados. No site, o código é verificado pelo
+compilador do TypeScript e pelo ESLint, que apontam erros e problemas de
+escrita no código.
 \section{Testes de Sistema e Validação}
 
-A integração entre extensão, servidor, banco de dados e site foi verificada
-durante o desenvolvimento por meio da navegação em páginas reais: para cada
+O funcionamento conjunto da extensão, do servidor, do banco de dados e do site
+foi verificado durante o desenvolvimento, navegando em páginas reais. A cada
 análise, o servidor registra uma linha com o resultado do texto, o resultado
-das imagens e a decisão tomada, o que permitiu acompanhar o comportamento do
-sistema. Essas verificações, porém, não foram organizadas em casos de teste com
-resultados registrados.
+das imagens e a decisão tomada, o que permitiu acompanhar como o sistema se
+comportava. Essas verificações, porém, não foram organizadas em roteiros de
+teste com resultados registrados.
 
-A tarefa dedicada ao modo degradado e aos testes do motor
-de políticas (S3-02) foi retirado do escopo deste semestre, de modo que o
-funcionamento com apenas uma modalidade disponível, o tempo de resposta e o
-consumo de recursos não foram medidos formalmente. A validação de usabilidade
-com os representantes da comunidade externa (S6-02) foi realizada entre 15 e
-22 de novembro.
-
+A tarefa dedicada ao modo degradado e aos testes do motor de políticas
+(S3-02) foi retirada do escopo deste semestre. Por isso, não foram medidos
+formalmente o funcionamento do sistema com apenas um dos modelos disponível,
+o tempo de resposta e o uso de recursos do computador. A validação de
+usabilidade com os representantes da comunidade externa (S6-02) foi realizada
+entre 15 e 22 de novembro.
 \textit{[Descrever a validação do sistema com a comunidade externa: data,
 participantes, cenários avaliados e resultados.]}
 
@@ -1872,16 +1899,14 @@ participantes, cenários avaliados e resultados.]}
 
 \section{Metodologia}
 
-O projeto adotou o Scrum \cite{scrumguide2020}, com o trabalho dividido em
-seis \textit{sprints}, seguidas de uma \textit{sprint} final de consolidação
-dos resultados. As tarefas e o acompanhamento das
-\textit{sprints} foram registrados no GitHub Projects, e o código foi
-versionado no GitHub, com o
-desenvolvimento de cada frente em \textit{branches} próprias.
+O projeto seguiu o Scrum \cite{scrumguide2020}, com o trabalho dividido em
+seis \textit{sprints} e uma \textit{sprint} final para reunir os resultados.
+As tarefas e o andamento de cada \textit{sprint} foram acompanhados no GitHub
+Projects, e o código foi guardado e versionado no GitHub, com cada frente de
+trabalho desenvolvida em um ramo (\textit{branch}) próprio.
 
-A equipe foi organizada em duas duplas, cada uma responsável por uma modalidade
-de inteligência artificial, como mostra o Quadro~\ref{tab:equipe}.
-
+A equipe foi organizada em duas duplas, cada uma responsável por um dos
+modelos de inteligência artificial, como mostra o Quadro~\ref{tab:equipe}.
 \begin{table}[htbp]
 \centering
 \small
@@ -1900,14 +1925,13 @@ João Pedro Duarte Giatti & IA de imagem (visão) & Pesquisa, bases de imagens, 
 
 \section{Cronograma Planejado}
 
-O Quadro~\ref{tab:cronograma-planejado} apresenta o planejamento do projeto,
-definido no GitHub Projects: o período e o foco de cada \textit{sprint}, as
-tarefas previstas e os respectivos responsáveis. As tarefas são identificadas
-pelo número da \textit{sprint} e por um número sequencial (por exemplo,
-S1-01) e, quando aplicável, indicam os requisitos a que atendem. As tarefas de
-configuração inicial, sem identificador próprio, são indicadas pelo número da
-\textit{issue}.
-
+O Quadro~\ref{tab:cronograma-planejado} mostra o planejamento do projeto
+feito no GitHub Projects: o período e o foco de cada \textit{sprint}, as
+tarefas previstas e quem era responsável por cada uma. Cada tarefa tem um
+código formado pelo número da \textit{sprint} e por um número sequencial (por
+exemplo, S1-01) e, quando faz sentido, indica o requisito que ela atende. As
+tarefas de configuração inicial, que não têm esse código, aparecem com o
+número da \textit{issue} no GitHub.
 {\small
 \begin{longtable}{|p{1.5cm}|p{9.0cm}|p{3.3cm}|}
 \hline
@@ -1956,10 +1980,9 @@ S7 & Consolidação dos resultados para o relatório final & Jhenifer \\ \hline
 
 \section{Cronograma Real}
 
-O Quadro~\ref{tab:cronograma-real} apresenta os itens do quadro do GitHub
-Projects, com os responsáveis, as datas de início e de conclusão registradas e
-a situação de cada item.
-
+O Quadro~\ref{tab:cronograma-real} mostra o que de fato aconteceu: as
+tarefas do GitHub Projects, os responsáveis, as datas em que cada uma começou
+e terminou e a situação final.
 {\small
 \begin{longtable}{|p{1.3cm}|p{6.4cm}|p{2.6cm}|p{2.0cm}|p{1.5cm}|}
 \hline
@@ -1999,22 +2022,22 @@ S7 & Consolidação dos resultados para o relatório final (\#40) & Jhenifer & 1
 \end{longtable}
 }
 
-A comparação entre os dois cronogramas mostra que a \textit{sprint} 1 foi
-concluída no prazo, com a extensão de captura e o pré-processamento entregues
-até 22/09. A partir da \textit{sprint} 2 houve atrasos: o ajuste fino do modelo
-de PLN se estendeu até 15/10, e a base de imagens e o modelo de visão só foram
-concluídos em 02/11, quase um mês após o fim previsto da \textit{sprint}. Como
-o motor de políticas depende dos dois classificadores, as \textit{sprints} 3, 4
-e 5 foram executadas de forma concentrada entre 01/11 e 08/11, e o painel e a
-validação com a comunidade externa, previstos para a \textit{sprint} 6, foram
-realizados entre 15/11 e 22/11. O período de \textit{buffer} foi substituído
-por uma \textit{sprint} 7, dedicada à consolidação dos resultados para o
-relatório final. O item de modo degradado e testes do motor de políticas
-(\#33) foi retirado do escopo deste semestre e não será realizado. Além
-disso, o bloqueio efetivo das páginas, previsto na \textit{sprint} 5, não
-foi concluído: a decisão de bloqueio é registrada no banco, mas ainda não
-impede o carregamento da página.
+Comparando os dois cronogramas, a \textit{sprint} 1 terminou no prazo, com a
+extensão de captura e o preparo dos dados entregues até 22/09. A partir da
+\textit{sprint} 2, houve atrasos: o treinamento do modelo de texto foi até
+15/10, e a base de imagens e o modelo de imagens só ficaram prontos em 02/11,
+quase um mês depois do previsto. Como o motor de políticas depende dos dois
+modelos, as \textit{sprints} 3, 4 e 5 acabaram concentradas entre 01/11 e
+08/11. O painel e a validação com a comunidade externa, previstos para a
+\textit{sprint} 6, foram feitos entre 15/11 e 22/11, e o período reservado
+para imprevistos (\textit{buffer}) virou uma \textit{sprint} 7, usada para
+reunir os resultados do relatório final.
 
+Duas tarefas não foram concluídas. O modo degradado e os testes do motor de
+políticas (\#33) foram retirados do escopo deste semestre. Já o bloqueio
+efetivo das páginas, previsto para a \textit{sprint} 5, ficou incompleto: o
+sistema registra a decisão de bloquear, mas ainda não impede que a página
+carregue.
 % ------------------------------------------------------------
 % 14 Resultados e Discussão
 % ------------------------------------------------------------
@@ -2022,123 +2045,88 @@ impede o carregamento da página.
 
 \section{Atendimento aos Objetivos}
 
-O resultado deste semestre é um protótipo funcional que percorre todo o fluxo
-proposto: a extensão captura o conteúdo das páginas, os dois classificadores o
-analisam, o mecanismo de decisão consolida os resultados e as ocorrências ficam
-disponíveis para o responsável no site. O Quadro~\ref{tab:objetivos} confronta
-esse resultado com os objetivos específicos definidos no
-Capítulo~\ref{cap:objetivos}.
+Ao final do semestre, o ORCA funciona do começo ao fim. Quando uma pessoa
+acessa uma página, a extensão do navegador lê o texto e as imagens dessa
+página e os envia para análise. Dois modelos de inteligência artificial
+examinam o conteúdo, um para o texto e outro para as imagens, e o sistema
+decide se a página é segura, se merece um alerta ou se deveria ser bloqueada.
+Quando há algum problema, a ocorrência fica registrada, e o responsável pode
+consultá-la no site do projeto.
 
-{\small
-\begin{longtable}{|p{5.4cm}|p{2.0cm}|p{6.4cm}|}
-\hline
-\textbf{Objetivo específico} & \textbf{Situação} & \textbf{Comentário} \\ \hline
-\endfirsthead
-\hline
-\textbf{Objetivo específico} & \textbf{Situação} & \textbf{Comentário} \\ \hline
-\endhead
-Pesquisar e selecionar técnicas e modelos & Atendido & BERTimbau Base para texto; para imagens, comparação entre NudeNet e \texttt{image-safety-classifier-s} \\ \hline
-Construir e documentar as bases de dados & Atendido & Base textual com 40.178 textos e base de imagens com 1.052 imagens, ambas documentadas; nem todas as categorias do projeto são cobertas \\ \hline
-Treinar ou ajustar os modelos & Atendido & O modelo textual foi ajustado pela equipe; o de imagens foi utilizado pré-treinado, sem ajuste fino, e avaliado na base da equipe \\ \hline
-Desenvolver o mecanismo de captura & Atendido & Extensão para o Chrome que captura texto e imagens e acompanha mudanças na página \\ \hline
-Desenvolver o mecanismo de políticas & Atendido & Consolidação e decisão implementadas, com limiares fixos; sem regras configuráveis e sem bloqueio efetivo no navegador \\ \hline
-Implementar a interface de acompanhamento & Atendido & Site com cadastro, login, histórico, filtros e contagem de alertas e bloqueios \\ \hline
-Avaliar o desempenho dos classificadores & Atendido & Métricas de qualidade obtidas (texto na validação, imagens no teste); avaliação do texto no teste e tempo de classificação pendentes \\ \hline
-Testar o sistema em situações de navegação & Parcial & Testes unitários automatizados e verificação exploratória da integração, sem casos de teste documentados \\ \hline
-Documentar limitações técnicas, éticas e de privacidade & Atendido & Registradas neste documento e na documentação técnica do repositório \\ \hline
-Estabelecer a base arquitetural para a evolução & Atendido & Classificação, decisão, persistência e interface separadas e comunicadas por API \\ \hline
-\caption{Atendimento aos objetivos específicos}
-\label{tab:objetivos}
-\end{longtable}
-}
+Para chegar a esse resultado, a equipe escolheu os modelos de inteligência
+artificial, montou as bases de dados usadas para treiná-los e avaliá-los, com
+cerca de 40 mil textos e mil imagens, e construiu a extensão, o servidor de
+análise e o site. Cada uma dessas partes funciona de forma independente, o que
+facilita a evolução do projeto nos próximos semestres. Assim, nove dos dez
+objetivos definidos no Capítulo~\ref{cap:objetivos} foram cumpridos.
 
-Os objetivos atendidos parcialmente concentram-se nas atividades previstas para
-as \textit{sprints} 4 e 5, como o bloqueio efetivo, a configuração de regras e
-a validação sistemática. Esses pontos não impedem o funcionamento do fluxo de
-ponta a ponta e são retomados como trabalhos futuros no
-Capítulo~\ref{cap:conclusao}.
+O objetivo que ficou incompleto foi o de testar o sistema em situações reais
+de navegação. O sistema foi usado e verificado durante o desenvolvimento, mas
+esses testes não foram organizados em roteiros com resultados registrados.
+Além disso, alguns objetivos foram cumpridos de forma mais simples do que o
+planejado. O modelo de imagens foi usado como veio pronto, sem ser treinado
+novamente pela equipe, pois já atendia às necessidades do projeto. Além disso,
+o sistema ainda não reconhece todos os tipos de conteúdo previstos, como
+apostas e drogas, porque não foram encontradas bases de dados adequadas. O
+discurso de ódio chegou a ser implementado, mas seu desempenho não foi
+considerado satisfatório pela equipe, pelo mesmo motivo.
 
 \section{Atendimento aos Requisitos}
 
-O Quadro~\ref{tab:status-requisitos} resume a situação dos requisitos
-funcionais e não funcionais.
+Os requisitos descrevem o que o sistema deveria fazer. As funções principais
+foram entregues: capturar o conteúdo das páginas, analisá-lo, decidir o que
+fazer e mostrar o histórico ao responsável. Dos 15 requisitos funcionais, sete
+foram atendidos por completo, cinco foram atendidos em parte e dois não foram
+implementados.
 
-{\small
-\begin{longtable}{|p{1.6cm}|p{2.0cm}|p{10.2cm}|}
-\hline
-\textbf{Código} & \textbf{Situação} & \textbf{Observação} \\ \hline
-\endfirsthead
-\hline
-\textbf{Código} & \textbf{Situação} & \textbf{Observação} \\ \hline
-\endhead
-RF001 & Atendido & Captura do texto visível e das imagens \texttt{<img>}; imagens de fundo, vídeos e \textit{iframes} não são lidos \\ \hline
-RF002 & Atendido & Normalização na extensão e no servidor; mínimo de dez palavras; textos longos divididos em janelas de 128 \textit{tokens} \\ \hline
-RF003 & Parcial & Classes seguro, suicídio e ódio; apostas e drogas não cobertas \\ \hline
-RF004 & Atendido & \textit{Score} entre 0 e 1 para cada classificação textual \\ \hline
-RF005 & Atendido & Filtro por tamanho e proporção, limite de 15 imagens e redimensionamento para o modelo \\ \hline
-RF006 & Parcial & Classes seguro, sexual e violento; automutilação, apostas e drogas em imagens não cobertas \\ \hline
-RF007 & Atendido & Probabilidade de cada classe para cada imagem \\ \hline
-RF008 & Atendido & Risco final pelo maior valor entre as modalidades e prioridade da causa indicada pela imagem \\ \hline
-RF009 & Parcial & Decisão entre alerta e bloqueio com limiares fixos (0,50 e 0,75), diferentes dos exemplos do requisito \\ \hline
-RF010 & Não atendido & Regras por categoria não configuráveis \\ \hline
-RF011 & Não atendido & Bloqueio registrado, mas a página não é bloqueada no navegador \\ \hline
-RF012 & Parcial & Registro de URL, nível, causa e data das páginas com ocorrência; modalidade, \textit{score} e versão do modelo não são gravados \\ \hline
-RF013 & Atendido & Histórico com filtros por texto, categoria, tipo e período \\ \hline
-RF014 & Parcial & Contagem de alertas e bloqueios por período e categoria; total de páginas analisadas não disponível \\ \hline
-RF015 & Não atendido & Estruturas preparadas no banco, mas a função não foi integrada \\ \hline
-RNF001 & Não verificado & Tempo de resposta não medido de forma sistemática \\ \hline
-RNF002 & Atendido & Senhas com Argon2, autenticação por JWT, RLS no banco e chave de serviço restrita ao servidor \\ \hline
-RNF003 & Atendido & Texto e imagens processados em memória; apenas páginas com ocorrência são registradas \\ \hline
-RNF004 & Atendido & Interface simples, a usabilidade foi avaliada com usuários da comunidade externa \\ \hline
-RNF005 & Parcial & Uma modalidade sem resultado não impede a decisão pela outra; com o servidor indisponível, a navegação segue sem análise \\ \hline
-RNF006 & Atendido & Classificadores, decisão, persistência e interface em módulos independentes \\ \hline
-RNF007 & Atendido & Os motores de classificação ficam em um servidor independente da extensão, acessado por API, o que facilita sua migração para outro equipamento \\ \hline
-RNF008 & Atendido & Extensão para o Google Chrome (Manifest V3) \\ \hline
-RNF009 & Atendido & Registros vinculados ao usuário e protegidos no banco, sem trilha de alterações \\ \hline
-\caption{Situação dos requisitos funcionais e não funcionais}
-\label{tab:status-requisitos}
-\end{longtable}
-}
+Os dois requisitos não implementados correspondem, na prática, às funções de
+controle do responsável. O primeiro é o bloqueio efetivo: o sistema identifica
+que uma página deveria ser bloqueada, mas apenas registra essa decisão. O
+segundo é a possibilidade de o responsável escolher o que fazer com cada tipo
+de conteúdo, já que, por enquanto, essas regras são fixas.
 
-Os requisitos específicos de inteligência artificial são comparados aos
-resultados obtidos no Quadro~\ref{tab:status-ia}. As metas do modelo textual
-foram verificadas no conjunto de validação.
+Quanto aos requisitos não funcionais, que tratam da qualidade do sistema, o
+destaque é a proteção dos dados. As senhas são guardadas de forma
+criptografada, o acesso exige login, e o conteúdo das páginas é analisado e
+descartado logo em seguida: o banco guarda apenas o endereço, a categoria e a
+data das páginas que geraram alerta ou bloqueio. Por outro lado, ainda não
+foi medido o tempo que o sistema leva para analisar cada página.
 
-{\small
-\begin{longtable}{|p{1.6cm}|p{4.6cm}|p{5.2cm}|p{2.2cm}|}
-\hline
-\textbf{Código} & \textbf{Meta} & \textbf{Resultado} & \textbf{Situação} \\ \hline
-\endfirsthead
-\hline
-\textbf{Código} & \textbf{Meta} & \textbf{Resultado} & \textbf{Situação} \\ \hline
-\endhead
-RIA001 & Acurácia $\geq$ 85\% & 89,56\% & Atendido \\ \hline
-RIA002 & F1 $\geq$ 0,85 nas classes sensíveis & Suicídio 0,8211; ódio 0,6392 & Não atendido \\ \hline
-RIA003 & Falsos negativos $<$ 10\% nas classes sensíveis & Suicídio 9,8\%; ódio 33,5\% & Parcial \\ \hline
-RIA004 & Falsos positivos $<$ 10\% & 6,95\% dos textos seguros classificados como sensíveis & Atendido \\ \hline
-RIA005 & Inferência $<$ 500 ms por página & Não medido & Pendente \\ \hline
-RIA006 e RIA007 & Base rotulada e documentada; conjuntos separados & Bases documentadas e tratamento de repetições entre conjuntos & Atendido \\ \hline
-RIA008 e RIA009 & Versão e \textit{score} rastreáveis & Retornados pela API, mas não gravados no registro & Parcial \\ \hline
-RIA010 e RIA011 & Avaliação de casos ambíguos; reavaliação periódica & Não realizadas & Não atendido \\ \hline
-RIC001 & Acurácia $\geq$ 90\% & 96,84\% & Atendido \\ \hline
-RIC002 & F1 $\geq$ 0,85 nas classes sensíveis & sexual 0,9733; violento 0,9333 & Atendido \\ \hline
-RIC003 & Falsos negativos $<$ 5\% nas classes sensíveis & 3,6\% (seguro contra inseguro); violento 12,5\% com oito imagens & Parcial \\ \hline
-RIC004 & Falsos positivos $<$ 5\% & 2,67\% & Atendido \\ \hline
-RIC005 & Inferência $<$ 300 ms por imagem & Não medido; testes iniciais indicaram cerca de 2 s por imagem em CPU & Pendente \\ \hline
-RIC006 e RIC007 & Base rotulada e documentada; conjuntos separados & Base de avaliação documentada; modelo sem ajuste fino & Parcial \\ \hline
-RIC008 e RIC009 & Versão e \textit{score} rastreáveis & Retornados pela API, mas não gravados no registro & Parcial \\ \hline
-RIC010 e RIC011 & Avaliação de casos ambíguos; reavaliação periódica & Não realizadas & Não atendido \\ \hline
-\caption{Comparação entre as metas de IA e os resultados obtidos}
-\label{tab:status-ia}
-\end{longtable}
-}
+\section{Desempenho dos Modelos de Inteligência Artificial}
 
-O modelo de imagens superou as metas de qualidade, ainda que com as ressalvas
-sobre a base discutidas no Capítulo~\ref{cap:solucao}. O modelo textual atingiu a acurácia
-esperada e manteve os falsos negativos de suicídio dentro da meta, mas ficou
-aquém na classe ódio, em que um terço dos textos não foi identificado. A
-medição do tempo de classificação é a lacuna mais relevante, já que as
-observações iniciais com o modelo de imagens indicam valores acima da meta.
+Para avaliar os modelos, a equipe mostrou a eles textos e imagens cuja
+resposta correta já era conhecida e contou quantas vezes eles acertaram. Além
+da taxa geral de acertos, duas perguntas importam para o controle parental:
+quantos conteúdos perigosos o modelo deixou passar e quantas vezes ele acusou
+um conteúdo inofensivo.
+
+O modelo de imagens teve o melhor desempenho. Ele acertou cerca de 97 de cada
+100 imagens avaliadas, reconheceu 80 das 83 imagens inadequadas e acusou por
+engano apenas 2 das 75 imagens comuns. Todas as metas de acerto foram
+alcançadas, com uma exceção: entre as oito imagens violentas, uma não foi
+reconhecida. Como o número de imagens violentas é pequeno, cada erro pesa
+muito no resultado, e por isso esses números devem ser confirmados com uma
+base maior e mais parecida com a navegação real.
+
+O modelo de texto acertou cerca de 9 em cada 10 textos, acima da meta. Na
+categoria de suicídio, que é a mais sensível para a proteção da criança, ele
+reconheceu 101 dos 112 textos. Além disso, apenas cerca de 7 em cada 100
+textos comuns foram marcados por engano como problemáticos.
+
+O ponto fraco é o discurso de ódio, categoria que foi implementada, mas cujo
+resultado não foi aceito pela equipe. O modelo reconheceu cerca de dois em
+cada três textos de ódio e, quando apontou um texto como ódio, acertou em
+cerca de seis de cada dez vezes. Esse é o resultado mais fraco do projeto e
+ficou abaixo da meta. A dificuldade tem duas origens. A primeira é a natureza
+do problema: o ódio muitas vezes aparece de forma indireta, com ironia ou
+gírias, e até as pessoas discordam sobre o que é ou não discurso de ódio. A
+segunda é a limitação do idioma, já que existem poucas bases de dados
+adequadas em português.
+
+Por fim, a velocidade dos modelos não foi medida de forma organizada. As
+primeiras observações indicam que o modelo de imagens leva cerca de 2 segundos
+por imagem em um computador comum, bem acima da meta de 0,3 segundo, o que
+torna esse um dos principais pontos de melhoria.
 
 \section{Benefícios para os Usuários}
 
@@ -2186,78 +2174,53 @@ idade e autonomia.
 \chapter{Conclusão e Trabalhos Futuros}
 \label{cap:conclusao}
 
-Este trabalho desenvolveu o ORCA, um protótipo de classificação de conteúdo
-web que combina um modelo de processamento de linguagem natural e um modelo de
-visão computacional para identificar conteúdos potencialmente inadequados
-durante a navegação. O protótipo integra uma extensão para o Google Chrome, um
-servidor de análise, um banco de dados e um site de acompanhamento, e
-demonstra a viabilidade de separar a classificação do conteúdo da decisão
-sobre o acesso.
+Este trabalho apresentou o ORCA, um protótipo que usa dois modelos de
+inteligência artificial, um para texto e outro para imagens, para identificar
+conteúdos potencialmente inadequados enquanto a criança navega. O sistema
+reúne uma extensão para o Google Chrome, um servidor de análise, um banco de
+dados e um site de acompanhamento, e mostra que é possível separar a tarefa de
+classificar o conteúdo da tarefa de decidir o que fazer com ele.
 
-O classificador textual, ajustado a partir do BERTimbau, obteve acurácia de
-89,56\% e Macro F1 de 0,7995 na validação, com bom desempenho na detecção de
-ideação suicida e desempenho inferior na de discurso de ódio. O classificador
-de imagens, pré-treinado, obteve acurácia de 96,84\% e Macro F1 de 0,9579 no
-conjunto de teste montado pela equipe.
+O modelo de texto, construído a partir do BERTimbau, acertou cerca de 9 em
+cada 10 textos na validação (acurácia de 89,56\% e Macro F1 de 0,7995) e teve
+bom desempenho na detecção de ideação suicida. A detecção de discurso de ódio
+foi implementada, mas seu resultado não foi aceito pela equipe: além de o ódio
+aparecer muitas vezes de forma indireta e subjetiva, há poucas bases de dados
+adequadas em português. O modelo de imagens, usado sem novo treinamento,
+acertou cerca de 97 em cada 100 imagens no teste montado pela equipe
+(acurácia de 96,84\% e Macro F1 de 0,9579).
 
-As principais limitações do protótipo são a ausência de bloqueio efetivo no
-navegador, os limiares de decisão fixos, a cobertura parcial das categorias
-definidas pelo projeto, a avaliação do modelo textual ainda restrita à
-validação, a falta de medição do tempo de resposta e a captura restrita a
-imagens \texttt{<img>} do quadro principal da página.
+O protótipo ainda tem limitações importantes: as páginas não são bloqueadas
+de fato no navegador, os limites de decisão são fixos, nem todas as
+categorias previstas são reconhecidas, o modelo de texto só foi avaliado na
+validação, o tempo de resposta não foi medido e a extensão só lê as imagens
+comuns (\texttt{<img>}) da parte principal da página.
 
-Como trabalhos futuros, propõem-se:
+Para os próximos passos, propõe-se:
 
 \begin{alineas}
-    \item exibir a página de bloqueio e permitir que o responsável configure
-    ações e limiares por categoria;
-    \item implementar o início e a pausa do monitoramento e a renovação de
-    sessões, cujas estruturas já existem no banco de dados;
-    \item avaliar o modelo textual no conjunto de teste e medir o tempo de
-    classificação e o consumo de recursos dos dois modelos;
+    \item mostrar a página de bloqueio e permitir que o responsável escolha a
+    ação e o limite de decisão de cada categoria;
+    \item criar a opção de ligar e desligar o monitoramento e a renovação
+    automática do login, cujas estruturas já existem no banco de dados;
+    \item avaliar o modelo de texto no conjunto de teste e medir o tempo de
+    resposta e o uso de recursos dos dois modelos;
+    \item melhorar a detecção de discurso de ódio, com novas bases de dados em
+    português e o ajuste do limite de decisão dessa categoria;
     \item ampliar as bases de dados para cobrir apostas, drogas e
-    automutilação, reduzir a dependência de uma única fonte por classe e
-    incluir imagens reais de navegação na avaliação;
-    \item testar o motor de políticas com apenas uma modalidade disponível
-    (modo degradado) e realizar testes de sistema documentados;
-    \item integrar os motores de classificação a uma infraestrutura baseada em
-    Raspberry Pi, permitindo a aplicação centralizada de políticas aos
-    dispositivos de uma rede doméstica.
+    automutilação, usar mais de uma fonte por categoria e incluir imagens reais
+    de navegação na avaliação;
+    \item testar o motor de políticas com apenas um dos modelos funcionando
+    (modo degradado) e criar roteiros de teste documentados para o sistema;
+    \item levar os modelos para um Raspberry Pi, permitindo controlar de forma
+    centralizada o acesso de todos os dispositivos de uma rede doméstica.
 \end{alineas}
-
 % ------------------------------------------------------------
 % 16 Aceite final do projeto
 % ------------------------------------------------------------
 \chapter{Aceite final do projeto}
 
-\begin{center}
-\textbf{TERMO DE ACEITE DO PROJETO}
-\end{center}
 
-Eu, \underline{\hspace{8cm}}, ocupante do cargo de
-\underline{\hspace{5cm}} na organização \underline{\hspace{6cm}},
-inscrita no CNPJ sob o nº \underline{\hspace{4.5cm}}, declaro que acompanhei o
-desenvolvimento do projeto ``Classificação Inteligente de Conteúdo Web para
-Controle de Acesso em Navegadores'' (ORCA), realizado pelos alunos Eduarda
-Luiza Pinheiro Nepomuceno, Jean Yuki Kimura, Jhenifer Laís Barbosa e João
-Pedro Duarte Giatti, do curso de Engenharia de Software da Pontifícia
-Universidade Católica de Campinas, na disciplina Projeto Integrador VI, sob
-orientação da Profa. Sílvia Cristina de Matos Soares.
-
-Declaro, ainda, que participei da definição dos requisitos e da validação dos
-protótipos e que o sistema apresentado atende aos objetivos acordados para
-este semestre, considerando as limitações descritas neste documento.
-
-\vspace{1.5cm}
-
-\noindent Campinas, \underline{\hspace{1cm}} de \underline{\hspace{3cm}} de 2026.
-
-\vspace{2cm}
-
-\begin{center}
-\underline{\hspace{9cm}}\\
-Assinatura do representante da comunidade externa
-\end{center}
 
 % ------------------------------------------------------------
 % REFERÊNCIAS
