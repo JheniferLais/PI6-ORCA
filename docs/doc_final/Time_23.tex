@@ -479,11 +479,12 @@ revisão e retrospectiva, a partir de uma lista priorizada de itens, o
 % Formato compacto: espaçamento simples e fonte menor dentro do quadro,
 % identificador e nome na mesma linha de título e largura total da página.
 \newcommand{\reqfunc}[5]{%
-  \par\smallskip\noindent
+  \par\smallskip
   \begingroup
   \SingleSpacing\footnotesize
   \renewcommand{\arraystretch}{1.15}%
-  \begin{tabular}{|p{2.3cm}|p{12.8cm}|}
+  \noindent
+  \begin{tabular}{|p{2.3cm}|p{12.7cm}|}
   \hline
   \multicolumn{2}{|l|}{\textbf{#1 -- #2}} \\ \hline
   \textbf{Descrição Geral} & #3 \\ \hline
@@ -1168,7 +1169,7 @@ quanto os limites de seu escopo em relação às ferramentas existentes.
 \hspace{0.7cm}%
 \begin{minipage}{0.38\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{senhora.jpg}
+    \includegraphics[width=\textwidth]{senhora-web.jpg}
 \end{minipage}%
 \hfill
 \begin{minipage}{0.6\textwidth}
@@ -1198,7 +1199,7 @@ quanto os limites de seu escopo em relação às ferramentas existentes.
 \hspace{0.7cm}%
 \begin{minipage}{0.38\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{menino.jpg}
+    \includegraphics[width=\textwidth]{menino-web.jpg}
 \end{minipage}%
 \hfill
 \begin{minipage}{0.6\textwidth}
@@ -1261,21 +1262,21 @@ do cadastro, do login e do histórico de alertas.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[height=0.8\textheight]{ORCA_HOME.png}
+    \includegraphics[height=0.8\textheight]{ORCA_HOME.jpg}
     \caption{Protótipo da página inicial do ORCA}
     \label{fig:prot-home}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{ORCA_REGISTER.png}
+    \includegraphics[width=\textwidth]{ORCA_REGISTER.jpg}
     \caption{Protótipo da tela de cadastro do ORCA}
     \label{fig:prot-cadastro}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{ORCA_LOGIN.png}
+    \includegraphics[width=\textwidth]{ORCA_LOGIN.jpg}
     \caption{Protótipo da tela de login do ORCA}
     \label{fig:prot-login}
 \end{figure}
