@@ -181,9 +181,9 @@ artificial oferece outro caminho: em vez de olhar apenas o endereço, ela pode
 ler o texto e observar as imagens da página para estimar que tipo de conteúdo
 está ali.
 
-É essa a proposta do ORCA neste semestre. O sistema captura o texto e as
+É essa a proposta do ORCA. O sistema captura o texto e as
 imagens das páginas acessadas no navegador e os envia para dois modelos de
-inteligência artificial treinados ou ajustados pela equipe: um especializado
+inteligência artificial treinados e ajustados pela equipe: um especializado
 em texto e outro em imagens. Cada modelo indica a que categoria o conteúdo
 pertence, e, a partir dessas respostas, um mecanismo de políticas decide se a
 página deve ser permitida ou bloqueada.
@@ -207,7 +207,7 @@ modelo funciona isoladamente, mas também se os dois podem ser usados juntos
 durante a navegação.
 
 O projeto também oferece um site de acompanhamento, no qual o responsável
-consulta as páginas que geraram alertas ou bloqueios e as estatísticas de uso.
+consulta as páginas que geraram alertas ou bloqueios.
 Neste semestre, esse site serve para acompanhar e avaliar o protótipo, e
 ainda não é um painel de administração de uma rede doméstica.
 
@@ -248,7 +248,7 @@ segurança digital.
 \section*{Círculo Dourado}
 
 Para mostrar com clareza o propósito do projeto, foi usado o Círculo Dourado
-(\textit{Golden Circle}), modelo criado por Simon Sinek \cite{sinek2009} que organiza uma ideia
+(\textit{Golden Circle}), modelo criado por Simon Sinek que organiza uma ideia
 em três camadas: \textit{Why} (por quê), \textit{How} (como) e \textit{What}
 (o quê).
 
@@ -303,14 +303,23 @@ classificações para decidir se a página deve ser permitida ou bloqueada.
 
 As 62 horas de extensão do projeto correspondem às atividades realizadas com a
 comunidade externa, ou seja, com pessoas de fora da universidade que fazem
-parte do público do ORCA. Esses representantes ajudam a definir o problema,
-participam das entrevistas, contribuem com os requisitos e avaliam os
-protótipos e o sistema final. Para que as contribuições reflitam quem de fato
-usaria o ORCA, foram buscadas pessoas com perfis parecidos com os das personas
-apresentadas no Capítulo~\ref{cap:personas}: responsáveis por crianças e
-adolescentes, profissionais da educação e profissionais de tecnologia ou de
-segurança digital.
+parte do público do ORCA. Para que as contribuições refletissem quem de fato
+usaria o sistema, foram buscadas pessoas com perfis parecidos com os das
+personas apresentadas no Capítulo~\ref{cap:personas}: responsáveis por
+crianças e adolescentes, profissionais da educação e profissionais de
+tecnologia ou de segurança digital.
 
+Os representantes participaram de dois momentos importantes do projeto:
+
+\begin{alineas}
+    \item \textbf{Entendimento da dor:} a equipe aplicou um formulário para entender as dificuldades reais dos responsáveis no
+    acompanhamento da navegação das crianças. As respostas mostraram que a
+    ideia inicial precisava de ajustes, e o escopo do ORCA foi revisto a partir
+    dessas contribuições;
+    \item \textbf{Validação do protótipo:} com as telas prontas, os
+    representantes avaliaram o site e disseram o que acharam de cada tela. A
+    partir dessas opiniões, a equipe fez ajustes na interface.
+\end{alineas}
 O Quadro~\ref{tab:representantes} apresenta os representantes que
 participaram do projeto.
 \begin{table}[htbp]
@@ -326,6 +335,79 @@ Camila do Rosario Duarte & Administradora & caca22duarte@\allowbreak gmail.com &
 \caption{Representantes da comunidade externa}
 \label{tab:representantes}
 \end{table}
+
+\section{Pesquisa de Entendimento da Dor}
+
+Para entender as dificuldades reais dos responsáveis, a equipe aplicou um
+formulário on-line no Google Forms, respondido por 19 pessoas e disponível
+em:
+\url{https://docs.google.com/forms/d/1dNpGm-VMGNii7-7fR1AdEO6rxzEA1t7YivhUH9GNhzo/viewform}.
+Os resultados a seguir são apresentados de forma agregada, sem identificar os
+participantes.
+
+A Figura~\ref{fig:forms-perfil} mostra quem respondeu à pesquisa. A maior
+parte tem ligação direta com o tema: dez pessoas são pais, mães ou
+responsáveis por crianças ou adolescentes, duas são profissionais da educação
+e duas trabalham em organizações que atendem esse público. As demais não se
+encaixam nesses grupos, mas têm interesse no assunto. Entre os responsáveis, a
+faixa etária mais citada foi a de 6 a 9 anos. Esse perfil é importante porque
+mostra que as opiniões vêm, em sua maioria, de quem convive com o problema no
+dia a dia, como as personas do projeto.
+
+\begin{figure}[htbp]
+    \centering
+    \caption{Relação dos respondentes com o tema}
+    \label{fig:forms-perfil}
+    \includegraphics[width=0.85\textwidth]{forms_perfil.png}
+    \fonte{Elaborada pelos autores com os dados do formulário (2026).}
+\end{figure}
+
+O problema é percebido como frequente e próximo: 18 das 19 pessoas acreditam
+que crianças e adolescentes são expostos a conteúdos inadequados com
+frequência ou muita frequência, e o mesmo número já presenciou ou soube de
+uma situação desse tipo. Os conteúdos que mais preocupam são o sexual, a
+violência e as drogas, marcados por 18 pessoas, seguidos pelo discurso de
+ódio e pelo incentivo a comportamentos perigosos, com 15 cada. Esse resultado reforça a escolha das
+categorias trabalhadas pelos modelos do ORCA.
+
+A maior dificuldade apontada foi não saber quais conteúdos estão sendo
+acessados, marcada por 13 pessoas.
+Também apareceram a dificuldade de acompanhar a atividade em diferentes sites
+e a percepção de que as ferramentas existentes não identificam bem certos
+conteúdos, com 8 marcações cada. Essas respostas mostram que o responsável
+precisa, antes de tudo, de visibilidade sobre o que a criança vê, o que
+justifica o histórico de ocorrências do ORCA e a análise do conteúdo da
+página, e não apenas do endereço.
+
+Todas as 19 pessoas consideraram ``muito útil'' uma ferramenta com a proposta
+do ORCA. As funcionalidades mais desejadas foram bloquear automaticamente
+conforme regras definidas (17 pessoas) e identificar as categorias de conteúdo
+em textos e imagens (15 pessoas), que correspondem exatamente ao núcleo do
+projeto. Receber notificações e
+configurar regras por idade também foram bastante citados e ficam como
+caminhos de evolução.
+
+Por fim, a pesquisa mostrou o que os responsáveis mais temem em uma
+ferramenta automática. A maior preocupação é deixar passar conteúdos que
+deveriam ser bloqueados (7 pessoas), seguida por bloquear conteúdos que não
+deveriam ser bloqueados (5 pessoas). Coerentemente, o que mais importa para os
+respondentes é que a ferramenta identifique corretamente as categorias de
+conteúdo (13 pessoas) e deixe passar menos conteúdos inadequados (9 pessoas),
+conforme a Figura~\ref{fig:forms-importante}. Logo depois aparecem a proteção
+dos dados pessoais e a facilidade de uso, com 8 pessoas cada, o que mostra
+que, além de acertar, a ferramenta precisa respeitar a privacidade da família
+e ser simples de usar. Essas respostas estão alinhadas às metas definidas para
+os modelos de inteligência artificial, que dão atenção especial aos conteúdos
+inadequados que deixam de ser identificados e aos alarmes falsos, e às
+decisões de guardar apenas o mínimo de dados e de manter a interface simples.
+
+\begin{figure}[htbp]
+    \centering
+    \caption{O que é mais importante em uma ferramenta de controle de conteúdo}
+    \label{fig:forms-importante}
+    \includegraphics[width=0.85\textwidth]{forms_importante.png}
+    \fonte{Elaborada pelos autores com os dados do formulário (2026).}
+\end{figure}
 
 % ------------------------------------------------------------
 % 4 Fundamentação Teórica
@@ -1042,8 +1124,7 @@ resposta. Eles seguem o mesmo formato dos demais requisitos.
 \chapter{Benchmarking}
 
 O benchmarking compara o ORCA com três ferramentas de controle parental
-conhecidas no mercado: Qustodio \cite{qustodio}, Microsoft Family Safety
-\cite{familysafety} e Net Nanny \cite{netnanny}. A
+conhecidas no mercado: Qustodio, Microsoft Family Safety e Net Nanny. A
 comparação considera recursos de filtragem, análise de conteúdo, regras,
 monitoramento e características técnicas ligadas aos objetivos do projeto. A
 intenção não é mostrar que o ORCA tem mais recursos que essas ferramentas, e
@@ -1113,32 +1194,20 @@ Raspberry Pi é uma evolução prevista para os próximos semestres. Assim, o
 benchmarking mostra tanto o que o ORCA traz de novo quanto os limites do seu
 escopo atual em relação às ferramentas existentes.
 % ------------------------------------------------------------
-% 7 Definição das Personas 
+% 7 Definição das Personas
 % ------------------------------------------------------------
 \chapter{Definição das Personas}
 \label{cap:personas}
 
 \section{Persona 1 -- Renata Souza, a Mãe Vigilante}
 
-\noindent
-\hspace{0.7cm}%
-\begin{minipage}{0.38\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{mulher.jpg}
-\end{minipage}%
-\hfill
-\begin{minipage}{0.6\textwidth}
-    \begin{itemize}
-        \item \textbf{Nome:} Renata Souza
-        \item \textbf{Idade:} 38 anos
-        \item \textbf{Sexo:} Feminino
-        \item \textbf{Estado Civil:} Casada
-        \item \textbf{Ocupação/Trabalho:} Analista financeira, trabalha em regime híbrido (\textit{home office} 3x por semana)
-        \item \textbf{Biografia:} Atua na área financeira e gerencia a rotina familiar. Mãe de Lucas (8) e Beatriz (12); o notebook do trabalho e o tablet da casa são compartilhados pelos filhos fora do horário escolar.
-    \end{itemize}
-\end{minipage}
-
 \begin{itemize}
+    \item \textbf{Nome:} Renata Souza
+    \item \textbf{Idade:} 38 anos
+    \item \textbf{Sexo:} Feminino
+    \item \textbf{Estado Civil:} Casada
+    \item \textbf{Ocupação/Trabalho:} Analista financeira, trabalha em regime híbrido (\textit{home office} 3x por semana)
+    \item \textbf{Biografia:} Atua na área financeira e gerencia a rotina familiar. Mãe de Lucas (8) e Beatriz (12); o notebook do trabalho e o tablet da casa são compartilhados pelos filhos fora do horário escolar.
     \item \textbf{Hobbies:} Leitura, jardinagem e passar tempo em família.
     \item \textbf{Conhecimento em tecnologia:} Médio.
     \item \textbf{Conhecimento no domínio do negócio:} Alto.
@@ -1150,25 +1219,13 @@ escopo atual em relação às ferramentas existentes.
 
 \section{Persona 2 -- Dona Marlene, Responsável por um Lar com Várias Crianças}
 
-\noindent
-\hspace{0.7cm}%
-\begin{minipage}{0.38\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{senhora-web.jpg}
-\end{minipage}%
-\hfill
-\begin{minipage}{0.6\textwidth}
-    \begin{itemize}
-        \item \textbf{Nome:} Marlene da Silva (Dona Marlene)
-        \item \textbf{Idade:} 58 anos
-        \item \textbf{Sexo:} Feminino
-        \item \textbf{Estado Civil:} Viúva
-        \item \textbf{Ocupação/Trabalho:} Aposentada; cuida informalmente dos netos e sobrinhos-netos enquanto os pais trabalham
-        \item \textbf{Biografia:} Funciona como uma espécie de ``creche familiar'', recebendo em casa até 5 crianças com idades entre 6 e 14 anos em horários distintos, contando com um único computador e um tablet compartilhados.
-    \end{itemize}
-\end{minipage}
-
 \begin{itemize}
+    \item \textbf{Nome:} Marlene da Silva (Dona Marlene)
+    \item \textbf{Idade:} 58 anos
+    \item \textbf{Sexo:} Feminino
+    \item \textbf{Estado Civil:} Viúva
+    \item \textbf{Ocupação/Trabalho:} Aposentada; cuida informalmente dos netos e sobrinhos-netos enquanto os pais trabalham
+    \item \textbf{Biografia:} Funciona como uma espécie de ``creche familiar'', recebendo em casa até 5 crianças com idades entre 6 e 14 anos em horários distintos, contando com um único computador e um tablet compartilhados.
     \item \textbf{Hobbies:} Tricô, culinária e cuidar das plantas.
     \item \textbf{Conhecimento em tecnologia:} Baixo.
     \item \textbf{Conhecimento no domínio do negócio:} Médio.
@@ -1180,25 +1237,13 @@ escopo atual em relação às ferramentas existentes.
 
 \section{Persona 3 -- Caio ``Modo Anônimo'', o Adversário}
 
-\noindent
-\hspace{0.7cm}%
-\begin{minipage}{0.38\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{menino-web.jpg}
-\end{minipage}%
-\hfill
-\begin{minipage}{0.6\textwidth}
-    \begin{itemize}
-        \item \textbf{Nome:} Caio Mendes
-        \item \textbf{Idade:} 13 anos
-        \item \textbf{Sexo:} Masculino
-        \item \textbf{Estado Civil:} Solteiro
-        \item \textbf{Ocupação/Trabalho:} Estudante do 8º ano
-        \item \textbf{Biografia:} Autoproclamado ``especialista em TI'' da família. Usa o tablet da casa compartilhado com os pais e irmão mais novo; já alterou configurações de rede por curiosidade para testar limites.
-    \end{itemize}
-\end{minipage}
-
 \begin{itemize}
+    \item \textbf{Nome:} Caio Mendes
+    \item \textbf{Idade:} 13 anos
+    \item \textbf{Sexo:} Masculino
+    \item \textbf{Estado Civil:} Solteiro
+    \item \textbf{Ocupação/Trabalho:} Estudante do 8º ano
+    \item \textbf{Biografia:} Autoproclamado ``especialista em TI'' da família. Usa o tablet da casa compartilhado com os pais e irmão mais novo; já alterou configurações de rede por curiosidade para testar limites.
     \item \textbf{Hobbies:} Jogos eletrônicos, vídeos de tecnologia e exploração de softwares.
     \item \textbf{Conhecimento em tecnologia:} Alto para a idade.
     \item \textbf{Conhecimento no domínio do negócio:} Baixo.
@@ -1271,9 +1316,9 @@ login e o histórico de alertas.
     \label{fig:prot-logs}
 \end{figure}
 
-\textit{[Descrever a validação e o aceite dos protótipos pelos representantes da
-comunidade externa: data, participantes, observações e ajustes realizados.]}
-
+As telas foram apresentadas aos representantes da comunidade externa, que
+disseram o que acharam de cada uma delas. Com base nesses comentários, a
+equipe fez ajustes na interface antes da versão final do site.
 % ------------------------------------------------------------
 % 9 Modelo de Dados
 % ------------------------------------------------------------
@@ -1653,7 +1698,7 @@ segura, sexual ou violenta (no modelo, essas classes aparecem com as siglas em
 inglês SFW, NSFW e NSFL). A versão usada no ORCA é chamada de
 \texttt{vision-v1}.
 
-A escolha veio de uma comparação entre dois modelos. O NudeNet \cite{nudenet} era rápido,
+A escolha veio de uma comparação entre dois modelos. O NudeNet era rápido,
 mas só detecta nudez e mostrou muitos erros nos testes da equipe. O
 \texttt{image-safety-classifier-s} errou menos e também reconhece conteúdo
 violento, por isso foi o escolhido. Ele foi usado do jeito que veio, sem novo
@@ -1852,9 +1897,7 @@ site.
 Os testes unitários foram escritos com o \texttt{unittest}, ferramenta de
 testes do Python, e não precisam de internet nem dos modelos completos para
 rodar: o modelo de texto é testado com uma versão reduzida do BERT, e o de
-imagens com imagens geradas artificialmente e um classificador simulado. O
-Quadro~\ref{tab:testes-automatizados} resume os grupos de testes e o
-resultado da execução feita em 23 de novembro de 2026.
+imagens com imagens geradas artificialmente e um classificador simulado.
 \begin{table}[htbp]
 \centering
 \small
@@ -1889,9 +1932,9 @@ formalmente o funcionamento do sistema com apenas um dos modelos disponível,
 o tempo de resposta e o uso de recursos do computador. A validação de
 usabilidade com os representantes da comunidade externa (S6-02) foi realizada
 entre 15 e 22 de novembro.
-\textit{[Descrever a validação do sistema com a comunidade externa: data,
-participantes, cenários avaliados e resultados.]}
-
+Nessa validação, os representantes conheceram as telas do sistema e deram
+sua opinião sobre elas, e a equipe ajustou a interface de acordo com esses
+comentários.
 % ------------------------------------------------------------
 % 13 Gestão do Projeto
 % ------------------------------------------------------------
@@ -2016,7 +2059,7 @@ S5 & Modelagem e criação do banco de dados (\#36) & Jhenifer & 01/11 a 08/11 &
 S5 & Proteção dos dados armazenados (\#37) & Jhenifer & 01/11 a 08/11 & Concluído \\ \hline
 S6 & Painel: consulta do histórico de classificações e bloqueios (\#38) & Jean, Jhenifer, João & 15/11 a 17/11 & Concluído \\ \hline
 S6 & Validação de usabilidade com a comunidade externa (\#39) & Todos & 15/11 a 22/11 & Concluído \\ \hline
-S7 & Consolidação dos resultados para o relatório final (\#40) & Jhenifer & 15/11 a 24/11 & Em andamento \\ \hline
+S7 & Consolidação dos resultados para o relatório final (\#40) & Jhenifer & 15/11 a 24/11 & Concluído \\ \hline
 \caption{Cronograma real}
 \label{tab:cronograma-real}
 \end{longtable}
